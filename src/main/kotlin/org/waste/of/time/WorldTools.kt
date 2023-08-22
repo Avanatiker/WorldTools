@@ -1,14 +1,10 @@
 package org.waste.of.time
 
-import com.mojang.brigadier.CommandDispatcher
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents
-import net.minecraft.command.CommandRegistryAccess
-import net.minecraft.nbt.*
-import net.minecraft.world.chunk.*
+import net.minecraft.world.chunk.WorldChunk
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.util.concurrent.ConcurrentHashMap

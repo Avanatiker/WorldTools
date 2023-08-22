@@ -5,7 +5,6 @@ import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtIo
 import net.minecraft.nbt.scanner.NbtScanner
 import net.minecraft.util.PathUtil
-import net.minecraft.util.ThrowableDeliverer
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.world.storage.RegionFile
 import java.io.DataOutput
@@ -39,7 +38,9 @@ open class CustomRegionBasedStorage internal constructor(
     fun getTagAt(pos: ChunkPos): NbtCompound? {
         val regionFile = getRegionFile(pos)
         regionFile.getChunkInputStream(pos).use { dataInputStream ->
-            return if (dataInputStream == null) { null } else NbtIo.read(dataInputStream)
+            return if (dataInputStream == null) {
+                null
+            } else NbtIo.read(dataInputStream)
         }
     }
 

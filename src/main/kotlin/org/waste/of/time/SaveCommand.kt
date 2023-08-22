@@ -3,13 +3,7 @@ package org.waste.of.time
 import com.mojang.brigadier.Command
 import com.mojang.brigadier.context.CommandContext
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
-import net.minecraft.nbt.NbtIo
-import net.minecraft.world.storage.RegionBasedStorage
-import net.minecraft.world.storage.RegionFile
-import net.minecraft.world.storage.StorageIoWorker
-import org.waste.of.time.WorldTools.LOGGER
-import java.io.*
-import java.util.zip.DeflaterOutputStream
+import java.io.File
 
 
 object SaveCommand : Command<FabricClientCommandSource> {

@@ -28,13 +28,6 @@ import net.minecraft.world.gen.chunk.BlendingData
 import org.waste.of.time.WorldTools.LOGGER
 
 object ClientChunkSerializer {
-    private const val DATA_VERSION_KEY = "DataVersion"
-    private const val UPGRADE_DATA_KEY = "UpgradeData"
-    private const val BLOCK_TICKS = "block_ticks"
-    private const val FLUID_TICKS = "fluid_ticks"
-    private const val STRUCTURES_KEY = "structures"
-    private const val Y_POS_KEY = "yPos"
-
     private val BLOCK_CODEC = PalettedContainer.createPalettedContainerCodec(
         Block.STATE_IDS,
         BlockState.CODEC,
@@ -46,9 +39,9 @@ object ClientChunkSerializer {
         val chunkPos = chunk.pos
         val nbt = NbtCompound()
 
-        nbt.putInt(DATA_VERSION_KEY, SharedConstants.getGameVersion().saveVersion.id)
+        nbt.putInt("DataVersion", SharedConstants.getGameVersion().saveVersion.id)
         nbt.putInt(ChunkSerializer.X_POS_KEY, chunkPos.x)
-        nbt.putInt(Y_POS_KEY, chunk.bottomSectionCoord)
+        nbt.putInt("yPos", chunk.bottomSectionCoord)
         nbt.putInt(ChunkSerializer.Z_POS_KEY, chunkPos.z)
         nbt.putLong("LastUpdate", chunk.world.time)
         nbt.putLong("InhabitedTime", chunk.inhabitedTime)
@@ -70,7 +63,7 @@ object ClientChunkSerializer {
         }
 
         if (!chunk.upgradeData.isDone()) {
-            nbt.put(UPGRADE_DATA_KEY, chunk.upgradeData.toNbt())
+            nbt.put("UpgradeData", chunk.upgradeData.toNbt())
         }
 
         val lightingProvider = chunk.world.chunkManager.lightingProvider
@@ -140,10 +133,10 @@ object ClientChunkSerializer {
 
         val time = chunk.world.levelProperties.time
 
-        nbt.put(BLOCK_TICKS, tickSchedulers.blocks().toNbt(time) { block: Block? ->
+        nbt.put("block_ticks", tickSchedulers.blocks().toNbt(time) { block: Block? ->
             Registries.BLOCK.getId(block).toString()
         })
-        nbt.put(FLUID_TICKS, tickSchedulers.fluids().toNbt(time) { fluid: Fluid? ->
+        nbt.put("fluid_ticks", tickSchedulers.fluids().toNbt(time) { fluid: Fluid? ->
             Registries.FLUID.getId(fluid).toString()
         })
 
@@ -159,7 +152,7 @@ object ClientChunkSerializer {
 
         nbt.put(ChunkSerializer.HEIGHTMAPS_KEY, heightMaps)
 
-        // ToDo: no structureRegistry because of missing structure context, maybe create a custom structure registry
+        // ToDo: no structureRegistry because of missing structure context, maybe create a custom structure context
 //        val structures = NbtCompound()
 //        val structureRegistry = chunk.world.registryManager.get(RegistryKeys.STRUCTURE)
 //
@@ -174,7 +167,7 @@ object ClientChunkSerializer {
         return nbt
     }
 
-    private fun StructureStart.toNbt(identifier: Identifier, chunkPos: ChunkPos) : NbtCompound {
+    private fun StructureStart.toNbt(identifier: Identifier, chunkPos: ChunkPos): NbtCompound {
         val structureNbt = NbtCompound()
         if (!hasChildren()) {
             structureNbt.putString("id", StructureStart.INVALID)
