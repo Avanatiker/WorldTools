@@ -52,7 +52,7 @@ Contributions to WorldTools are welcome! If you'd like to contribute, please fol
 
 ## License
 
-WorldTools is released under the [GPT License](LICENSE).
+WorldTools is released under the [GPT License Version 3](LICENSE.md).
 
 ## Contact
 
@@ -61,3 +61,9 @@ If you have any questions, concerns, or suggestions, you can reach us at support
 ---
 
 **Disclaimer:** WorldTools is not affiliated with Mojang Studios. Minecraft is a registered trademark of Mojang Studios. Use of the WorldTools software is subject to the terms outlined in the license agreement.
+
+```
+WorldTools  Copyright (C) 2023  Constructor aka Avanatiker
+This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.
+This is free software, and you are welcome to redistribute it
+```

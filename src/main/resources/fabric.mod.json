@@ -14,7 +14,7 @@
     "sources": "https://github.com/Avanatiker/WorldTools/"
   },
 
-  "license": "CC0-1.0",
+  "license": "GPLv3",
   "icon": "assets/world_tools/WorldTools.png",
 
   "environment": "*",
