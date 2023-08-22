@@ -52,7 +52,7 @@ Contributions to WorldTools are welcome! If you'd like to contribute, please fol
 
 ## License
 
-WorldTools is released under the [GPT License Version 3](LICENSE.md).
+WorldTools is released under the [GNU General Public License v3.0](LICENSE.md).
 
 ## Contact
 
