@@ -1,32 +1,33 @@
 {
   "schemaVersion": 1,
-  "id": "modid",
+  "id": "world_tools",
   "version": "${version}",
 
-  "name": "Example Mod",
-  "description": "This is an example description! Tell everyone what your mod is about!",
+  "name": "WorldTools",
+  "description": "A minecraft world downloader built with Kotlin.",
   "authors": [
-    "Me!"
+    "Constructor",
+    "P529"
   ],
   "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
+    "homepage": "https://github.com/Avanatiker/WorldTools/",
+    "sources": "https://github.com/Avanatiker/WorldTools/"
   },
 
   "license": "CC0-1.0",
-  "icon": "assets/modid/icon.png",
+  "icon": "assets/world_tools/WorldTools.png",
 
   "environment": "*",
   "entrypoints": {
-    "main": [
+    "client": [
       {
         "adapter": "kotlin",
-        "value": "net.fabricmc.example.ExampleMod"
+        "value": "org.waste.of.time.WorldTools"
       }
     ]
   },
   "mixins": [
-    "modid.mixins.json"
+    "world_tools.mixins.json"
   ],
 
   "depends": {
