@@ -24,7 +24,7 @@ WorldTools is a powerful and user-friendly Minecraft world downloader tool built
 
 1. **Install Fabric Loader:** Before using WorldTools, ensure you have the Fabric Loader installed on your Minecraft client. You can download it from [here](https://fabricmc.net/use/).
 
-2. **Download WorldTools Mod:** Download the WorldTools mod from the [official repository](https://github.com/yourusername/WorldTools).
+2. **Download WorldTools Mod:** Download the WorldTools mod from the [official repository](https://github.com/Avanatiker/WorldTools).
 
 3. **Place Mod in Mods Folder:** Place the downloaded JAR file of the WorldTools mod into the "mods" folder of your Minecraft installation directory.
 
