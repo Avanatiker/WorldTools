@@ -10,14 +10,11 @@ object SaveCommand : Command<FabricClientCommandSource> {
     private val regionBasedStorage = CustomRegionBasedStorage(File("WorldTools/region").toPath(), false)
 
     override fun run(context: CommandContext<FabricClientCommandSource>?): Int {
-        WorldTools.cachedChunks.forEach { entry ->
-            regionBasedStorage.use { storage ->
+        regionBasedStorage.use { storage ->
+            WorldTools.cachedChunks.forEach { entry ->
                 storage.write(entry.value.pos, ClientChunkSerializer.serialize(entry.value))
             }
         }
-
-//        regionBasedStorage.close()
-
         return 0
     }
 }

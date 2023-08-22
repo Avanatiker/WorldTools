@@ -5,6 +5,7 @@ import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtIo
 import net.minecraft.nbt.scanner.NbtScanner
 import net.minecraft.util.PathUtil
+import net.minecraft.util.ThrowableDeliverer
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.world.storage.RegionFile
 import java.io.DataOutput
@@ -66,18 +67,17 @@ open class CustomRegionBasedStorage internal constructor(
 
     @Throws(IOException::class)
     override fun close() {
-        // ToDo: find out why the closing causes a crash
-//        val throwableDeliverer = ThrowableDeliverer<IOException>()
-//
-//        cachedRegionFiles.values.filterNotNull().forEach { regionFile ->
-//            try {
-//                regionFile.close()
-//            } catch (iOException: IOException) {
-//                throwableDeliverer.add(iOException)
-//            }
-//        }
-//
-//        throwableDeliverer.deliver()
+        val throwableDeliverer = ThrowableDeliverer<IOException>()
+
+        cachedRegionFiles.values.filterNotNull().forEach { regionFile ->
+            try {
+                regionFile.close()
+            } catch (iOException: IOException) {
+                throwableDeliverer.add(iOException)
+            }
+        }
+
+        throwableDeliverer.deliver()
     }
 
     @Throws(IOException::class)
