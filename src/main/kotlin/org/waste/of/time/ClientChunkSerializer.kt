@@ -66,10 +66,9 @@ object ClientChunkSerializer {
             nbt.put("UpgradeData", chunk.upgradeData.toNbt())
         }
 
-        val lightingProvider = chunk.world.chunkManager.lightingProvider
         val biomeRegistry = chunk.world.registryManager.get(RegistryKeys.BIOME)
 
-        val codec = PalettedContainer.createReadableContainerCodec(
+        val biomeCodec = PalettedContainer.createReadableContainerCodec(
             biomeRegistry.indexedEntries,
             biomeRegistry.createEntryCodec(),
             PalettedContainer.PaletteProvider.BIOME,
@@ -77,6 +76,7 @@ object ClientChunkSerializer {
         )
 
         val sectionsList = NbtList()
+        val lightingProvider = chunk.world.chunkManager.lightingProvider
 
         (lightingProvider.bottomY until lightingProvider.topY).forEach { y ->
             val sectionCoord = chunk.sectionCoordToIndex(y)
@@ -98,7 +98,7 @@ object ClientChunkSerializer {
                 )
                 sectionNbt.put(
                     "biomes",
-                    codec.encodeStart(NbtOps.INSTANCE, chunkSection.biomeContainer).getOrThrow(
+                    biomeCodec.encodeStart(NbtOps.INSTANCE, chunkSection.biomeContainer).getOrThrow(
                         false
                     ) { LOGGER.error(it) }
                 )
