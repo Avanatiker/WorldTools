@@ -29,15 +29,14 @@ open class CustomRegionBasedStorage internal constructor(
 
         PathUtil.createDirectories(directory)
         val path = directory.resolve("r." + pos.regionX + "." + pos.regionZ + MCA_EXTENSION)
-        val regionFile2 = RegionFile(path, directory, dsync)
-        cachedRegionFiles.putAndMoveToFirst(longPos, regionFile2)
-        return regionFile2
+        val regionFile = RegionFile(path, directory, dsync)
+        cachedRegionFiles.putAndMoveToFirst(longPos, regionFile)
+        return regionFile
     }
 
     @Throws(IOException::class)
     fun getTagAt(pos: ChunkPos): NbtCompound? {
-        val regionFile = getRegionFile(pos)
-        regionFile.getChunkInputStream(pos).use { dataInputStream ->
+        getRegionFile(pos).getChunkInputStream(pos).use { dataInputStream ->
             return if (dataInputStream == null) {
                 null
             } else NbtIo.read(dataInputStream)
@@ -46,8 +45,7 @@ open class CustomRegionBasedStorage internal constructor(
 
     @Throws(IOException::class)
     fun scanChunk(chunkPos: ChunkPos, scanner: NbtScanner?) {
-        val regionFile = getRegionFile(chunkPos)
-        regionFile.getChunkInputStream(chunkPos).use { dataInputStream ->
+        getRegionFile(chunkPos).getChunkInputStream(chunkPos).use { dataInputStream ->
             dataInputStream?.let {
                 NbtIo.scan(it, scanner)
             }
