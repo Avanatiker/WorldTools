@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.text.Text
 import net.minecraft.world.chunk.WorldChunk
 import net.minecraft.world.level.storage.LevelStorage
 import org.apache.logging.log4j.LogManager
@@ -15,6 +16,8 @@ import java.util.concurrent.ConcurrentLinkedDeque
 
 object WorldTools : ClientModInitializer {
     val LOGGER: Logger = LogManager.getLogger()
+    val NAME: Text = Text.of("WorldTools")
+    const val MCA_EXTENSION = ".mca"
     val levelStorage: LevelStorage = LevelStorage.create(File("WorldTools").toPath())
     val cachedChunks: ConcurrentLinkedDeque<WorldChunk> = ConcurrentLinkedDeque()
     private val cachedPlayers: ConcurrentLinkedDeque<PlayerEntity> = ConcurrentLinkedDeque()

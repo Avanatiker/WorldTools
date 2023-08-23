@@ -8,6 +8,7 @@ import net.minecraft.util.PathUtil
 import net.minecraft.util.ThrowableDeliverer
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.world.storage.RegionFile
+import org.waste.of.time.WorldTools.MCA_EXTENSION
 import java.io.DataOutput
 import java.io.IOException
 import java.nio.file.Path
@@ -33,24 +34,6 @@ open class CustomRegionBasedStorage internal constructor(
         val regionFile = RegionFile(path, directory, dsync)
         cachedRegionFiles.putAndMoveToFirst(longPos, regionFile)
         return regionFile
-    }
-
-    @Throws(IOException::class)
-    fun getTagAt(pos: ChunkPos): NbtCompound? {
-        getRegionFile(pos).getChunkInputStream(pos).use { dataInputStream ->
-            return if (dataInputStream == null) {
-                null
-            } else NbtIo.read(dataInputStream)
-        }
-    }
-
-    @Throws(IOException::class)
-    fun scanChunk(chunkPos: ChunkPos, scanner: NbtScanner?) {
-        getRegionFile(chunkPos).getChunkInputStream(chunkPos).use { dataInputStream ->
-            dataInputStream?.let {
-                NbtIo.scan(it, scanner)
-            }
-        }
     }
 
     @Throws(IOException::class)
@@ -83,9 +66,5 @@ open class CustomRegionBasedStorage internal constructor(
     @Throws(IOException::class)
     fun sync() {
         cachedRegionFiles.values.filterNotNull().forEach { it.sync() }
-    }
-
-    companion object {
-        const val MCA_EXTENSION = ".mca"
     }
 }
