@@ -7,20 +7,42 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.toast.SystemToast
 import net.minecraft.text.Text
-import java.io.File
+import net.minecraft.util.WorldSavePath
 
 
 object SaveCommand : Command<FabricClientCommandSource> {
-    private val regionBasedStorage = CustomRegionBasedStorage(File("WorldTools/region").toPath(), false)
-
     override fun run(context: CommandContext<FabricClientCommandSource>?): Int {
-        CoroutineScope(Dispatchers.Default).launch {
-            regionBasedStorage.use { storage ->
-                WorldTools.cachedChunks.forEach { entry ->
-                    storage.write(entry.value.pos, ClientChunkSerializer.serialize(entry.value))
+        val player = context?.source?.player ?: return 0
+        val levelName = player.serverBrand ?: return 0
+
+        CoroutineScope(Dispatchers.IO).launch {
+            WorldTools.cachedChunks.groupBy { it.world }.forEach { entry ->
+                val session = WorldTools.levelStorage.createSession(levelName)
+                session.createSaveHandler().savePlayerData(player)
+
+                LevelPropertySerializer.backupLevelDataFile(
+                    session,
+                    levelName,
+                    player,
+                    entry.key
+                )
+
+                entry.value.forEach { chunk ->
+                    CustomRegionBasedStorage(
+                        session.getDirectory(WorldSavePath.ROOT).resolve("region"), false
+                    ).write(chunk.pos, ClientChunkSerializer.serialize(chunk))
                 }
             }
+            MinecraftClient.getInstance().toastManager.add(
+                SystemToast.create(
+                    MinecraftClient.getInstance(),
+                    SystemToast.Type.WORLD_BACKUP,
+                    Text.of("WorldTools"),
+                    Text.of("Save completed")
+                )
+            )
             MinecraftClient.getInstance().inGameHud.chatHud.addMessage(Text.of("Save completed"))
         }
         return 0
