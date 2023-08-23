@@ -13,6 +13,7 @@ import net.minecraft.nbt.NbtList
 import net.minecraft.text.Text
 import net.minecraft.util.WorldSavePath
 import org.waste.of.time.WorldTools.mc
+import java.io.File
 import java.net.InetSocketAddress
 
 
@@ -28,36 +29,21 @@ object SaveCommand : Command<FabricClientCommandSource> {
                 WorldTools.cachedChunks.groupBy { it.world }.forEach { chunkGroup ->
                     LevelPropertySerializer.backupLevelDataFile(session, levelName, player, chunkGroup.key)
 
-                    // ToDo: most likely there is a better way to get the path
-                    val path = when (val dimension = chunkGroup.key.registryKey.value.path) {
-                        "overworld" -> "region"
-                        "the_nether" -> "DIM-1/region"
-                        "the_end" -> "DIM1/region"
-                        else -> "$dimension/region"
-                    }
+                    val folder = dimensionFolder(chunkGroup.key.registryKey.value.path) + "region"
+                    val path = session.getDirectory(WorldSavePath.ROOT).resolve(folder)
 
                     chunkGroup.value.forEach { chunk ->
-                        val regionStorage = CustomRegionBasedStorage(
-                            session.getDirectory(WorldSavePath.ROOT).resolve(path), false
-                        )
-
-                        regionStorage.write(chunk.pos, ClientChunkSerializer.serialize(chunk))
+                        CustomRegionBasedStorage(
+                            path, false
+                        ).write(chunk.pos, ClientChunkSerializer.serialize(chunk))
                     }
                 }
                 WorldTools.cachedEntities.groupBy { it.world }.forEach { worldGroup ->
-                    // ToDo: most likely there is a better way to get the path
-                    val path = when (val dimension = worldGroup.key.registryKey.value.path) {
-                        "overworld" -> "entities"
-                        "the_nether" -> "DIM-1/entities"
-                        "the_end" -> "DIM1/entities"
-                        else -> "$dimension/entities"
-                    }
+                    val folder = dimensionFolder(worldGroup.key.registryKey.value.path) + "entities"
+
+                    val path = session.getDirectory(WorldSavePath.ROOT).resolve(folder)
 
                     worldGroup.value.groupBy { it.chunkPos }.forEach { entityGroup ->
-                        val regionStorage = CustomRegionBasedStorage(
-                            session.getDirectory(WorldSavePath.ROOT).resolve(path), false
-                        )
-
                         val entityMain = NbtCompound()
                         val entityList = NbtList()
 
@@ -74,7 +60,7 @@ object SaveCommand : Command<FabricClientCommandSource> {
                         val pos = NbtIntArray(intArrayOf(entityGroup.key.x, entityGroup.key.z))
                         entityMain.put("Position", pos)
 
-                        regionStorage.write(entityGroup.key, entityMain)
+                        CustomRegionBasedStorage(path, false).write(entityGroup.key, entityMain)
                     }
                 }
 
@@ -107,5 +93,12 @@ object SaveCommand : Command<FabricClientCommandSource> {
             mc.inGameHud.chatHud.addMessage(Text.of(successMessage))
         }
         return 0
+    }
+
+    private fun dimensionFolder(dimension: String) = when (dimension) {
+        "overworld" -> ""
+        "the_nether" -> "DIM-1/"
+        "the_end" -> "DIM1/"
+        else -> "$dimension/"
     }
 }
