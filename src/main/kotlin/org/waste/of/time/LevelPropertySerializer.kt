@@ -6,7 +6,6 @@ import net.minecraft.nbt.*
 import net.minecraft.util.Util
 import net.minecraft.util.WorldSavePath
 import net.minecraft.world.World
-import net.minecraft.world.gen.GeneratorOptions
 import net.minecraft.world.level.storage.LevelStorage.Session
 import org.waste.of.time.WorldTools.LOGGER
 import java.io.File

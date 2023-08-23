@@ -3,7 +3,6 @@ package org.waste.of.time
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtIo
-import net.minecraft.nbt.scanner.NbtScanner
 import net.minecraft.util.PathUtil
 import net.minecraft.util.ThrowableDeliverer
 import net.minecraft.util.math.ChunkPos

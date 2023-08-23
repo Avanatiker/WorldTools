@@ -4,36 +4,36 @@ import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents
-import net.minecraft.entity.player.PlayerEntity
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents
+import net.minecraft.client.MinecraftClient
+import net.minecraft.entity.Entity
 import net.minecraft.text.Text
 import net.minecraft.world.chunk.WorldChunk
-import net.minecraft.world.level.storage.LevelStorage
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
-import java.io.File
-import java.util.concurrent.ConcurrentLinkedDeque
+import java.util.concurrent.ConcurrentHashMap
 
 
 object WorldTools : ClientModInitializer {
     val LOGGER: Logger = LogManager.getLogger()
     val NAME: Text = Text.of("WorldTools")
     const val MCA_EXTENSION = ".mca"
-    val levelStorage: LevelStorage = LevelStorage.create(File("WorldTools").toPath())
-    val cachedChunks: ConcurrentLinkedDeque<WorldChunk> = ConcurrentLinkedDeque()
-    private val cachedPlayers: ConcurrentLinkedDeque<PlayerEntity> = ConcurrentLinkedDeque()
+    val mc: MinecraftClient = MinecraftClient.getInstance()
+    val cachedChunks: ConcurrentHashMap.KeySetView<WorldChunk, Boolean> = ConcurrentHashMap.newKeySet()
+    val cachedEntities: ConcurrentHashMap.KeySetView<Entity, Boolean> = ConcurrentHashMap.newKeySet()
 
     override fun onInitializeClient() {
         ClientChunkEvents.CHUNK_LOAD.register(ClientChunkEvents.Load { _, worldChunk ->
             cachedChunks.add(worldChunk)
         })
 
-        // ToDo: cache players
-
-        // ToDo: cache entities
+        ClientEntityEvents.ENTITY_LOAD.register(ClientEntityEvents.Load { entity, _ ->
+            cachedEntities.add(entity)
+        })
 
         // ToDo: cache tile entities
 
-        // ToDo: cache point of interests
+        // ToDo: cache points of interest
 
         ClientCommandRegistrationCallback.EVENT.register(ClientCommandRegistrationCallback { dispatcher, _ ->
             dispatcher.register(literal("world").then(literal("save").executes(SaveCommand)))
