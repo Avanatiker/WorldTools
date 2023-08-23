@@ -14,7 +14,6 @@ import net.minecraft.nbt.NbtList
 import net.minecraft.text.Text
 import net.minecraft.util.WorldSavePath
 import org.waste.of.time.WorldTools.mc
-import java.io.File
 import java.net.InetSocketAddress
 
 
@@ -57,6 +56,7 @@ object SaveCommand : Command<FabricClientCommandSource> {
                         entityGroup.value.forEach {
                             val entityNbt = NbtCompound()
                             it.saveSelfNbt(entityNbt)
+                            entityNbt.putByte("NoAI", 1)
                             entityList.add(entityNbt)
                         }
 
@@ -87,21 +87,21 @@ object SaveCommand : Command<FabricClientCommandSource> {
                 return@launch
             }
 
-            val successMessage = "Saved ${
+            val successMessage = Text.of("Saved ${
                 WorldTools.cachedChunks.size
             } chunks, ${entityPartition.first.size} players and ${
                 entityPartition.second.size
-            } entities to world $levelName"
+            } entities to world $levelName")
 
             mc.toastManager.add(
                 SystemToast.create(
                     mc,
                     SystemToast.Type.WORLD_BACKUP,
                     WorldTools.NAME,
-                    Text.of(successMessage)
+                    successMessage
                 )
             )
-            mc.inGameHud.chatHud.addMessage(Text.of(successMessage))
+            mc.inGameHud.chatHud.addMessage(successMessage)
         }
         return 0
     }
