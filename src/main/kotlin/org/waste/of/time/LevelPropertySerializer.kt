@@ -39,6 +39,7 @@ object LevelPropertySerializer {
         }
 
         nbt.putBoolean("WasModded", true) // not sure
+
         // skip removed features
 
         val gameNbt = NbtCompound()
@@ -52,16 +53,7 @@ object LevelPropertySerializer {
 
         nbt.put("WorldGenSettings", generatorMockNbt())
 
-        // ToDo: maybe find a way to use this instead of the above, making a valid registry is essential
-//        WorldGenSettings.CODEC.encodeStart(
-//            NbtOps.INSTANCE, WorldGenSettings(genOptions, DimensionOptionsRegistryHolder.DimensionsConfig())
-//        ).resultOrPartial {
-//            LOGGER.error(it)
-//        }.ifPresent {
-//            nbt.put("WorldGenSettings", it)
-//        }
-
-        nbt.putInt("GameType", player.server?.defaultGameMode?.id ?: 0)
+        nbt.putInt("GameType", player.server?.defaultGameMode?.id ?: 0) // ToDo: needs player list entry
         nbt.putInt("SpawnX", world.levelProperties.spawnX)
         nbt.putInt("SpawnY", world.levelProperties.spawnY)
         nbt.putInt("SpawnZ", world.levelProperties.spawnZ)
@@ -86,7 +78,7 @@ object LevelPropertySerializer {
         nbt.put("DragonFight", NbtCompound()) // not sure
 
         val playerNbt = NbtCompound()
-        nbt.put("Player", player.writeNbt(playerNbt)) // ???
+        nbt.put("Player", player.writeNbt(playerNbt)) // why ???
 
         // skip custom boss events
         nbt.put("CustomBossEvents", NbtCompound())
@@ -101,16 +93,41 @@ object LevelPropertySerializer {
     }
 
     private fun generatorMockNbt(): NbtCompound {
-        val genOptions = GeneratorOptions.createRandom()
         val genNbt = NbtCompound()
 
         genNbt.putByte("bonus_chest", 0)
-        genNbt.putLong("seed", genOptions.seed)
-        genNbt.putByte("generate_features", 1)
+        genNbt.putLong("seed", 0)
+        genNbt.putByte("generate_features", 0)
 
         val dimensionsNbt = NbtCompound()
 
         val overworld = NbtCompound()
+
+        overworld.put("generator", voidGenerator())
+        overworld.putString("type", "minecraft:overworld")
+
+        dimensionsNbt.put("minecraft:overworld", overworld)
+
+        val nether = NbtCompound()
+
+        nether.put("generator", voidGenerator())
+        nether.putString("type", "minecraft:the_nether")
+
+        dimensionsNbt.put("minecraft:the_nether", nether)
+
+        val end = NbtCompound()
+
+        end.put("generator", voidGenerator())
+        end.putString("type", "minecraft:the_end")
+
+        dimensionsNbt.put("minecraft:the_end", end)
+
+        genNbt.put("dimensions", dimensionsNbt)
+
+        return genNbt
+    }
+
+    private fun overworldDefaultGen(): NbtCompound {
         val overworldGen = NbtCompound()
         val overworldBiomeSource = NbtCompound()
 
@@ -121,12 +138,10 @@ object LevelPropertySerializer {
         overworldGen.put("biome_source", overworldBiomeSource)
         overworldGen.putString("type", "minecraft:noise")
 
-        overworld.put("generator", overworldGen)
-        overworld.putString("type", "minecraft:overworld")
+        return overworldGen
+    }
 
-        dimensionsNbt.put("minecraft:overworld", overworld)
-
-        val nether = NbtCompound()
+    private fun netherDefaultGen(): NbtCompound {
         val netherGen = NbtCompound()
         val netherBiomeSource = NbtCompound()
 
@@ -137,12 +152,10 @@ object LevelPropertySerializer {
         netherGen.put("biome_source", netherBiomeSource)
         netherGen.putString("type", "minecraft:noise")
 
-        nether.put("generator", netherGen)
-        nether.putString("type", "minecraft:the_nether")
+        return netherGen
+    }
 
-        dimensionsNbt.put("minecraft:the_nether", nether)
-
-        val end = NbtCompound()
+    private fun endDefaultGen(): NbtCompound {
         val endGen = NbtCompound()
         val endBiomeSource = NbtCompound()
 
@@ -152,13 +165,28 @@ object LevelPropertySerializer {
         endGen.put("biome_source", endBiomeSource)
         endGen.putString("type", "minecraft:noise")
 
-        end.put("generator", endGen)
-        end.putString("type", "minecraft:the_end")
+        return endGen
+    }
 
-        dimensionsNbt.put("minecraft:the_end", end)
+    private fun voidGenerator(): NbtCompound {
+        val voidGen = NbtCompound()
+        val voidLayers = NbtList()
+        val onlyLayer = NbtCompound()
 
-        genNbt.put("dimensions", dimensionsNbt)
+        onlyLayer.putString("block", "minecraft:air")
+        onlyLayer.putInt("height", 1)
+        voidLayers.add(onlyLayer)
 
-        return genNbt
+        val settingsNbt = NbtCompound()
+        settingsNbt.putByte("features", 1)
+        settingsNbt.putString("biome", "minecraft:the_void")
+        settingsNbt.put("layers", voidLayers)
+        settingsNbt.put("structure_overrides", NbtList())
+        settingsNbt.putByte("lakes", 0)
+
+        voidGen.put("settings", settingsNbt)
+        voidGen.putString("type", "minecraft:flat")
+
+        return voidGen
     }
 }
