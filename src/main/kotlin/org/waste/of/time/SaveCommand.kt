@@ -49,7 +49,7 @@ object SaveCommand : Command<FabricClientCommandSource> {
 
                         entityGroup.value.forEach {
                             val entityNbt = NbtCompound()
-                            it.writeNbt(entityNbt)
+                            it.saveSelfNbt(entityNbt)
                             entityList.add(entityNbt)
                         }
 
