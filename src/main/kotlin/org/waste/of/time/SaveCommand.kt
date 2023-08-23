@@ -10,16 +10,18 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.toast.SystemToast
 import net.minecraft.text.Text
 import net.minecraft.util.WorldSavePath
+import java.net.InetSocketAddress
 
 
 object SaveCommand : Command<FabricClientCommandSource> {
     override fun run(context: CommandContext<FabricClientCommandSource>?): Int {
         val player = context?.source?.player ?: return 0
-        val levelName = player.serverBrand ?: return 0
+        val levelName = (MinecraftClient.getInstance().networkHandler?.connection?.address as? InetSocketAddress)?.hostName.toString()
 
         CoroutineScope(Dispatchers.IO).launch {
             WorldTools.cachedChunks.groupBy { it.world }.forEach { entry ->
-                val session = WorldTools.levelStorage.createSession(levelName)
+                val session = MinecraftClient.getInstance().levelStorage.createSession(levelName)
+//                val session = WorldTools.levelStorage.createSession(levelName)
                 session.createSaveHandler().savePlayerData(player)
 
                 LevelPropertySerializer.backupLevelDataFile(

@@ -6,6 +6,7 @@ import net.minecraft.nbt.*
 import net.minecraft.util.Util
 import net.minecraft.util.WorldSavePath
 import net.minecraft.world.World
+import net.minecraft.world.gen.GeneratorOptions
 import net.minecraft.world.level.storage.LevelStorage.Session
 import org.waste.of.time.WorldTools.LOGGER
 import java.io.File
@@ -49,7 +50,16 @@ object LevelPropertySerializer {
         nbt.put("Version", gameNbt)
         NbtHelper.putDataVersion(nbt)
 
-        // skip world gen settings
+        nbt.put("WorldGenSettings", generatorMockNbt())
+
+        // ToDo: maybe find a way to use this instead of the above, making a valid registry is essential
+//        WorldGenSettings.CODEC.encodeStart(
+//            NbtOps.INSTANCE, WorldGenSettings(genOptions, DimensionOptionsRegistryHolder.DimensionsConfig())
+//        ).resultOrPartial {
+//            LOGGER.error(it)
+//        }.ifPresent {
+//            nbt.put("WorldGenSettings", it)
+//        }
 
         nbt.putInt("GameType", player.server?.defaultGameMode?.id ?: 0)
         nbt.putInt("SpawnX", world.levelProperties.spawnX)
@@ -79,13 +89,76 @@ object LevelPropertySerializer {
         nbt.put("Player", player.writeNbt(playerNbt)) // ???
 
         // skip custom boss events
+        nbt.put("CustomBossEvents", NbtCompound())
 
-        nbt.put("ScheduledEvents", NbtCompound()) // not sure
+        nbt.put("ScheduledEvents", NbtList()) // not sure
         nbt.putInt("WanderingTraderSpawnDelay", 0) // not sure
         nbt.putInt("WanderingTraderSpawnChance", 0) // not sure
 
         // skip wandering trader id
 
         return nbt
+    }
+
+    private fun generatorMockNbt(): NbtCompound {
+        val genOptions = GeneratorOptions.createRandom()
+        val genNbt = NbtCompound()
+
+        genNbt.putByte("bonus_chest", 0)
+        genNbt.putLong("seed", genOptions.seed)
+        genNbt.putByte("generate_features", 1)
+
+        val dimensionsNbt = NbtCompound()
+
+        val overworld = NbtCompound()
+        val overworldGen = NbtCompound()
+        val overworldBiomeSource = NbtCompound()
+
+        overworldBiomeSource.putString("preset", "minecraft:overworld")
+        overworldBiomeSource.putString("type", "minecraft:multi_noise")
+
+        overworldGen.putString("settings", "minecraft:overworld")
+        overworldGen.put("biome_source", overworldBiomeSource)
+        overworldGen.putString("type", "minecraft:noise")
+
+        overworld.put("generator", overworldGen)
+        overworld.putString("type", "minecraft:overworld")
+
+        dimensionsNbt.put("minecraft:overworld", overworld)
+
+        val nether = NbtCompound()
+        val netherGen = NbtCompound()
+        val netherBiomeSource = NbtCompound()
+
+        netherBiomeSource.putString("preset", "minecraft:nether")
+        netherBiomeSource.putString("type", "minecraft:multi_noise")
+
+        netherGen.putString("settings", "minecraft:nether")
+        netherGen.put("biome_source", netherBiomeSource)
+        netherGen.putString("type", "minecraft:noise")
+
+        nether.put("generator", netherGen)
+        nether.putString("type", "minecraft:the_nether")
+
+        dimensionsNbt.put("minecraft:the_nether", nether)
+
+        val end = NbtCompound()
+        val endGen = NbtCompound()
+        val endBiomeSource = NbtCompound()
+
+        endBiomeSource.putString("type", "minecraft:the_end")
+
+        endGen.putString("settings", "minecraft:end")
+        endGen.put("biome_source", endBiomeSource)
+        endGen.putString("type", "minecraft:noise")
+
+        end.put("generator", endGen)
+        end.putString("type", "minecraft:the_end")
+
+        dimensionsNbt.put("minecraft:the_end", end)
+
+        genNbt.put("dimensions", dimensionsNbt)
+
+        return genNbt
     }
 }
