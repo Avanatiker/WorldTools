@@ -7,6 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
 import net.minecraft.client.toast.SystemToast
+import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtIntArray
 import net.minecraft.nbt.NbtList
@@ -21,6 +22,7 @@ object SaveCommand : Command<FabricClientCommandSource> {
     override fun run(context: CommandContext<FabricClientCommandSource>?): Int {
         val player = context?.source?.player ?: return 0
         val levelName = (mc.networkHandler?.connection?.address as? InetSocketAddress)?.hostName.toString()
+        val entityPartition = WorldTools.cachedEntities.partition { it is PlayerEntity }
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -38,7 +40,12 @@ object SaveCommand : Command<FabricClientCommandSource> {
                         ).write(chunk.pos, ClientChunkSerializer.serialize(chunk))
                     }
                 }
-                WorldTools.cachedEntities.groupBy { it.world }.forEach { worldGroup ->
+
+                entityPartition.first.filterIsInstance<PlayerEntity>().forEach {
+                    session.createSaveHandler().savePlayerData(it)
+                }
+
+                entityPartition.second.groupBy { it.world }.forEach { worldGroup ->
                     val folder = dimensionFolder(worldGroup.key.registryKey.value.path) + "entities"
 
                     val path = session.getDirectory(WorldSavePath.ROOT).resolve(folder)
@@ -80,7 +87,11 @@ object SaveCommand : Command<FabricClientCommandSource> {
                 return@launch
             }
 
-            val successMessage = "Saved ${WorldTools.cachedChunks.size} chunks to world $levelName"
+            val successMessage = "Saved ${
+                WorldTools.cachedChunks.size
+            } chunks, ${entityPartition.first.size} players and ${
+                entityPartition.second.size
+            } entities to world $levelName"
 
             mc.toastManager.add(
                 SystemToast.create(
