@@ -60,6 +60,8 @@ class SaveCommand : Command<FabricClientCommandSource> {
         get() = stepsDone.toFloat() / totalSteps.toFloat()
 
     override fun run(context: CommandContext<FabricClientCommandSource>?): Int {
+        WorldTools.capturing = false
+
         val noAi = BoolArgumentType.getBool(context, "freezeEntities")
         val player = context?.source?.player ?: return -1
 
@@ -102,6 +104,7 @@ class SaveCommand : Command<FabricClientCommandSource> {
             sendSuccess()
             WorldTools.flush()
             bossBars.remove(progressBar.uuid)
+            WorldTools.capturing = true
         }
         return 0
     }
@@ -315,6 +318,6 @@ class SaveCommand : Command<FabricClientCommandSource> {
         "overworld" -> ""
         "the_nether" -> "DIM-1/"
         "the_end" -> "DIM1/"
-        else -> "$dimension/"
+        else -> "dimensions/minecraft/$dimension/"
     }
 }

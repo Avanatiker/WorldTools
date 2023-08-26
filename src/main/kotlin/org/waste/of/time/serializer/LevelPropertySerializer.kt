@@ -60,7 +60,7 @@ object LevelPropertySerializer {
         nbt.put("Version", gameNbt)
         NbtHelper.putDataVersion(nbt)
 
-        nbt.put("WorldGenSettings", generatorMockNbt())
+        nbt.put("WorldGenSettings", generatorMockNbt(player))
 
         val playerEntry = mc.networkHandler?.listedPlayerListEntries?.find {
             it.profile.id == player.uuid
@@ -97,7 +97,7 @@ object LevelPropertySerializer {
 
         val playerNbt = NbtCompound()
         player.writeNbt(playerNbt)
-        playerNbt.putString("Dimension", player.world.registryKey.value.path)
+        playerNbt.putString("Dimension", "minecraft:${player.world.registryKey.value.path}")
         nbt.put("Player", playerNbt)
 
         nbt.put("CustomBossEvents", NbtCompound()) // not sure
@@ -111,7 +111,7 @@ object LevelPropertySerializer {
         return nbt
     }
 
-    private fun generatorMockNbt(): NbtCompound {
+    private fun generatorMockNbt(player: ClientPlayerEntity): NbtCompound {
         val genNbt = NbtCompound()
 
         genNbt.putByte("bonus_chest", 0)
@@ -119,6 +119,13 @@ object LevelPropertySerializer {
         genNbt.putByte("generate_features", 0)
 
         val dimensionsNbt = NbtCompound()
+
+        val custom = NbtCompound()
+
+        custom.put("generator", voidGenerator())
+        custom.putString("type", "minecraft:overworld")
+
+        dimensionsNbt.put("minecraft:${player.world.registryKey.value.path}", custom)
 
         val overworld = NbtCompound()
 

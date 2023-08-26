@@ -73,6 +73,9 @@ object WorldTools : ClientModInitializer {
 
     override fun onInitializeClient() {
         ClientChunkEvents.CHUNK_LOAD.register(ClientChunkEvents.Load { _, worldChunk ->
+            if (mc.isInSingleplayer) {
+                capturing = false
+            }
             if (!capturing) return@Load
 
             cachedChunks.add(worldChunk)
@@ -81,6 +84,9 @@ object WorldTools : ClientModInitializer {
         })
 
         ClientEntityEvents.ENTITY_LOAD.register(ClientEntityEvents.Load { entity, _ ->
+            if (mc.isInSingleplayer) {
+                capturing = false
+            }
             if (!capturing) return@Load
 
             captureInfoBar.name = Text.of("Captured ${cachedChunks.size} chunks and ${cachedEntities.size} entities")
