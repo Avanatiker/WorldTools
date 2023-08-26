@@ -1,34 +1,44 @@
-package org.waste.of.time
+package org.waste.of.time.serializer
 
 import net.minecraft.SharedConstants
 import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.nbt.*
 import net.minecraft.util.Util
 import net.minecraft.util.WorldSavePath
-import net.minecraft.world.World
 import net.minecraft.world.level.storage.LevelStorage.Session
+import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.LOGGER
+import org.waste.of.time.WorldTools.credits
+import org.waste.of.time.WorldTools.mc
 import java.io.File
 
 object LevelPropertySerializer {
-    fun backupLevelDataFile(session: Session, levelName: String, player: ClientPlayerEntity, world: World) {
+    /**
+     * See [net.minecraft.world.level.storage.LevelStorage.Session.backupLevelDataFile]
+     */
+    fun backupLevelDataFile(session: Session, levelName: String, player: ClientPlayerEntity) {
         val resultingFile = session.getDirectory(WorldSavePath.ROOT).toFile()
-        val dataNbt = serialize(levelName, player, world)
+        val dataNbt = serialize(levelName, player)
         val levelNbt = NbtCompound()
         levelNbt.put("Data", dataNbt)
+        levelNbt.copyFrom(credits)
 
         try {
-            val newFile = File.createTempFile("level", ".dat", resultingFile)
+            val newFile = File.createTempFile("level", WorldTools.DAT_EXTENSION, resultingFile)
             NbtIo.writeCompressed(levelNbt, newFile)
             val backup = session.getDirectory(WorldSavePath.LEVEL_DAT_OLD).toFile()
             val current = session.getDirectory(WorldSavePath.LEVEL_DAT).toFile()
             Util.backupAndReplace(current, newFile, backup)
+            LOGGER.info("Saved level data.")
         } catch (exception: Exception) {
             LOGGER.error("Failed to save level {}", resultingFile, exception)
         }
     }
 
-    private fun serialize(levelName: String, player: ClientPlayerEntity, world: World): NbtCompound {
+    /**
+     * See [net.minecraft.world.level.LevelProperties.updateProperties]
+     */
+    private fun serialize(levelName: String, player: ClientPlayerEntity): NbtCompound {
         val nbt = NbtCompound()
 
         player.serverBrand?.let {
@@ -52,35 +62,45 @@ object LevelPropertySerializer {
 
         nbt.put("WorldGenSettings", generatorMockNbt())
 
-        nbt.putInt("GameType", player.server?.defaultGameMode?.id ?: 0) // ToDo: needs player list entry
-        nbt.putInt("SpawnX", world.levelProperties.spawnX)
-        nbt.putInt("SpawnY", world.levelProperties.spawnY)
-        nbt.putInt("SpawnZ", world.levelProperties.spawnZ)
-        nbt.putFloat("SpawnAngle", world.levelProperties.spawnAngle)
-        nbt.putLong("Time", world.time)
-        nbt.putLong("DayTime", world.timeOfDay)
+        val playerEntry = mc.networkHandler?.listedPlayerListEntries?.find {
+            it.profile.id == player.uuid
+        }
+
+        nbt.putInt(
+            "GameType",
+            playerEntry?.gameMode?.id
+                ?: player.server?.defaultGameMode?.id
+                ?: 0
+        )
+        nbt.putInt("SpawnX", player.world.levelProperties.spawnX)
+        nbt.putInt("SpawnY", player.world.levelProperties.spawnY)
+        nbt.putInt("SpawnZ", player.world.levelProperties.spawnZ)
+        nbt.putFloat("SpawnAngle", player.world.levelProperties.spawnAngle)
+        nbt.putLong("Time", player.world.time)
+        nbt.putLong("DayTime", player.world.timeOfDay)
         nbt.putLong("LastPlayed", System.currentTimeMillis())
         nbt.putString("LevelName", levelName)
         nbt.putInt("version", 19133)
         nbt.putInt("clearWeatherTime", 0) // not sure
         nbt.putInt("rainTime", 0) // not sure
-        nbt.putBoolean("raining", world.isRaining)
+        nbt.putBoolean("raining", player.world.isRaining)
         nbt.putInt("thunderTime", 0) // not sure
-        nbt.putBoolean("thundering", world.isThundering)
+        nbt.putBoolean("thundering", player.world.isThundering)
         nbt.putBoolean("hardcore", player.server?.isHardcore ?: false)
         nbt.putBoolean("allowCommands", true) // not sure
         nbt.putBoolean("initialized", true) // not sure
-        world.worldBorder.write().writeNbt(nbt)
-        nbt.putByte("Difficulty", world.levelProperties.difficulty.id.toByte())
+        player.world.worldBorder.write().writeNbt(nbt)
+        nbt.putByte("Difficulty", player.world.levelProperties.difficulty.id.toByte())
         nbt.putBoolean("DifficultyLocked", false) // not sure
-        nbt.put("GameRules", world.levelProperties.gameRules.toNbt())
+        nbt.put("GameRules", player.world.levelProperties.gameRules.toNbt())
         nbt.put("DragonFight", NbtCompound()) // not sure
 
         val playerNbt = NbtCompound()
-        nbt.put("Player", player.writeNbt(playerNbt)) // why ???
+        player.writeNbt(playerNbt)
+        playerNbt.putString("Dimension", player.world.registryKey.value.path)
+        nbt.put("Player", playerNbt)
 
-        // skip custom boss events
-        nbt.put("CustomBossEvents", NbtCompound())
+        nbt.put("CustomBossEvents", NbtCompound()) // not sure
 
         nbt.put("ScheduledEvents", NbtList()) // not sure
         nbt.putInt("WanderingTraderSpawnDelay", 0) // not sure
@@ -124,47 +144,6 @@ object LevelPropertySerializer {
         genNbt.put("dimensions", dimensionsNbt)
 
         return genNbt
-    }
-
-    private fun overworldDefaultGen(): NbtCompound {
-        val overworldGen = NbtCompound()
-        val overworldBiomeSource = NbtCompound()
-
-        overworldBiomeSource.putString("preset", "minecraft:overworld")
-        overworldBiomeSource.putString("type", "minecraft:multi_noise")
-
-        overworldGen.putString("settings", "minecraft:overworld")
-        overworldGen.put("biome_source", overworldBiomeSource)
-        overworldGen.putString("type", "minecraft:noise")
-
-        return overworldGen
-    }
-
-    private fun netherDefaultGen(): NbtCompound {
-        val netherGen = NbtCompound()
-        val netherBiomeSource = NbtCompound()
-
-        netherBiomeSource.putString("preset", "minecraft:nether")
-        netherBiomeSource.putString("type", "minecraft:multi_noise")
-
-        netherGen.putString("settings", "minecraft:nether")
-        netherGen.put("biome_source", netherBiomeSource)
-        netherGen.putString("type", "minecraft:noise")
-
-        return netherGen
-    }
-
-    private fun endDefaultGen(): NbtCompound {
-        val endGen = NbtCompound()
-        val endBiomeSource = NbtCompound()
-
-        endBiomeSource.putString("type", "minecraft:the_end")
-
-        endGen.putString("settings", "minecraft:end")
-        endGen.put("biome_source", endBiomeSource)
-        endGen.putString("type", "minecraft:noise")
-
-        return endGen
     }
 
     private fun voidGenerator(): NbtCompound {

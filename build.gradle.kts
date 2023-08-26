@@ -23,6 +23,14 @@ dependencies {
 
     modImplementation("net.fabricmc:fabric-language-kotlin:${property("fabric_kotlin_version")}")
     modImplementation("net.fabricmc.fabric-api:fabric-api:${property("fabric_api_version")}")
+
+    modImplementation(include("net.kyori:adventure-platform-fabric:5.9.0")!!) // for Minecraft 1.20.1
+
+//    implementation("net.kyori:adventure-api:4.14.0")
+
+//    modApi("me.shedaniel.cloth:cloth-config-fabric:ABC") {
+//        exclude(group = "net.fabricmc.fabric-api")
+//    }
 }
 
 tasks {

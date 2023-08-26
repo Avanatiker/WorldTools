@@ -4,6 +4,7 @@
   "package": "org.waste.of.time.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "BossBarHudAccessor"
   ],
   "client": [
   ],

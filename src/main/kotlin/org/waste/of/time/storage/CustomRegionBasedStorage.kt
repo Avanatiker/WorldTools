@@ -1,4 +1,4 @@
-package org.waste.of.time
+package org.waste.of.time.storage
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap
 import net.minecraft.nbt.NbtCompound

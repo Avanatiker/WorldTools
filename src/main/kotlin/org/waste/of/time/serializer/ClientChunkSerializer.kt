@@ -1,4 +1,4 @@
-package org.waste.of.time
+package org.waste.of.time.serializer
 
 import net.minecraft.SharedConstants
 import net.minecraft.block.Block
