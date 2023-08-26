@@ -15,6 +15,7 @@ import net.minecraft.world.chunk.WorldChunk
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.waste.of.time.command.WorldToolsCommandBuilder
+import org.waste.of.time.mixin.BossBarHudAccessor
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
@@ -37,12 +38,27 @@ object WorldTools : ClientModInitializer {
     val cachedChunks: ConcurrentHashMap.KeySetView<WorldChunk, Boolean> = ConcurrentHashMap.newKeySet()
     val cachedEntities: ConcurrentHashMap.KeySetView<Entity, Boolean> = ConcurrentHashMap.newKeySet()
 
+    val bossBars by lazy {
+        (mc.inGameHud.bossBarHud as BossBarHudAccessor).getBossBars()
+    }
+
     val progressBar = ClientBossBar(
         UUID.randomUUID(),
         Text.of(""),
         0.0f,
         BossBar.Color.GREEN,
         BossBar.Style.PROGRESS,
+        false,
+        false,
+        false
+    )
+
+    val captureInfoBar = ClientBossBar(
+        UUID.randomUUID(),
+        Text.of(""),
+        1.0f,
+        BossBar.Color.PURPLE,
+        BossBar.Style.NOTCHED_10,
         false,
         false,
         false
@@ -57,11 +73,19 @@ object WorldTools : ClientModInitializer {
 
     override fun onInitializeClient() {
         ClientChunkEvents.CHUNK_LOAD.register(ClientChunkEvents.Load { _, worldChunk ->
-            if (capturing) cachedChunks.add(worldChunk)
+            if (!capturing) return@Load
+
+            cachedChunks.add(worldChunk)
+            captureInfoBar.name = Text.of("Captured ${cachedChunks.size} chunks and ${cachedEntities.size} entities")
+            bossBars.putIfAbsent(captureInfoBar.uuid, captureInfoBar)
         })
 
         ClientEntityEvents.ENTITY_LOAD.register(ClientEntityEvents.Load { entity, _ ->
-            if (capturing) cachedEntities.add(entity)
+            if (!capturing) return@Load
+
+            captureInfoBar.name = Text.of("Captured ${cachedChunks.size} chunks and ${cachedEntities.size} entities")
+            bossBars.putIfAbsent(captureInfoBar.uuid, captureInfoBar)
+            cachedEntities.add(entity)
         })
 
         // ToDo: cache lootable tile entities
@@ -76,5 +100,6 @@ object WorldTools : ClientModInitializer {
     fun flush() {
         cachedChunks.clear()
         cachedEntities.clear()
+        bossBars.remove(captureInfoBar.uuid)
     }
 }

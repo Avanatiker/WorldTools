@@ -24,10 +24,11 @@ import org.waste.of.time.WorldTools.CREDIT_MESSAGE
 import org.waste.of.time.WorldTools.LOGGER
 import org.waste.of.time.WorldTools.MOD_ID
 import org.waste.of.time.WorldTools.VERSION
+import org.waste.of.time.WorldTools.bossBars
+import org.waste.of.time.WorldTools.captureInfoBar
 import org.waste.of.time.WorldTools.credits
 import org.waste.of.time.WorldTools.mc
 import org.waste.of.time.WorldTools.progressBar
-import org.waste.of.time.mixin.BossBarHudAccessor
 import org.waste.of.time.serializer.ClientChunkSerializer
 import org.waste.of.time.serializer.LevelPropertySerializer
 import org.waste.of.time.storage.CustomRegionBasedStorage
@@ -47,9 +48,12 @@ class SaveCommand : Command<FabricClientCommandSource> {
         )
     }
 
-    private val bossBars = (mc.inGameHud.bossBarHud as BossBarHudAccessor).getBossBars()
-    private val entityPartition = WorldTools.cachedEntities.partition { it is PlayerEntity }
-    private val totalSteps = WorldTools.cachedChunks.size + entityPartition.second.size
+    private val entityPartition by lazy {
+        WorldTools.cachedEntities.partition { it is PlayerEntity }
+    }
+    private val totalSteps by lazy {
+        WorldTools.cachedChunks.size + entityPartition.second.size
+    }
     private val serverEntry = mc.currentServerEntry ?: throw NOT_FOUND_EXCEPTION.create("server")
     private var stepsDone = 0
     private val percentage: Float
@@ -60,12 +64,14 @@ class SaveCommand : Command<FabricClientCommandSource> {
         val player = context?.source?.player ?: return -1
 
         messageWorldInfo(player)
+
+        bossBars.remove(captureInfoBar.uuid, captureInfoBar)
         bossBars.putIfAbsent(progressBar.uuid, progressBar)
 
         CoroutineScope(Dispatchers.IO).launch {
-            val session = mc.levelStorage.createSession(serverEntry.address)
-
             try {
+                val session = mc.levelStorage.createSession(serverEntry.address)
+
                 session.getDirectory(WorldSavePath.ROOT)
                     .resolve("$MOD_ID $VERSION metadata.txt")
                     .toFile()
@@ -150,7 +156,7 @@ class SaveCommand : Command<FabricClientCommandSource> {
 
     private fun createMetadata(serverEntry: ServerInfo, player: ClientPlayerEntity): String {
         val localDateTime = LocalDateTime.now()
-        val zoneId = ZoneId.systemDefault() // or specify the desired zone
+        val zoneId = ZoneId.systemDefault()
 
         val zonedDateTime = ZonedDateTime.of(localDateTime, zoneId)
         val formatter = DateTimeFormatter.RFC_1123_DATE_TIME
@@ -159,7 +165,7 @@ class SaveCommand : Command<FabricClientCommandSource> {
 
         val infoBuilder = StringBuilder()
 
-        infoBuilder.append("World save of ${serverEntry.address} captured at $formattedDateTime\n\n")
+        infoBuilder.append("World save of ${serverEntry.address} captured at $formattedDateTime by ${player.name.string}\n\n")
         infoBuilder.append("Server Brand: ${player.serverBrand}\n")
         infoBuilder.append("Server MOTD: ${serverEntry.label.string.split("\n").joinToString(" ")}\n")
         infoBuilder.append("Version: ${serverEntry.version.string}\n")
@@ -224,13 +230,13 @@ class SaveCommand : Command<FabricClientCommandSource> {
                 savedChunks++
                 progressBar.percent = percentage
                 progressBar.name = Text.of(
-                    "${".2f".format(percentage * 100)}% - Saving chunk (${
+                    "${"%.2f".format(percentage * 100)}% - Saving chunk (${
                         savedChunks
                     }/${
                         WorldTools.cachedChunks.size
                     }) at ${
                         chunk.pos
-                    } in dimension ${dimension}..."
+                    } in $dimension..."
                 )
             }
         }
@@ -261,9 +267,9 @@ class SaveCommand : Command<FabricClientCommandSource> {
                     entityList.add(entityNbt)
                     stepsDone++
                     savedEntities++
-                    progressBar.percent = stepsDone.toFloat() / totalSteps.toFloat()
+                    progressBar.percent = percentage
                     progressBar.name = Text.of(
-                        "${".2f".format(percentage * 100)}% - Saving ${it.name.string} (${
+                        "${"%.2f".format(percentage * 100)}% - Saving ${it.name.string} (${
                             savedEntities
                         }/${
                             entityPartition.second.size
