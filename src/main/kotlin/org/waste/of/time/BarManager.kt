@@ -56,6 +56,7 @@ object BarManager {
     }
 
     fun stopCapture() {
+        captureInfoBar.percent = 0.0f
         bossBars.remove(captureInfoBar.uuid)
     }
 

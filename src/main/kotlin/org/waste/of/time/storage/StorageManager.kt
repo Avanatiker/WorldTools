@@ -217,6 +217,7 @@ object StorageManager {
                 CustomRegionBasedStorage(path, false).write(chunk.pos, chunkNbt)
 
                 cachedChunks.remove(chunk)
+                BarManager.updateCapture()
                 stepsDone++
                 savedChunks++
                 BarManager.updateSaveChunk(
@@ -265,6 +266,7 @@ object StorageManager {
                     entityList.add(entityNbt)
 
                     cachedEntities.remove(it)
+                    BarManager.updateCapture()
                     stepsDone++
                     savedEntities++
                     BarManager.updateSaveEntity(
@@ -304,12 +306,10 @@ object StorageManager {
                 entityPartition.first.size
             }</color> players, and <color:#FFA2C4>${
                 entityPartition.second.size
-            }</color> entities to world "
-        )
-
-        message.append(
+            }</color> entities to saves directory "
+        ).append(
             text(
-                serverEntry.address,
+                "${serverEntry.address} (click to open)",
                 TextColor.color(0xFFA2C4)
             ).clickEvent(ClickEvent.openFile(savedPath.path))
         )
