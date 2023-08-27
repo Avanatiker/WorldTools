@@ -89,6 +89,7 @@ object WorldTools : ClientModInitializer {
     fun flush() {
         cachedChunks.clear()
         cachedEntities.clear()
+        BarManager.updateCapture()
     }
 
     fun sendMessage(text: Text) =
