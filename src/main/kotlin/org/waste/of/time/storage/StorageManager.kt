@@ -43,15 +43,15 @@ import kotlin.io.path.writeBytes
 object StorageManager {
     private var stepsDone = 0
 
-    fun save(freezeEntities: Boolean = false, messageInfo: Boolean = false) {
+    fun save(freezeEntities: Boolean = false, messageInfo: Boolean = false): Int {
         stepsDone = 0
 
         BarManager.startSaving()
 
         val entitySnapshot = cachedEntities.partition { it is PlayerEntity }
         val chunkSnapshot = cachedChunks.toSet()
-        val totalSteps = cachedChunks.size + entitySnapshot.second.size
-        val serverEntry = mc.currentServerEntry ?: return
+        val totalSteps = chunkSnapshot.size + entitySnapshot.second.size
+        val serverEntry = mc.currentServerEntry ?: return -1
 
         if (messageInfo) messageWorldInfo(serverEntry, chunkSnapshot, entitySnapshot)
 
@@ -62,7 +62,7 @@ object StorageManager {
                 session.getDirectory(WorldSavePath.ROOT)
                     .resolve("$MOD_ID $VERSION metadata.txt")
                     .toFile()
-                    .writeText(createMetadata(serverEntry))
+                    .appendText(createMetadata(serverEntry))
 
                 saveFavicon(session, serverEntry)
                 LevelPropertySerializer.backupLevelDataFile(session, serverEntry.address)
@@ -89,6 +89,8 @@ object StorageManager {
 
             BarManager.stopSaving()
         }
+
+        return 0
     }
 
     private fun messageWorldInfo(
@@ -234,6 +236,7 @@ object StorageManager {
     private fun savePlayers(session: LevelStorage.Session, players: List<PlayerEntity>) {
         players.forEach {
             session.createSaveHandler().savePlayerData(it)
+            cachedEntities.remove(it)
         }
     }
 

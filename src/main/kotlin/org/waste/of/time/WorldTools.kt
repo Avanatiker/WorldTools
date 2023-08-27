@@ -71,7 +71,7 @@ object WorldTools : ClientModInitializer {
 
     private fun checkCache() {
         BarManager.updateCapture()
-        if ((cachedChunks.size < MAX_CACHE_SIZE && cachedEntities.size < MAX_CACHE_SIZE) || saving) return
+        if (cachedChunks.size + cachedEntities.size < MAX_CACHE_SIZE || saving) return
 
         StorageManager.save()
     }

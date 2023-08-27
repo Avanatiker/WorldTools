@@ -104,6 +104,8 @@ object LevelPropertySerializer {
         putInt("WanderingTraderSpawnChance", 0) // not sure
 
         // skip wandering trader id
+
+        put("author", creditNbt)
     }
 
     private fun generatorMockNbt() = NbtCompound().apply {
