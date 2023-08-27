@@ -83,7 +83,13 @@ object BarManager {
     fun updateSaveEntity(percentage: Float, savedEntities: Int, totalEntitiesSaved: Int, entity: Entity) {
         progressBar.percent = percentage
         progressBar.name = mm(
-            "${"%.2f".format(percentage * 100)}% - Saving <color:#FFA2C4>${entity.name.string}</color> (<color:#FFA2C4>$savedEntities</color>/<color:#FFA2C4>$totalEntitiesSaved</color>) at <color:#FFA2C4>${entity.blockPos.toShortString()}</color>..."
+            "${"%.2f".format(percentage * 100)}% - Saving <color:#FFA2C4>${sanitizeName(entity.name.string)}</color> (<color:#FFA2C4>$savedEntities</color>/<color:#FFA2C4>$totalEntitiesSaved</color>) at <color:#FFA2C4>${entity.blockPos.toShortString()}</color>..."
         )
     }
+
+    /**
+     * Certain resource packs inject legacy formatting codes into entity names.
+     * these codes will cause the bar to throw exceptions if present in the content.
+     */
+    private fun sanitizeName(name: String) = name.replace(Regex("§"), "")
 }
