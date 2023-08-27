@@ -4,21 +4,17 @@
 
 ## Overview
 
-WorldTools is a powerful and user-friendly Minecraft world downloader tool built using the Fabric modding framework and Kotlin programming language. It allows players to easily download and save Minecraft worlds from multiplayer servers or single-player games, preserving all structures, terrain, and player data for later exploration or backup purposes.
+WorldTools is a powerful and user-friendly Minecraft world downloader tool built using the Fabric modding framework and Kotlin programming language. It allows players to easily download and save Minecraft worlds from multiplayer servers, preserving all structures, terrain, and player data for later exploration or backup purposes.
 
 ## Features
 
 - **Seamless Integration:** WorldTools seamlessly integrates with Minecraft through the Fabric mod loader, providing a hassle-free experience for downloading worlds.
 
-- **Multiplayer and Single-Player Support:** Whether you want to download a multiplayer server world or a single-player world, WorldTools has you covered.
-
 - **Complete World Preservation:** WorldTools ensures that all aspects of the world, including terrain, structures, player inventories, and more, are preserved in the downloaded version.
 
-- **Intuitive User Interface:** The user interface is designed to be intuitive and user-friendly, making it easy for both novice and experienced players to use.
+- **Intuitive User Interface:** Work in progress, coming soon™.
 
-- **Customizable Download Options:** Users can customize their download preferences, including which player data to preserve, whether to include entities, and more.
-
-- **Secure and Reliable:** WorldTools prioritizes the security and reliability of your data, ensuring that your world is downloaded accurately and safely.
+- **Customizable Download Options:** Users can customize their download preferences, whether to include entities and/or players, and more.
 
 ## Installation
 
@@ -30,7 +26,7 @@ WorldTools is a powerful and user-friendly Minecraft world downloader tool built
 
 4. **Launch Minecraft:** Launch Minecraft with the Fabric profile.
 
-5. **Start Using WorldTools:** Once in the game, you can access WorldTools' features through its user interface.
+5. **Start Using WorldTools:** Once in the game, you can access WorldTools' features through its user interface (coming soon™) or the command line.
 
 ## Usage
 
