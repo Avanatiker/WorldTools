@@ -43,7 +43,7 @@ object WorldTools : ClientModInitializer {
     val cachedEntities: ConcurrentHashMap.KeySetView<Entity, Boolean> = ConcurrentHashMap.newKeySet()
 
     val creditNbt: NbtCompound
-        get() = NbtCompound().apply { putString("author", MOD_ID) }
+        get() = NbtCompound().apply { putString("Credits", CREDIT_MESSAGE) }
 
     override fun onInitializeClient() {
         ClientChunkEvents.CHUNK_LOAD.register(ClientChunkEvents.Load { _, worldChunk ->
