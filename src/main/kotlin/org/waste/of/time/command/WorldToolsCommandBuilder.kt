@@ -37,7 +37,9 @@ object WorldToolsCommandBuilder {
                 )
                 .then(
                     literal("save")
+                        .executes(SaveCommand())
                         .then(argument("freezeEntities", bool()).executes(SaveCommand()))
+
                 )
         )
     }

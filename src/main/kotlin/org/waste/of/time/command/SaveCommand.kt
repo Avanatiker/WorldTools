@@ -9,8 +9,12 @@ import org.waste.of.time.storage.StorageManager
 
 class SaveCommand : Command<FabricClientCommandSource> {
     override fun run(context: CommandContext<FabricClientCommandSource>?): Int {
-        StorageManager.save(BoolArgumentType.getBool(context, "freezeEntities"))
-
+        val noAi = try {
+            BoolArgumentType.getBool(context, "freezeEntities")
+        } catch (e: IllegalArgumentException) {
+             false
+        }
+        StorageManager.save(noAi)
         return 0
     }
 }
