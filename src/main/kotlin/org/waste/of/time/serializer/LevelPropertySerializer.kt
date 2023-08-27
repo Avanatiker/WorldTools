@@ -1,14 +1,13 @@
 package org.waste.of.time.serializer
 
 import net.minecraft.SharedConstants
-import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.nbt.*
 import net.minecraft.util.Util
 import net.minecraft.util.WorldSavePath
 import net.minecraft.world.level.storage.LevelStorage.Session
 import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.LOGGER
-import org.waste.of.time.WorldTools.credits
+import org.waste.of.time.WorldTools.creditNbt
 import org.waste.of.time.WorldTools.mc
 import java.io.File
 
@@ -16,12 +15,13 @@ object LevelPropertySerializer {
     /**
      * See [net.minecraft.world.level.storage.LevelStorage.Session.backupLevelDataFile]
      */
-    fun backupLevelDataFile(session: Session, levelName: String, player: ClientPlayerEntity) {
+    fun backupLevelDataFile(session: Session, levelName: String) {
         val resultingFile = session.getDirectory(WorldSavePath.ROOT).toFile()
-        val dataNbt = serialize(levelName, player)
-        val levelNbt = NbtCompound()
-        levelNbt.put("Data", dataNbt)
-        levelNbt.copyFrom(credits)
+        val dataNbt = serialize(levelName)
+        val levelNbt = NbtCompound().apply {
+            put("Data", dataNbt)
+            copyFrom(creditNbt)
+        }
 
         try {
             val newFile = File.createTempFile("level", WorldTools.DAT_EXTENSION, resultingFile)
@@ -38,140 +38,115 @@ object LevelPropertySerializer {
     /**
      * See [net.minecraft.world.level.LevelProperties.updateProperties]
      */
-    private fun serialize(levelName: String, player: ClientPlayerEntity): NbtCompound {
-        val nbt = NbtCompound()
+    private fun serialize(levelName: String) = NbtCompound().apply {
+        val player = mc.player ?: return@apply
 
         player.serverBrand?.let {
-            val brandList = NbtList()
-            brandList.add(NbtString.of(it))
-            nbt.put("ServerBrands", brandList)
+            put("ServerBrands", NbtList().apply {
+                add(NbtString.of(it))
+            })
         }
 
-        nbt.putBoolean("WasModded", true) // not sure
+        putBoolean("WasModded", false)
 
         // skip removed features
 
-        val gameNbt = NbtCompound()
-        gameNbt.putString("Name", SharedConstants.getGameVersion().name)
-        gameNbt.putInt("Id", SharedConstants.getGameVersion().saveVersion.id)
-        gameNbt.putBoolean("Snapshot", !SharedConstants.getGameVersion().isStable)
-        gameNbt.putString("Series", SharedConstants.getGameVersion().saveVersion.series)
+        put("Version", NbtCompound().apply {
+            putString("Name", SharedConstants.getGameVersion().name)
+            putInt("Id", SharedConstants.getGameVersion().saveVersion.id)
+            putBoolean("Snapshot", !SharedConstants.getGameVersion().isStable)
+            putString("Series", SharedConstants.getGameVersion().saveVersion.series)
+        })
 
-        nbt.put("Version", gameNbt)
-        NbtHelper.putDataVersion(nbt)
+        NbtHelper.putDataVersion(this)
 
-        nbt.put("WorldGenSettings", generatorMockNbt(player))
+        put("WorldGenSettings", generatorMockNbt())
 
-        val playerEntry = mc.networkHandler?.listedPlayerListEntries?.find {
+        mc.networkHandler?.listedPlayerListEntries?.find {
             it.profile.id == player.uuid
-        }
+        }?.let {
+            putInt("GameType", it.gameMode.id)
+        } ?: putInt("GameType", player.server?.defaultGameMode?.id ?: 0)
 
-        nbt.putInt(
-            "GameType",
-            playerEntry?.gameMode?.id
-                ?: player.server?.defaultGameMode?.id
-                ?: 0
-        )
-        nbt.putInt("SpawnX", player.world.levelProperties.spawnX)
-        nbt.putInt("SpawnY", player.world.levelProperties.spawnY)
-        nbt.putInt("SpawnZ", player.world.levelProperties.spawnZ)
-        nbt.putFloat("SpawnAngle", player.world.levelProperties.spawnAngle)
-        nbt.putLong("Time", player.world.time)
-        nbt.putLong("DayTime", player.world.timeOfDay)
-        nbt.putLong("LastPlayed", System.currentTimeMillis())
-        nbt.putString("LevelName", levelName)
-        nbt.putInt("version", 19133)
-        nbt.putInt("clearWeatherTime", 0) // not sure
-        nbt.putInt("rainTime", 0) // not sure
-        nbt.putBoolean("raining", player.world.isRaining)
-        nbt.putInt("thunderTime", 0) // not sure
-        nbt.putBoolean("thundering", player.world.isThundering)
-        nbt.putBoolean("hardcore", player.server?.isHardcore ?: false)
-        nbt.putBoolean("allowCommands", true) // not sure
-        nbt.putBoolean("initialized", true) // not sure
-        player.world.worldBorder.write().writeNbt(nbt)
-        nbt.putByte("Difficulty", player.world.levelProperties.difficulty.id.toByte())
-        nbt.putBoolean("DifficultyLocked", false) // not sure
-        nbt.put("GameRules", player.world.levelProperties.gameRules.toNbt())
-        nbt.put("DragonFight", NbtCompound()) // not sure
+        putInt("SpawnX", player.world.levelProperties.spawnX)
+        putInt("SpawnY", player.world.levelProperties.spawnY)
+        putInt("SpawnZ", player.world.levelProperties.spawnZ)
+        putFloat("SpawnAngle", player.world.levelProperties.spawnAngle)
+        putLong("Time", player.world.time)
+        putLong("DayTime", player.world.timeOfDay)
+        putLong("LastPlayed", System.currentTimeMillis())
+        putString("LevelName", levelName)
+        putInt("version", 19133)
+        putInt("clearWeatherTime", 0) // not sure
+        putInt("rainTime", 0) // not sure
+        putBoolean("raining", player.world.isRaining)
+        putInt("thunderTime", 0) // not sure
+        putBoolean("thundering", player.world.isThundering)
+        putBoolean("hardcore", player.server?.isHardcore ?: false)
+        putBoolean("allowCommands", true) // not sure
+        putBoolean("initialized", true) // not sure
 
-        val playerNbt = NbtCompound()
-        player.writeNbt(playerNbt)
-        playerNbt.putString("Dimension", "minecraft:${player.world.registryKey.value.path}")
-        nbt.put("Player", playerNbt)
+        player.world.worldBorder.write().writeNbt(this)
 
-        nbt.put("CustomBossEvents", NbtCompound()) // not sure
+        putByte("Difficulty", player.world.levelProperties.difficulty.id.toByte())
+        putBoolean("DifficultyLocked", false) // not sure
+        put("GameRules", player.world.levelProperties.gameRules.toNbt())
+        put("DragonFight", NbtCompound()) // not sure
 
-        nbt.put("ScheduledEvents", NbtList()) // not sure
-        nbt.putInt("WanderingTraderSpawnDelay", 0) // not sure
-        nbt.putInt("WanderingTraderSpawnChance", 0) // not sure
+        put("Player", NbtCompound().apply {
+            player.writeNbt(this)
+            putString("Dimension", "minecraft:${player.world.registryKey.value.path}")
+        })
+
+        put("CustomBossEvents", NbtCompound()) // not sure
+        put("ScheduledEvents", NbtList()) // not sure
+        putInt("WanderingTraderSpawnDelay", 0) // not sure
+        putInt("WanderingTraderSpawnChance", 0) // not sure
 
         // skip wandering trader id
-
-        return nbt
     }
 
-    private fun generatorMockNbt(player: ClientPlayerEntity): NbtCompound {
-        val genNbt = NbtCompound()
+    private fun generatorMockNbt() = NbtCompound().apply {
+        putByte("bonus_chest", 0)
+        putLong("seed", 0)
+        putByte("generate_features", 0)
 
-        genNbt.putByte("bonus_chest", 0)
-        genNbt.putLong("seed", 0)
-        genNbt.putByte("generate_features", 0)
+        put("dimensions", NbtCompound().apply {
+            put("minecraft:${mc.player?.world?.registryKey?.value?.path}", NbtCompound().apply {
+                put("generator", voidGenerator())
+                putString("type", "minecraft:overworld")
+            })
 
-        val dimensionsNbt = NbtCompound()
+            put("minecraft:overworld", NbtCompound().apply {
+                put("generator", voidGenerator())
+                putString("type", "minecraft:overworld")
+            })
 
-        val custom = NbtCompound()
+            put("minecraft:the_nether", NbtCompound().apply {
+                put("generator", voidGenerator())
+                putString("type", "minecraft:the_nether")
+            })
 
-        custom.put("generator", voidGenerator())
-        custom.putString("type", "minecraft:overworld")
-
-        dimensionsNbt.put("minecraft:${player.world.registryKey.value.path}", custom)
-
-        val overworld = NbtCompound()
-
-        overworld.put("generator", voidGenerator())
-        overworld.putString("type", "minecraft:overworld")
-
-        dimensionsNbt.put("minecraft:overworld", overworld)
-
-        val nether = NbtCompound()
-
-        nether.put("generator", voidGenerator())
-        nether.putString("type", "minecraft:the_nether")
-
-        dimensionsNbt.put("minecraft:the_nether", nether)
-
-        val end = NbtCompound()
-
-        end.put("generator", voidGenerator())
-        end.putString("type", "minecraft:the_end")
-
-        dimensionsNbt.put("minecraft:the_end", end)
-
-        genNbt.put("dimensions", dimensionsNbt)
-
-        return genNbt
+            put("minecraft:the_end", NbtCompound().apply {
+                put("generator", voidGenerator())
+                putString("type", "minecraft:the_end")
+            })
+        })
     }
 
-    private fun voidGenerator(): NbtCompound {
-        val voidGen = NbtCompound()
-        val voidLayers = NbtList()
-        val onlyLayer = NbtCompound()
-
-        onlyLayer.putString("block", "minecraft:air")
-        onlyLayer.putInt("height", 1)
-        voidLayers.add(onlyLayer)
-
-        val settingsNbt = NbtCompound()
-        settingsNbt.putByte("features", 1)
-        settingsNbt.putString("biome", "minecraft:the_void")
-        settingsNbt.put("layers", voidLayers)
-        settingsNbt.put("structure_overrides", NbtList())
-        settingsNbt.putByte("lakes", 0)
-
-        voidGen.put("settings", settingsNbt)
-        voidGen.putString("type", "minecraft:flat")
-
-        return voidGen
+    private fun voidGenerator() = NbtCompound().apply {
+        put("settings", NbtCompound().apply {
+            putByte("features", 1)
+            putString("biome", "minecraft:the_void")
+            put("layers", NbtList().apply {
+                add(NbtCompound().apply {
+                    putString("block", "minecraft:air")
+                    putInt("height", 1)
+                })
+            })
+            put("structure_overrides", NbtList())
+            putByte("lakes", 0)
+        })
+        putString("type", "minecraft:flat")
     }
 }

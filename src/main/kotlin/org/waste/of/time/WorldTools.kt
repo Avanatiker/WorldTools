@@ -4,19 +4,17 @@ import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents
+import net.kyori.adventure.platform.fabric.FabricClientAudiences
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.hud.ClientBossBar
 import net.minecraft.entity.Entity
-import net.minecraft.entity.boss.BossBar
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.text.Text
 import net.minecraft.world.chunk.WorldChunk
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.waste.of.time.command.WorldToolsCommandBuilder
-import org.waste.of.time.mixin.BossBarHudAccessor
-import java.util.*
+import org.waste.of.time.storage.StorageManager
 import java.util.concurrent.ConcurrentHashMap
 
 
@@ -27,71 +25,39 @@ object WorldTools : ClientModInitializer {
     const val CREDIT_MESSAGE = "This file was created by $MOD_ID $VERSION ($URL)"
     const val MCA_EXTENSION = ".mca"
     const val DAT_EXTENSION = ".dat"
+    const val MAX_CACHE_SIZE = 1000
 
     val LOGGER: Logger = LogManager.getLogger()
-    val BRANDING: Text = Text.of(MOD_ID)
+    val BRAND: Text by lazy {
+        mm("<color:green>W<color:gray>orld<color:green>T<color:gray>ools<reset>")
+    }
 
     val mc: MinecraftClient = MinecraftClient.getInstance()
     var mm = MiniMessage.miniMessage()
 
-    var capturing = true
+    var saving = false
+    private var capturing = true
+    private val caching: Boolean
+        get() = capturing && !mc.isInSingleplayer
     val cachedChunks: ConcurrentHashMap.KeySetView<WorldChunk, Boolean> = ConcurrentHashMap.newKeySet()
     val cachedEntities: ConcurrentHashMap.KeySetView<Entity, Boolean> = ConcurrentHashMap.newKeySet()
 
-    val bossBars by lazy {
-        (mc.inGameHud.bossBarHud as BossBarHudAccessor).getBossBars()
-    }
-
-    val progressBar = ClientBossBar(
-        UUID.randomUUID(),
-        Text.of(""),
-        0.0f,
-        BossBar.Color.GREEN,
-        BossBar.Style.PROGRESS,
-        false,
-        false,
-        false
-    )
-
-    val captureInfoBar = ClientBossBar(
-        UUID.randomUUID(),
-        Text.of(""),
-        1.0f,
-        BossBar.Color.PURPLE,
-        BossBar.Style.NOTCHED_10,
-        false,
-        false,
-        false
-    )
-
-    val credits: NbtCompound
-        get() {
-            val nbt = NbtCompound()
-            nbt.putString("Credits", CREDIT_MESSAGE)
-            return nbt
-        }
+    val creditNbt: NbtCompound
+        get() = NbtCompound().apply { putString("author", MOD_ID) }
 
     override fun onInitializeClient() {
         ClientChunkEvents.CHUNK_LOAD.register(ClientChunkEvents.Load { _, worldChunk ->
-            if (mc.isInSingleplayer) {
-                capturing = false
-            }
-            if (!capturing) return@Load
+            if (!caching) return@Load
 
             cachedChunks.add(worldChunk)
-            captureInfoBar.name = Text.of("Captured ${cachedChunks.size} chunks and ${cachedEntities.size} entities")
-            bossBars.putIfAbsent(captureInfoBar.uuid, captureInfoBar)
+            checkCache()
         })
 
         ClientEntityEvents.ENTITY_LOAD.register(ClientEntityEvents.Load { entity, _ ->
-            if (mc.isInSingleplayer) {
-                capturing = false
-            }
-            if (!capturing) return@Load
+            if (!caching) return@Load
 
-            captureInfoBar.name = Text.of("Captured ${cachedChunks.size} chunks and ${cachedEntities.size} entities")
-            bossBars.putIfAbsent(captureInfoBar.uuid, captureInfoBar)
             cachedEntities.add(entity)
+            checkCache()
         })
 
         // ToDo: cache lootable tile entities
@@ -103,9 +69,30 @@ object WorldTools : ClientModInitializer {
         })
     }
 
+    private fun checkCache() {
+        BarManager.updateCapture()
+        if ((cachedChunks.size < MAX_CACHE_SIZE && cachedEntities.size < MAX_CACHE_SIZE) || saving) return
+
+        StorageManager.save()
+    }
+
+    fun startCapture() {
+        capturing = true
+        BarManager.startCapture()
+    }
+
+    fun stopCapture() {
+        capturing = false
+        BarManager.stopCapture()
+    }
+
     fun flush() {
         cachedChunks.clear()
         cachedEntities.clear()
-        bossBars.remove(captureInfoBar.uuid)
     }
+
+    fun sendMessage(text: Text) =
+        mc.inGameHud.chatHud.addMessage(Text.of("[").copy().append(BRAND).copy().append("] ").append(text))
+
+    fun mm(text: String) = FabricClientAudiences.of().toNative(mm.deserialize(text))
 }

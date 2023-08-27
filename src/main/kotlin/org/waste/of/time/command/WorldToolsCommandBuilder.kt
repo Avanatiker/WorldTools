@@ -16,14 +16,14 @@ object WorldToolsCommandBuilder {
                         .then(
                             literal("start")
                                 .executes {
-                                    WorldTools.capturing = true
+                                    WorldTools.startCapture()
                                     0
                                 }
                         )
                         .then(
                             literal("stop")
                                 .executes {
-                                    WorldTools.capturing = false
+                                    WorldTools.stopCapture()
                                     0
                                 }
                         )
