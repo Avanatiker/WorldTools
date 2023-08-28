@@ -54,5 +54,7 @@ class UnscannedChestBlockEntityRenderer(
         )
 
         matrices.pop()
+
+        super.render(entity, tickDelta, matrices, vertexConsumers, light, overlay)
     }
 }
