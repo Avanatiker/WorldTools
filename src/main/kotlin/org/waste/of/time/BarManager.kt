@@ -6,6 +6,7 @@ import net.kyori.adventure.text.Component.text
 import net.minecraft.entity.Entity
 import net.minecraft.util.math.ChunkPos
 import org.waste.of.time.WorldTools.MAX_CACHE_SIZE
+import org.waste.of.time.WorldTools.cachedBlockEntities
 import org.waste.of.time.WorldTools.cachedChunks
 import org.waste.of.time.WorldTools.cachedEntities
 import org.waste.of.time.WorldTools.mm
@@ -48,7 +49,9 @@ object BarManager {
                 cachedChunks.size
             }</color> chunks and <color:#FFA2C4>${
                 cachedEntities.size
-            }</color> entities."
+            }</color> entities and <color:#FFA2C4>${
+                cachedBlockEntities.size
+            }</color> chests."
         ))
     }
 

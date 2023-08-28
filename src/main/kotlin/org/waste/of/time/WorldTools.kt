@@ -131,6 +131,7 @@ object WorldTools : ClientModInitializer {
                         }
 
                         cachedBlockEntities.add(blockEntity)
+                        checkCache()
                     }
                     ChestType.RIGHT -> {
                         val facingOffset = facing.rotateYCounterclockwise()
@@ -147,6 +148,7 @@ object WorldTools : ClientModInitializer {
                         }
 
                         cachedBlockEntities.add(blockEntity)
+                        checkCache()
                     }
 
                     else -> return@Remove
@@ -163,7 +165,7 @@ object WorldTools : ClientModInitializer {
 
     private fun checkCache() {
         BarManager.updateCapture()
-        if (cachedChunks.size + cachedEntities.size < MAX_CACHE_SIZE || saving) return
+        if (cachedChunks.size + cachedEntities.size + cachedBlockEntities.size < MAX_CACHE_SIZE || saving) return
 
         StorageManager.save()
     }
