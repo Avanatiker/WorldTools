@@ -26,6 +26,7 @@ import org.waste.of.time.WorldTools.CREDIT_MESSAGE
 import org.waste.of.time.WorldTools.LOGGER
 import org.waste.of.time.WorldTools.MOD_ID
 import org.waste.of.time.WorldTools.VERSION
+import org.waste.of.time.WorldTools.cachedBlockEntities
 import org.waste.of.time.WorldTools.cachedChunks
 import org.waste.of.time.WorldTools.cachedEntities
 import org.waste.of.time.WorldTools.creditNbt
@@ -230,6 +231,7 @@ object StorageManager {
                 CustomRegionBasedStorage(path, false).write(chunk.pos, chunkNbt)
 
                 cachedChunks.remove(chunk)
+                cachedBlockEntities.removeAll(chunk.blockEntities.map { it.value }.toSet())
                 BarManager.updateCapture()
                 stepsDone++
                 savedChunks++
