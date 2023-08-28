@@ -31,6 +31,7 @@ import org.waste.of.time.WorldTools.cachedEntities
 import org.waste.of.time.WorldTools.creditNbt
 import org.waste.of.time.WorldTools.mc
 import org.waste.of.time.WorldTools.mm
+import org.waste.of.time.WorldTools.saving
 import org.waste.of.time.serializer.ClientChunkSerializer
 import org.waste.of.time.serializer.LevelPropertySerializer
 import java.net.InetSocketAddress
@@ -43,7 +44,12 @@ import kotlin.io.path.writeBytes
 object StorageManager {
     private var stepsDone = 0
 
-    fun save(freezeEntities: Boolean = false, messageInfo: Boolean = false): Int {
+    fun save(freezeEntities: Boolean = false, messageInfo: Boolean = false, silent: Boolean = false): Int {
+        if (saving) {
+            LOGGER.warn("Already saving world.")
+            return -1
+        }
+
         stepsDone = 0
 
         BarManager.startSaving()
@@ -70,9 +76,14 @@ object StorageManager {
                 savePlayers(session, entitySnapshot.first.filterIsInstance<PlayerEntity>())
                 saveEntities(session, freezeEntities, totalSteps, entitySnapshot)
 
-                sendSuccess(session, entitySnapshot, chunkSnapshot, serverEntry)
+                if (!silent) sendSuccess(session, entitySnapshot, chunkSnapshot, serverEntry)
                 session.close()
             } catch (exception: Exception) {
+                if (silent) {
+                    LOGGER.error("Failed to save world.", exception)
+                    return@launch
+                }
+
                 val message = Text.of("Save failed: ${exception.localizedMessage}")
 
                 mc.toastManager.add(
