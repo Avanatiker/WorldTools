@@ -76,13 +76,13 @@ object WorldTools : ClientModInitializer {
             checkCache()
         })
 
-        ClientPlayConnectionEvents.DISCONNECT.register(ClientPlayConnectionEvents.Disconnect { _, _ ->
-            StorageManager.save(silent = true)
-        })
-
-        ClientLifecycleEvents.CLIENT_STOPPING.register(ClientLifecycleEvents.ClientStopping {
-            StorageManager.save(silent = true)
-        })
+//        ClientPlayConnectionEvents.DISCONNECT.register(ClientPlayConnectionEvents.Disconnect { _, _ ->
+//            StorageManager.save(silent = true)
+//        })
+//
+//        ClientLifecycleEvents.CLIENT_STOPPING.register(ClientLifecycleEvents.ClientStopping {
+//            StorageManager.save(silent = true)
+//        })
 
         UseBlockCallback.EVENT.register(UseBlockCallback { _, world, _, hitResult ->
             lastOpenedContainer = null
