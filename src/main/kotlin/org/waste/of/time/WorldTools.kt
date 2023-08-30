@@ -44,7 +44,7 @@ object WorldTools : ClientModInitializer {
 
     var saving = false
     private var capturing = true
-    private val caching: Boolean
+    val caching: Boolean
         get() = capturing && !mc.isInSingleplayer
     val cachedChunks: ConcurrentHashMap.KeySetView<WorldChunk, Boolean> = ConcurrentHashMap.newKeySet()
     val cachedEntities: ConcurrentHashMap.KeySetView<Entity, Boolean> = ConcurrentHashMap.newKeySet()
@@ -114,12 +114,10 @@ object WorldTools : ClientModInitializer {
 
     fun startCapture() {
         capturing = true
-        BarManager.startCapture()
     }
 
     fun stopCapture() {
         capturing = false
-        BarManager.stopCapture()
     }
 
     fun flush() {

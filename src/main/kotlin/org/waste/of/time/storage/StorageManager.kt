@@ -53,7 +53,7 @@ object StorageManager {
 
         stepsDone = 0
 
-        BarManager.startSaving()
+        WorldTools.saving = true
 
         val entitySnapshot = cachedEntities.partition { it is PlayerEntity }
         val chunkSnapshot = cachedChunks.toSet()
@@ -99,7 +99,8 @@ object StorageManager {
                 return@launch
             }
 
-            BarManager.stopSaving()
+
+            WorldTools.saving = false
         }
 
         return 0
