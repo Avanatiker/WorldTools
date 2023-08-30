@@ -7,7 +7,6 @@ import net.kyori.adventure.platform.fabric.FabricClientAudiences
 import net.kyori.adventure.text.Component.newline
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.event.ClickEvent
-import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.format.TextColor.color
 import net.minecraft.client.toast.SystemToast
 import net.minecraft.entity.Entity
@@ -21,7 +20,6 @@ import net.minecraft.world.chunk.WorldChunk
 import org.waste.of.time.BarManager
 import org.waste.of.time.BarManager.resetProgressBar
 import org.waste.of.time.BarManager.updateCapture
-import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.BRAND
 import org.waste.of.time.WorldTools.COLOR
 import org.waste.of.time.WorldTools.CREDIT_MESSAGE
@@ -39,7 +37,6 @@ import org.waste.of.time.WorldTools.sendMessage
 import org.waste.of.time.WorldTools.serverInfo
 import org.waste.of.time.WorldTools.session
 import org.waste.of.time.serializer.ClientChunkSerializer
-import org.waste.of.time.serializer.LevelPropertySerializer
 import org.waste.of.time.serializer.LevelPropertySerializer.backupLevelDataFile
 import java.net.InetSocketAddress
 import java.time.LocalDateTime
@@ -52,7 +49,7 @@ object StorageManager {
     private var stepsDone = 0
 
     fun save(
-        freezeEntities: Boolean = false,
+        freezeWorld: Boolean = true,
         messageInfo: Boolean = false,
         silent: Boolean = false,
         closeSession: Boolean = false
@@ -80,10 +77,10 @@ object StorageManager {
                     .writeText(createMetadata())
 
                 saveFavicon()
-                backupLevelDataFile()
+                backupLevelDataFile(freezeWorld = freezeWorld)
                 saveChunks(chunkSnapshot, totalSteps)
                 savePlayers(entitySnapshot.first.filterIsInstance<PlayerEntity>())
-                saveEntities(freezeEntities, totalSteps, entitySnapshot)
+                saveEntities(freezeWorld, totalSteps, entitySnapshot)
 
                 if (!silent) sendSuccess(entitySnapshot, chunkSnapshot)
             } catch (exception: Exception) {
