@@ -10,12 +10,14 @@ import org.waste.of.time.WorldTools.MAX_CACHE_SIZE
 import org.waste.of.time.WorldTools.cachedBlockEntities
 import org.waste.of.time.WorldTools.cachedChunks
 import org.waste.of.time.WorldTools.cachedEntities
+import org.waste.of.time.WorldTools.caching
 import org.waste.of.time.WorldTools.mm
+import org.waste.of.time.WorldTools.saving
 import java.util.*
 
 object BarManager {
 
-    private val progressBar: ClientBossBar =
+    private val progressBar =
         ClientBossBar(
             UUID.randomUUID(),
             Text.of(""),
@@ -27,7 +29,7 @@ object BarManager {
             false
         )
 
-    private val captureInfoBar: ClientBossBar =
+    private val captureInfoBar =
         ClientBossBar(
             UUID.randomUUID(),
             Text.of(""),
@@ -40,20 +42,13 @@ object BarManager {
         )
 
 
-    fun getProgressBar(): Optional<BossBar> {
-        if (WorldTools.saving) {
-            return Optional.of(progressBar)
-        }
-        return Optional.empty()
-    }
+    fun getProgressBar() = if (!saving) Optional.empty() else Optional.of(progressBar)
 
-    fun getCaptureBar(): Optional<BossBar> {
-        if (!WorldTools.caching) {
-            return Optional.empty()
-        }
-        return Optional.of(captureInfoBar)
-    }
+    fun getCaptureBar() = if (!caching) Optional.empty() else Optional.of(captureInfoBar)
 
+    fun resetProgressBar() {
+        progressBar.percent = 0f
+    }
 
     fun updateCapture() {
         val cacheFilled = (cachedChunks.size + cachedEntities.size) / MAX_CACHE_SIZE.toFloat()

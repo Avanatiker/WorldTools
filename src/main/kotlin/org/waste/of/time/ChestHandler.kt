@@ -41,7 +41,12 @@ object ChestHandler {
         })
     }
 
-    private fun populateOtherChest(container: ChestBlockEntity, facing: Direction, containerSlots: List<Slot>, isRight: Boolean) {
+    private fun populateOtherChest(
+        container: ChestBlockEntity,
+        facing: Direction,
+        containerSlots: List<Slot>,
+        isRight: Boolean
+    ) {
         val facingOffset = facing.rotateYClockwise()
         val pos = container.pos.offset(facingOffset) ?: return
         val otherChest = container.world?.getBlockEntity(pos) ?: return

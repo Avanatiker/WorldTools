@@ -20,6 +20,8 @@ import net.minecraft.world.chunk.WorldChunk
 import net.minecraft.world.level.storage.LevelStorage
 import net.minecraft.world.level.storage.LevelStorage.Session
 import org.waste.of.time.BarManager
+import org.waste.of.time.BarManager.resetProgressBar
+import org.waste.of.time.BarManager.updateCapture
 import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.BRAND
 import org.waste.of.time.WorldTools.CREDIT_MESSAGE
@@ -53,7 +55,7 @@ object StorageManager {
 
         stepsDone = 0
 
-        WorldTools.saving = true
+        saving = true
 
         val entitySnapshot = cachedEntities.partition { it is PlayerEntity }
         val chunkSnapshot = cachedChunks.toSet()
@@ -99,8 +101,9 @@ object StorageManager {
                 return@launch
             }
 
-
-            WorldTools.saving = false
+            saving = false
+            updateCapture()
+            resetProgressBar()
         }
 
         return 0
