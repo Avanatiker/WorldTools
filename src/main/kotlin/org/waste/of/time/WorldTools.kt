@@ -22,13 +22,15 @@ import net.minecraft.nbt.NbtCompound
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.world.chunk.WorldChunk
+import net.minecraft.world.level.storage.LevelStorage
 import net.minecraft.world.level.storage.LevelStorage.Session
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.waste.of.time.command.WorldToolsCommandBuilder
 import org.waste.of.time.renderer.UnscannedChestBlockEntityRenderer
-import org.waste.of.time.serializer.LevelPropertySerializer
+import org.waste.of.time.serializer.LevelPropertySerializer.backupLevelDataFile
 import org.waste.of.time.storage.StorageManager
+import org.waste.of.time.storage.StorageManager.saveFavicon
 import java.util.concurrent.ConcurrentHashMap
 
 
@@ -60,7 +62,6 @@ object WorldTools : ClientModInitializer {
     val cachedBlockEntities: ConcurrentHashMap.KeySetView<ChestBlockEntity, Boolean> = ConcurrentHashMap.newKeySet()
     var lastOpenedContainer: ChestBlockEntity? = null
 
-    lateinit var session: Session
     lateinit var serverInfo: ServerInfo
 
     override fun onInitializeClient() {
@@ -81,11 +82,9 @@ object WorldTools : ClientModInitializer {
         ClientPlayConnectionEvents.JOIN.register(ClientPlayConnectionEvents.Join { _, _, mc ->
             serverInfo = mc.currentServerEntry ?: return@Join
 
-            session = mc.levelStorage.createSession(serverInfo.address)
-
-            CoroutineScope(Dispatchers.IO).launch {
-                StorageManager.saveFavicon()
-                LevelPropertySerializer.backupLevelDataFile()
+            withSession {
+                saveFavicon()
+                backupLevelDataFile()
             }
         })
 
@@ -125,6 +124,18 @@ object WorldTools : ClientModInitializer {
         ClientCommandRegistrationCallback.EVENT.register(ClientCommandRegistrationCallback { dispatcher, _ ->
             WorldToolsCommandBuilder.register(dispatcher)
         })
+    }
+
+    inline fun withSession(crossinline block: LevelStorage.Session.() -> Unit) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                mc.levelStorage.createSession(serverInfo.address).use { session ->
+                    session.block()
+                }
+            } catch (e: Exception) {
+                LOGGER.error("Failed to create session for ${serverInfo.address}", e)
+            }
+        }
     }
 
     fun checkCache() {

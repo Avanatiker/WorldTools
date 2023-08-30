@@ -5,20 +5,20 @@ import net.minecraft.nbt.*
 import net.minecraft.util.Util
 import net.minecraft.util.WorldSavePath
 import net.minecraft.world.GameRules
+import net.minecraft.world.level.storage.LevelStorage.Session
 import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.LOGGER
 import org.waste.of.time.WorldTools.addAuthor
 import org.waste.of.time.WorldTools.mc
 import org.waste.of.time.WorldTools.serverInfo
-import org.waste.of.time.WorldTools.session
 import java.io.File
 
 object LevelPropertySerializer {
     /**
      * See [net.minecraft.world.level.storage.LevelStorage.Session.backupLevelDataFile]
      */
-    fun backupLevelDataFile(freezeWorld: Boolean = true) {
-        val resultingFile = session.getDirectory(WorldSavePath.ROOT).toFile()
+    fun Session.backupLevelDataFile(freezeWorld: Boolean = true) {
+        val resultingFile = getDirectory(WorldSavePath.ROOT).toFile()
         val dataNbt = serializeLevelData(freezeWorld)
         val levelNbt = NbtCompound().apply {
             addAuthor()
@@ -28,8 +28,8 @@ object LevelPropertySerializer {
         try {
             val newFile = File.createTempFile("level", WorldTools.DAT_EXTENSION, resultingFile)
             NbtIo.writeCompressed(levelNbt, newFile)
-            val backup = session.getDirectory(WorldSavePath.LEVEL_DAT_OLD).toFile()
-            val current = session.getDirectory(WorldSavePath.LEVEL_DAT).toFile()
+            val backup = getDirectory(WorldSavePath.LEVEL_DAT_OLD).toFile()
+            val current = getDirectory(WorldSavePath.LEVEL_DAT).toFile()
             Util.backupAndReplace(current, newFile, backup)
             LOGGER.info("Saved level data.")
         } catch (exception: Exception) {

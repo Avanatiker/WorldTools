@@ -1,9 +1,6 @@
 package org.waste.of.time.storage
 
 import com.mojang.authlib.GameProfile
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import net.kyori.adventure.platform.fabric.FabricClientAudiences
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.event.ClickEvent
@@ -19,11 +16,11 @@ import net.minecraft.text.Text
 import net.minecraft.util.PathUtil
 import net.minecraft.util.WorldSavePath
 import net.minecraft.world.chunk.WorldChunk
+import net.minecraft.world.level.storage.LevelStorage.Session
 import org.waste.of.time.BarManager
 import org.waste.of.time.BarManager.resetProgressBar
 import org.waste.of.time.BarManager.updateCapture
 import org.waste.of.time.WorldTools.BRAND
-import org.waste.of.time.WorldTools.CREDIT_MESSAGE
 import org.waste.of.time.WorldTools.CREDIT_MESSAGE_MD
 import org.waste.of.time.WorldTools.LOGGER
 import org.waste.of.time.WorldTools.MOD_ID
@@ -36,7 +33,7 @@ import org.waste.of.time.WorldTools.mm
 import org.waste.of.time.WorldTools.saving
 import org.waste.of.time.WorldTools.sendMessage
 import org.waste.of.time.WorldTools.serverInfo
-import org.waste.of.time.WorldTools.session
+import org.waste.of.time.WorldTools.withSession
 import org.waste.of.time.serializer.ClientChunkSerializer
 import org.waste.of.time.serializer.LevelPropertySerializer.backupLevelDataFile
 import org.waste.of.time.serializer.PathTreeNode
@@ -52,8 +49,7 @@ object StorageManager {
 
     fun save(
         freezeWorld: Boolean = true,
-        silent: Boolean = false,
-        closeSession: Boolean = false
+        silent: Boolean = false
     ): Int {
         if (saving) {
             LOGGER.warn("Already saving world.")
@@ -62,36 +58,15 @@ object StorageManager {
 
         stepsDone = 0
 
-        saving = true
-
         val entitySnapshot = cachedEntities.partition { it is PlayerEntity }
         val chunkSnapshot = cachedChunks.toSet()
         val totalSteps = chunkSnapshot.size + entitySnapshot.second.size
 
-        CoroutineScope(Dispatchers.IO).launch {
+        withSession {
             try {
-                val path = session.getDirectory(WorldSavePath.ROOT).resolve(MOD_ID)
+                saving = true
 
-                PathUtil.createDirectories(path)
-
-                path.resolve("Capture Metadata.md")
-                    .toFile()
-                    .writeText(createMetadataMd())
-
-                mc.networkHandler?.playerList?.let { playerList ->
-                    if (playerList.isEmpty()) return@let
-                    path.resolve("Player Entry List.csv")
-                        .toFile()
-                        .writeText(createPlayerListEntry(playerList.toList()))
-                }
-
-                mc.networkHandler?.worldKeys?.let { keys ->
-                    if (keys.isEmpty()) return@let
-                    path.resolve("Dimension Tree.txt")
-                        .toFile()
-                        .writeText(PathTreeNode.buildTree(keys.map { it.value.path }))
-                }
-
+                writeMetaData()
                 saveFavicon()
                 backupLevelDataFile(freezeWorld = freezeWorld)
                 saveChunks(chunkSnapshot, totalSteps)
@@ -99,10 +74,15 @@ object StorageManager {
                 saveEntities(freezeWorld, totalSteps, entitySnapshot)
 
                 if (!silent) sendSuccess(entitySnapshot, chunkSnapshot)
+
+                updateCapture()
+                resetProgressBar()
+
+                saving = false
             } catch (exception: Exception) {
                 if (silent) {
                     LOGGER.error("Failed to save world.", exception)
-                    return@launch
+                    return@withSession
                 }
 
                 val message = Text.of("Save failed: ${exception.localizedMessage}")
@@ -116,17 +96,33 @@ object StorageManager {
                     )
                 )
                 sendMessage(message)
-                return@launch
+                return@withSession
             }
 
-            saving = false
-            updateCapture()
-            resetProgressBar()
-
-            if (closeSession) session.close()
         }
 
         return 0
+    }
+
+    private fun Session.writeMetaData() {
+        getDirectory(WorldSavePath.ROOT).resolve(MOD_ID).apply {
+            PathUtil.createDirectories(this)
+
+            resolve("Capture Metadata.md").toFile()
+                .writeText(createMetadataMd())
+
+            mc.networkHandler?.playerList?.let { playerList ->
+                if (playerList.isEmpty()) return@let
+                resolve("Player Entry List.csv").toFile()
+                    .writeText(createPlayerListEntry(playerList.toList()))
+            }
+
+            mc.networkHandler?.worldKeys?.let { keys ->
+                if (keys.isEmpty()) return@let
+                resolve("Dimension Tree.txt").toFile()
+                    .writeText(PathTreeNode.buildTree(keys.map { it.value.path }))
+            }
+        }
     }
 
     private fun createMetadataMd() = StringBuilder().apply {
@@ -211,22 +207,22 @@ object StorageManager {
         append(", ")
     }
 
-    fun saveFavicon() {
+    fun Session.saveFavicon() {
         serverInfo.favicon?.let { favicon ->
-            session.iconFile.ifPresent {
+            iconFile.ifPresent {
                 it.writeBytes(favicon)
                 LOGGER.info("Saved favicon.")
             }
         }
     }
 
-    private fun saveChunks(chunks: Set<WorldChunk>, totalSteps: Int) {
+    private fun Session.saveChunks(chunks: Set<WorldChunk>, totalSteps: Int) {
         var savedChunks = 0
 
         chunks.groupBy { it.world }.forEach { chunkGroup ->
             val dimension = chunkGroup.key.registryKey.value.path
             val folder = dimensionFolder(dimension) + "region"
-            val path = session.getDirectory(WorldSavePath.ROOT).resolve(folder)
+            val path = getDirectory(WorldSavePath.ROOT).resolve(folder)
 
             chunkGroup.value.forEach { chunk ->
                 CustomRegionBasedStorage(path, false)
@@ -248,14 +244,14 @@ object StorageManager {
         }
     }
 
-    private fun savePlayers(players: List<PlayerEntity>) {
+    private fun Session.savePlayers(players: List<PlayerEntity>) {
         players.forEach {
-            session.createSaveHandler().savePlayerData(it)
+            createSaveHandler().savePlayerData(it)
             cachedEntities.remove(it)
         }
     }
 
-    private fun saveEntities(
+    private fun Session.saveEntities(
         freezeEntities: Boolean,
         totalSteps: Int,
         entityPartition: Pair<List<Entity>, List<Entity>>
@@ -265,7 +261,7 @@ object StorageManager {
         entityPartition.second.groupBy { it.world }.forEach { worldGroup ->
             val folder = dimensionFolder(worldGroup.key.registryKey.value.path) + "entities"
 
-            val path = session.getDirectory(WorldSavePath.ROOT).resolve(folder)
+            val path = getDirectory(WorldSavePath.ROOT).resolve(folder)
 
             worldGroup.value.groupBy { it.chunkPos }.forEach { entityGroup ->
                 CustomRegionBasedStorage(path, false).write(entityGroup.key, NbtCompound().apply {
@@ -304,11 +300,11 @@ object StorageManager {
         }
     }
 
-    private fun sendSuccess(
+    private fun Session.sendSuccess(
         entityPartition: Pair<List<Entity>, List<Entity>>,
         chunks: Set<WorldChunk>
     ) {
-        val savedPath = session.getDirectory(WorldSavePath.ROOT).toFile()
+        val savedPath = getDirectory(WorldSavePath.ROOT).toFile()
 
         val message = mm.deserialize(
             "Saved <color:#FFA2C4>${
