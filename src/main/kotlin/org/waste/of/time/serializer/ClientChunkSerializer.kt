@@ -60,10 +60,6 @@ object ClientChunkSerializer {
             }.forEach { add(it) }
         })
 
-        if (chunk.status.chunkType == ChunkStatus.ChunkType.PROTOCHUNK) {
-            // TODO: Figure out if proto chunks are needed
-        }
-
         getTickSchedulers(chunk)
         genPostProcessing(chunk)
 

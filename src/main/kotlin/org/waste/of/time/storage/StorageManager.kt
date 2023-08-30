@@ -4,10 +4,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import net.kyori.adventure.platform.fabric.FabricClientAudiences
+import net.kyori.adventure.text.Component.newline
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.format.TextColor
-import net.minecraft.client.network.ServerInfo
+import net.kyori.adventure.text.format.TextColor.color
 import net.minecraft.client.toast.SystemToast
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerEntity
@@ -17,13 +18,12 @@ import net.minecraft.nbt.NbtList
 import net.minecraft.text.Text
 import net.minecraft.util.WorldSavePath
 import net.minecraft.world.chunk.WorldChunk
-import net.minecraft.world.level.storage.LevelStorage
-import net.minecraft.world.level.storage.LevelStorage.Session
 import org.waste.of.time.BarManager
 import org.waste.of.time.BarManager.resetProgressBar
 import org.waste.of.time.BarManager.updateCapture
 import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.BRAND
+import org.waste.of.time.WorldTools.COLOR
 import org.waste.of.time.WorldTools.CREDIT_MESSAGE
 import org.waste.of.time.WorldTools.LOGGER
 import org.waste.of.time.WorldTools.MOD_ID
@@ -35,8 +35,12 @@ import org.waste.of.time.WorldTools.creditNbt
 import org.waste.of.time.WorldTools.mc
 import org.waste.of.time.WorldTools.mm
 import org.waste.of.time.WorldTools.saving
+import org.waste.of.time.WorldTools.sendMessage
+import org.waste.of.time.WorldTools.serverInfo
+import org.waste.of.time.WorldTools.session
 import org.waste.of.time.serializer.ClientChunkSerializer
 import org.waste.of.time.serializer.LevelPropertySerializer
+import org.waste.of.time.serializer.LevelPropertySerializer.backupLevelDataFile
 import java.net.InetSocketAddress
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -47,7 +51,12 @@ import kotlin.io.path.writeBytes
 object StorageManager {
     private var stepsDone = 0
 
-    fun save(freezeEntities: Boolean = false, messageInfo: Boolean = false, silent: Boolean = false): Int {
+    fun save(
+        freezeEntities: Boolean = false,
+        messageInfo: Boolean = false,
+        silent: Boolean = false,
+        closeSession: Boolean = false
+    ): Int {
         if (saving) {
             LOGGER.warn("Already saving world.")
             return -1
@@ -60,27 +69,23 @@ object StorageManager {
         val entitySnapshot = cachedEntities.partition { it is PlayerEntity }
         val chunkSnapshot = cachedChunks.toSet()
         val totalSteps = chunkSnapshot.size + entitySnapshot.second.size
-        val serverEntry = mc.currentServerEntry ?: return -1
 
-        if (messageInfo) messageWorldInfo(serverEntry, chunkSnapshot, entitySnapshot)
+        if (messageInfo) messageWorldInfo(chunkSnapshot, entitySnapshot)
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val session = mc.levelStorage.createSession(serverEntry.address)
-
                 session.getDirectory(WorldSavePath.ROOT)
                     .resolve("$MOD_ID $VERSION metadata.txt")
                     .toFile()
-                    .appendText(createMetadata(serverEntry))
+                    .writeText(createMetadata())
 
-                saveFavicon(session, serverEntry)
-                LevelPropertySerializer.backupLevelDataFile(session, serverEntry.address)
-                saveChunks(session, chunkSnapshot, totalSteps)
-                savePlayers(session, entitySnapshot.first.filterIsInstance<PlayerEntity>())
-                saveEntities(session, freezeEntities, totalSteps, entitySnapshot)
+                saveFavicon()
+                backupLevelDataFile()
+                saveChunks(chunkSnapshot, totalSteps)
+                savePlayers(entitySnapshot.first.filterIsInstance<PlayerEntity>())
+                saveEntities(freezeEntities, totalSteps, entitySnapshot)
 
-                if (!silent) sendSuccess(session, entitySnapshot, chunkSnapshot, serverEntry)
-                session.close()
+                if (!silent) sendSuccess(entitySnapshot, chunkSnapshot)
             } catch (exception: Exception) {
                 if (silent) {
                     LOGGER.error("Failed to save world.", exception)
@@ -97,54 +102,62 @@ object StorageManager {
                         message
                     )
                 )
-                WorldTools.sendMessage(message)
+                sendMessage(message)
                 return@launch
             }
 
             saving = false
             updateCapture()
             resetProgressBar()
+
+            if (closeSession) session.close()
         }
 
         return 0
     }
 
     private fun messageWorldInfo(
-        serverEntry: ServerInfo,
         chunks: Set<WorldChunk>,
         entityPartition: Pair<List<Entity>, List<Entity>>
     ) {
-        val worldInfo = Text.of(
-            "\nSaving world ${
-                serverEntry.address
-            } to disk...\nServer Brand: ${
-                mc.player?.serverBrand
-            }"
-        ).copy()
+        val worldInfo = text("").apply {
+            append(text("Saving world ", color(COLOR)))
+            append(text(serverInfo.address, color(COLOR)))
+            append(text(" to disk..."))
+            append(newline())
+            append(text("Server Brand: "))
+            append(text(mc.player?.serverBrand ?: "None", color(COLOR)))
+            append(newline())
+            append(text("Server MOTD: "))
+            append(text(serverInfo.label.string.split("\n").joinToString(" "), color(COLOR)))
+            append(newline())
+            append(text("Version: "))
+            append(text(serverInfo.version.string, color(COLOR)))
 
-        worldInfo.append(Text.of("\nServer motd:\n"))
-        worldInfo.append(serverEntry.label)
-        worldInfo.append(Text.of("\nVersion: "))
-        worldInfo.append(serverEntry.version)
-
-        if (serverEntry.playerCountLabel.string.isNotBlank()) {
-            worldInfo.append(Text.of("\nPlayer Count Label: "))
-            worldInfo.append(serverEntry.playerCountLabel)
-        }
-
-        worldInfo.append(Text.of("\nServer List Entry Name: "))
-        worldInfo.append(serverEntry.name)
-
-        if (serverEntry.playerListSummary?.isNotEmpty() == true) {
-            worldInfo.append(Text.of("\nPlayer List Summary: "))
-            serverEntry.playerListSummary?.forEach {
-                worldInfo.append(it)
+            if (serverInfo.playerCountLabel.string.isNotBlank()) {
+                append(newline())
+                append(text("Player Count Label: "))
+                append(text(serverInfo.playerCountLabel.string, color(COLOR)))
             }
+
+            if (serverInfo.name != "Minecraft Server") {
+                append(newline())
+                append(text("Server List Entry Name: "))
+                append(text(serverInfo.name, color(COLOR)))
+            }
+
+            if (serverInfo.playerListSummary?.isNotEmpty() == true) {
+                append(newline())
+                append(text("Player List Summary: "))
+                serverInfo.playerListSummary?.forEach {
+                    append(it)
+                }
+            }
+
+            append(newline())
         }
 
-        worldInfo.append("\n")
-
-        mc.inGameHud.chatHud.addMessage(worldInfo)
+        sendMessage(FabricClientAudiences.of().toNative(worldInfo))
 
         val downloadInfo = Text.of(
             "Saving ${
@@ -154,14 +167,14 @@ object StorageManager {
             } players and ${
                 entityPartition.second.size
             } entities to world ${
-                serverEntry.address
+                serverInfo.address
             }"
         )
 
-        mc.inGameHud.chatHud.addMessage(downloadInfo)
+        sendMessage(downloadInfo)
     }
 
-    private fun createMetadata(serverEntry: ServerInfo): String {
+    private fun createMetadata(): String {
         val localDateTime = LocalDateTime.now()
         val zoneId = ZoneId.systemDefault()
 
@@ -172,21 +185,20 @@ object StorageManager {
 
         val infoBuilder = StringBuilder()
 
-        infoBuilder.append("World save of ${serverEntry.address} captured at $formattedDateTime by ${mc.player?.name?.string}\n\n")
+        infoBuilder.append("World save of ${serverInfo.address} captured at $formattedDateTime by ${mc.player?.name?.string}\n\n")
         infoBuilder.append("Server Brand: ${mc.player?.serverBrand}\n")
-        infoBuilder.append("Server MOTD: ${serverEntry.label.string.split("\n").joinToString(" ")}\n")
-        infoBuilder.append("Version: ${serverEntry.version.string}\n")
+        infoBuilder.append("Server MOTD: ${serverInfo.label.string.split("\n").joinToString(" ")}\n")
+        infoBuilder.append("Version: ${serverInfo.version.string}\n")
 
-        if (serverEntry.playerCountLabel.string.isNotBlank()) {
-            infoBuilder.append("Player Count Label: ${serverEntry.playerCountLabel.string}\n")
+        if (serverInfo.playerCountLabel.string.isNotBlank()) {
+            infoBuilder.append("Player Count Label: ${serverInfo.playerCountLabel.string}\n")
         }
 
-        if (serverEntry.name != "Minecraft Server") {
-            infoBuilder.append("Server List Entry Name: ${serverEntry.name}\n")
+        if (serverInfo.name != "Minecraft Server") {
+            infoBuilder.append("Server List Entry Name: ${serverInfo.name}\n")
         }
 
-        mc.networkHandler?.connection?.address?.let {
-            (it as InetSocketAddress)
+        (mc.networkHandler?.connection?.address as? InetSocketAddress)?.let {
             infoBuilder.append("Server Host Name: ${it.address.canonicalHostName}\n")
             infoBuilder.append("Server Port: ${it.port}\n")
         }
@@ -196,12 +208,12 @@ object StorageManager {
             infoBuilder.append("Online Players: ${list.joinToString { it.profile.name }}\n")
         }
 
-        serverEntry.playerListSummary?.let {
+        serverInfo.playerListSummary?.let {
             if (it.isEmpty()) return@let
             infoBuilder.append("Player List Summary: ${it.joinToString(" ")}\n")
         }
 
-        serverEntry.players?.let { players ->
+        serverInfo.players?.let { players ->
             if (players.sample.isEmpty()) return@let
             infoBuilder.append("Players: ${players.sample.joinToString { it.name }}\n")
         }
@@ -212,8 +224,8 @@ object StorageManager {
         return infoBuilder.toString()
     }
 
-    private fun saveFavicon(session: LevelStorage.Session, serverEntry: ServerInfo) {
-        serverEntry.favicon?.let { favicon ->
+    fun saveFavicon() {
+        serverInfo.favicon?.let { favicon ->
             session.iconFile.ifPresent {
                 it.writeBytes(favicon)
                 LOGGER.info("Saved favicon.")
@@ -221,7 +233,7 @@ object StorageManager {
         }
     }
 
-    private fun saveChunks(session: LevelStorage.Session, chunks: Set<WorldChunk>, totalSteps: Int) {
+    private fun saveChunks(chunks: Set<WorldChunk>, totalSteps: Int) {
         var savedChunks = 0
 
         chunks.groupBy { it.world }.forEach { chunkGroup ->
@@ -236,7 +248,7 @@ object StorageManager {
 
                 cachedChunks.remove(chunk)
                 cachedBlockEntities.removeAll(chunk.blockEntities.map { it.value }.toSet())
-                BarManager.updateCapture()
+                updateCapture()
                 stepsDone++
                 savedChunks++
                 BarManager.updateSaveChunk(
@@ -250,7 +262,7 @@ object StorageManager {
         }
     }
 
-    private fun savePlayers(session: LevelStorage.Session, players: List<PlayerEntity>) {
+    private fun savePlayers(players: List<PlayerEntity>) {
         players.forEach {
             session.createSaveHandler().savePlayerData(it)
             cachedEntities.remove(it)
@@ -258,7 +270,6 @@ object StorageManager {
     }
 
     private fun saveEntities(
-        session: LevelStorage.Session,
         freezeEntities: Boolean,
         totalSteps: Int,
         entityPartition: Pair<List<Entity>, List<Entity>>
@@ -286,7 +297,7 @@ object StorageManager {
                     entityList.add(entityNbt)
 
                     cachedEntities.remove(it)
-                    BarManager.updateCapture()
+                    updateCapture()
                     stepsDone++
                     savedEntities++
                     BarManager.updateSaveEntity(
@@ -312,10 +323,8 @@ object StorageManager {
     }
 
     private fun sendSuccess(
-        session: Session,
         entityPartition: Pair<List<Entity>, List<Entity>>,
-        chunks: Set<WorldChunk>,
-        serverEntry: ServerInfo
+        chunks: Set<WorldChunk>
     ) {
         val savedPath = session.getDirectory(WorldSavePath.ROOT).toFile()
 
@@ -329,8 +338,8 @@ object StorageManager {
             }</color> entities to saves directory "
         ).append(
             text(
-                "${serverEntry.address} (click to open)",
-                TextColor.color(0xFFA2C4)
+                "${serverInfo.address} (click to open)",
+                color(0xFFA2C4)
             ).clickEvent(ClickEvent.openFile(savedPath.path))
         )
 
@@ -344,7 +353,7 @@ object StorageManager {
                 successMessage
             )
         )
-        WorldTools.sendMessage(successMessage)
+        sendMessage(successMessage)
     }
 
     private fun dimensionFolder(dimension: String) = when (dimension) {

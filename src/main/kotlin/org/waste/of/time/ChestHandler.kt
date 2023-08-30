@@ -7,8 +7,8 @@ import net.minecraft.block.enums.ChestType
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.ingame.GenericContainerScreen
 import net.minecraft.inventory.SimpleInventory
-import net.minecraft.screen.slot.Slot
-import net.minecraft.util.math.Direction
+import org.waste.of.time.WorldTools.cachedBlockEntities
+import org.waste.of.time.WorldTools.checkCache
 
 object ChestHandler {
     fun register(screen: Screen) {
@@ -20,7 +20,8 @@ object ChestHandler {
 
             val containerSlots = screen2.screenHandler.slots.filter { it.inventory is SimpleInventory }
 
-            WorldTools.cachedBlockEntities.add(container)
+            cachedBlockEntities.add(container)
+            val inventories = containerSlots.partition { it.index < 27 }
 
             when (chestType) {
                 ChestType.SINGLE -> {
@@ -29,39 +30,38 @@ object ChestHandler {
                     }
                 }
                 ChestType.LEFT -> {
-                    populateOtherChest(container, facing, containerSlots, false)
+                    val pos = container.pos.offset(facing.rotateYClockwise())
+                    val otherChest = container.world?.getBlockEntity(pos)
+                    if (otherChest !is ChestBlockEntity) return@Remove
+
+                    inventories.first.forEach {
+                        otherChest.setStack(it.index, it.stack)
+                    }
+                    inventories.second.forEach {
+                        container.setStack(it.index - 27, it.stack)
+                    }
+
+                    cachedBlockEntities.add(otherChest)
                 }
                 ChestType.RIGHT -> {
-                    populateOtherChest(container, facing, containerSlots, true)
+                    val pos = container.pos.offset(facing.rotateYCounterclockwise())
+                    val otherChest = container.world?.getBlockEntity(pos)
+                    if (otherChest !is ChestBlockEntity) return@Remove
+
+                    inventories.first.forEach {
+                        container.setStack(it.index, it.stack)
+                    }
+                    inventories.second.forEach {
+                        otherChest.setStack(it.index - 27, it.stack)
+                    }
+
+                    cachedBlockEntities.add(otherChest)
                 }
                 else -> return@Remove
             }
 
-            WorldTools.checkCache()
+            checkCache()
         })
     }
 
-    private fun populateOtherChest(
-        container: ChestBlockEntity,
-        facing: Direction,
-        containerSlots: List<Slot>,
-        isRight: Boolean
-    ) {
-        val facingOffset = facing.rotateYClockwise()
-        val pos = container.pos.offset(facingOffset) ?: return
-        val otherChest = container.world?.getBlockEntity(pos) ?: return
-        if (otherChest !is ChestBlockEntity) return
-
-        val inventories = containerSlots.partition { it.index < 27 }
-        inventories.first.forEach {
-            if (isRight) container.setStack(it.index, it.stack)
-            else otherChest.setStack(it.index, it.stack)
-        }
-        inventories.second.forEach {
-            if (isRight) otherChest.setStack(it.index - 27, it.stack)
-            else container.setStack(it.index - 27, it.stack)
-        }
-
-        WorldTools.cachedBlockEntities.add(otherChest)
-    }
 }

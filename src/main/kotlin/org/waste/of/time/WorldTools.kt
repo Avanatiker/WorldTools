@@ -1,9 +1,13 @@
 package org.waste.of.time
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.kyori.adventure.platform.fabric.FabricClientAudiences
@@ -11,16 +15,19 @@ import net.kyori.adventure.text.minimessage.MiniMessage
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.block.entity.ChestBlockEntity
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.network.ServerInfo
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactories
 import net.minecraft.entity.Entity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.world.chunk.WorldChunk
+import net.minecraft.world.level.storage.LevelStorage.Session
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.waste.of.time.command.WorldToolsCommandBuilder
 import org.waste.of.time.renderer.UnscannedChestBlockEntityRenderer
+import org.waste.of.time.serializer.LevelPropertySerializer
 import org.waste.of.time.storage.StorageManager
 import java.util.concurrent.ConcurrentHashMap
 
@@ -33,6 +40,7 @@ object WorldTools : ClientModInitializer {
     const val MCA_EXTENSION = ".mca"
     const val DAT_EXTENSION = ".dat"
     const val MAX_CACHE_SIZE = 1000
+    const val COLOR = 0xFFA2C4
 
     val LOGGER: Logger = LogManager.getLogger()
     val BRAND: Text by lazy {
@@ -54,6 +62,9 @@ object WorldTools : ClientModInitializer {
     val creditNbt: NbtCompound
         get() = NbtCompound().apply { putString("author", CREDIT_MESSAGE) }
 
+    lateinit var session: Session
+    lateinit var serverInfo: ServerInfo
+
     override fun onInitializeClient() {
         ClientChunkEvents.CHUNK_LOAD.register(ClientChunkEvents.Load { _, worldChunk ->
             if (!caching) return@Load
@@ -69,10 +80,21 @@ object WorldTools : ClientModInitializer {
             checkCache()
         })
 
-//        ClientPlayConnectionEvents.DISCONNECT.register(ClientPlayConnectionEvents.Disconnect { _, _ ->
-//            StorageManager.save(silent = true)
-//        })
-//
+        ClientPlayConnectionEvents.JOIN.register(ClientPlayConnectionEvents.Join { _, _, mc ->
+            serverInfo = mc.currentServerEntry ?: return@Join
+
+            session = mc.levelStorage.createSession(serverInfo.address)
+
+            CoroutineScope(Dispatchers.IO).launch {
+                StorageManager.saveFavicon()
+                LevelPropertySerializer.backupLevelDataFile()
+            }
+        })
+
+        ClientPlayConnectionEvents.DISCONNECT.register(ClientPlayConnectionEvents.Disconnect { _, _ ->
+            StorageManager.save(silent = true, closeSession = true)
+        })
+
 //        ClientLifecycleEvents.CLIENT_STOPPING.register(ClientLifecycleEvents.ClientStopping {
 //            StorageManager.save(silent = true)
 //        })

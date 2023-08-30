@@ -10,14 +10,14 @@ import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.util.math.RotationAxis
-import org.waste.of.time.WorldTools
+import org.waste.of.time.WorldTools.cachedBlockEntities
 import org.waste.of.time.WorldTools.mc
 import kotlin.math.sin
 
 class UnscannedChestBlockEntityRenderer(
     ctx: BlockEntityRendererFactory.Context
 ) : ChestBlockEntityRenderer<ChestBlockEntity>(ctx) {
-    private val stack = ItemStack(Items.JUKEBOX, 1)
+    private val stack = ItemStack(Items.CHEST, 1)
 
     override fun render(
         entity: ChestBlockEntity?,
@@ -27,10 +27,10 @@ class UnscannedChestBlockEntityRenderer(
         light: Int,
         overlay: Int
     ) {
+        super.render(entity, tickDelta, matrices, vertexConsumers, light, overlay)
         val world = entity?.world ?: return
 
-        if (!(entity !in WorldTools.cachedBlockEntities && !mc.isInSingleplayer && matrices != null)) {
-            super.render(entity, tickDelta, matrices, vertexConsumers, light, overlay)
+        if (!(entity !in cachedBlockEntities && !mc.isInSingleplayer && matrices != null)) {
             return
         }
 
@@ -40,12 +40,10 @@ class UnscannedChestBlockEntityRenderer(
         matrices.translate(0.5, 1.25 + offset, 0.5)
         matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees((world.time + tickDelta) * 4))
 
-        val lightAbove = WorldRenderer.getLightmapCoordinates(entity.world, entity.pos.up())
-
         mc.itemRenderer.renderItem(
             stack,
             ModelTransformationMode.GROUND,
-            lightAbove,
+            WorldRenderer.getLightmapCoordinates(entity.world, entity.pos.up()),
             overlay,
             matrices,
             vertexConsumers,
@@ -54,7 +52,5 @@ class UnscannedChestBlockEntityRenderer(
         )
 
         matrices.pop()
-
-        super.render(entity, tickDelta, matrices, vertexConsumers, light, overlay)
     }
 }

@@ -31,10 +31,10 @@ object WorldToolsCommandBuilder {
                 )
                 .then(literal("save")
                     .executes {
-                        StorageManager.save()
+                        StorageManager.save(messageInfo = true)
                     }
                     .then(argument("freezeEntities", bool()).executes {
-                        StorageManager.save(BoolArgumentType.getBool(it, "freezeEntities"))
+                        StorageManager.save(BoolArgumentType.getBool(it, "freezeEntities"), true)
                     })
                 )
         )

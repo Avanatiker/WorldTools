@@ -4,23 +4,24 @@ import net.minecraft.SharedConstants
 import net.minecraft.nbt.*
 import net.minecraft.util.Util
 import net.minecraft.util.WorldSavePath
-import net.minecraft.world.level.storage.LevelStorage.Session
 import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.LOGGER
 import org.waste.of.time.WorldTools.creditNbt
 import org.waste.of.time.WorldTools.mc
+import org.waste.of.time.WorldTools.serverInfo
+import org.waste.of.time.WorldTools.session
 import java.io.File
 
 object LevelPropertySerializer {
     /**
      * See [net.minecraft.world.level.storage.LevelStorage.Session.backupLevelDataFile]
      */
-    fun backupLevelDataFile(session: Session, levelName: String) {
+    fun backupLevelDataFile() {
         val resultingFile = session.getDirectory(WorldSavePath.ROOT).toFile()
-        val dataNbt = serialize(levelName)
+        val dataNbt = serializeLevelData()
         val levelNbt = NbtCompound().apply {
-            put("Data", dataNbt)
             copyFrom(creditNbt)
+            put("Data", dataNbt)
         }
 
         try {
@@ -38,7 +39,7 @@ object LevelPropertySerializer {
     /**
      * See [net.minecraft.world.level.LevelProperties.updateProperties]
      */
-    private fun serialize(levelName: String) = NbtCompound().apply {
+    private fun serializeLevelData() = NbtCompound().apply {
         val player = mc.player ?: return@apply
 
         player.serverBrand?.let {
@@ -75,7 +76,7 @@ object LevelPropertySerializer {
         putLong("Time", player.world.time)
         putLong("DayTime", player.world.timeOfDay)
         putLong("LastPlayed", System.currentTimeMillis())
-        putString("LevelName", levelName)
+        putString("LevelName", serverInfo.address)
         putInt("version", 19133)
         putInt("clearWeatherTime", 0) // not sure
         putInt("rainTime", 0) // not sure
@@ -104,8 +105,6 @@ object LevelPropertySerializer {
         putInt("WanderingTraderSpawnChance", 0) // not sure
 
         // skip wandering trader id
-
-        put("author", creditNbt)
     }
 
     private fun generatorMockNbt() = NbtCompound().apply {
