@@ -1,13 +1,14 @@
 package org.waste.of.time.storage
 
+import com.mojang.authlib.GameProfile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import net.kyori.adventure.platform.fabric.FabricClientAudiences
-import net.kyori.adventure.text.Component.newline
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.format.TextColor.color
+import net.minecraft.client.network.PlayerListEntry
 import net.minecraft.client.toast.SystemToast
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerEntity
@@ -15,21 +16,21 @@ import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtIntArray
 import net.minecraft.nbt.NbtList
 import net.minecraft.text.Text
+import net.minecraft.util.PathUtil
 import net.minecraft.util.WorldSavePath
 import net.minecraft.world.chunk.WorldChunk
 import org.waste.of.time.BarManager
 import org.waste.of.time.BarManager.resetProgressBar
 import org.waste.of.time.BarManager.updateCapture
 import org.waste.of.time.WorldTools.BRAND
-import org.waste.of.time.WorldTools.COLOR
 import org.waste.of.time.WorldTools.CREDIT_MESSAGE
+import org.waste.of.time.WorldTools.CREDIT_MESSAGE_MD
 import org.waste.of.time.WorldTools.LOGGER
 import org.waste.of.time.WorldTools.MOD_ID
-import org.waste.of.time.WorldTools.VERSION
+import org.waste.of.time.WorldTools.addAuthor
 import org.waste.of.time.WorldTools.cachedBlockEntities
 import org.waste.of.time.WorldTools.cachedChunks
 import org.waste.of.time.WorldTools.cachedEntities
-import org.waste.of.time.WorldTools.creditNbt
 import org.waste.of.time.WorldTools.mc
 import org.waste.of.time.WorldTools.mm
 import org.waste.of.time.WorldTools.saving
@@ -38,6 +39,7 @@ import org.waste.of.time.WorldTools.serverInfo
 import org.waste.of.time.WorldTools.session
 import org.waste.of.time.serializer.ClientChunkSerializer
 import org.waste.of.time.serializer.LevelPropertySerializer.backupLevelDataFile
+import org.waste.of.time.serializer.PathTreeNode
 import java.net.InetSocketAddress
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -50,7 +52,6 @@ object StorageManager {
 
     fun save(
         freezeWorld: Boolean = true,
-        messageInfo: Boolean = false,
         silent: Boolean = false,
         closeSession: Boolean = false
     ): Int {
@@ -67,14 +68,29 @@ object StorageManager {
         val chunkSnapshot = cachedChunks.toSet()
         val totalSteps = chunkSnapshot.size + entitySnapshot.second.size
 
-        if (messageInfo) messageWorldInfo(chunkSnapshot, entitySnapshot)
-
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                session.getDirectory(WorldSavePath.ROOT)
-                    .resolve("$MOD_ID $VERSION metadata.txt")
+                val path = session.getDirectory(WorldSavePath.ROOT).resolve(MOD_ID)
+
+                PathUtil.createDirectories(path)
+
+                path.resolve("Capture Metadata.md")
                     .toFile()
-                    .writeText(createMetadata())
+                    .writeText(createMetadataMd())
+
+                mc.networkHandler?.playerList?.let { playerList ->
+                    if (playerList.isEmpty()) return@let
+                    path.resolve("Player Entry List.csv")
+                        .toFile()
+                        .writeText(createPlayerListEntry(playerList.toList()))
+                }
+
+                mc.networkHandler?.worldKeys?.let { keys ->
+                    if (keys.isEmpty()) return@let
+                    path.resolve("Dimension Tree.txt")
+                        .toFile()
+                        .writeText(PathTreeNode.buildTree(keys.map { it.value.path }))
+                }
 
                 saveFavicon()
                 backupLevelDataFile(freezeWorld = freezeWorld)
@@ -113,65 +129,7 @@ object StorageManager {
         return 0
     }
 
-    private fun messageWorldInfo(
-        chunks: Set<WorldChunk>,
-        entityPartition: Pair<List<Entity>, List<Entity>>
-    ) {
-        val worldInfo = text("").apply {
-            append(text("Saving world ", color(COLOR)))
-            append(text(serverInfo.address, color(COLOR)))
-            append(text(" to disk..."))
-            append(newline())
-            append(text("Server Brand: "))
-            append(text(mc.player?.serverBrand ?: "None", color(COLOR)))
-            append(newline())
-            append(text("Server MOTD: "))
-            append(text(serverInfo.label.string.split("\n").joinToString(" "), color(COLOR)))
-            append(newline())
-            append(text("Version: "))
-            append(text(serverInfo.version.string, color(COLOR)))
-
-            if (serverInfo.playerCountLabel.string.isNotBlank()) {
-                append(newline())
-                append(text("Player Count Label: "))
-                append(text(serverInfo.playerCountLabel.string, color(COLOR)))
-            }
-
-            if (serverInfo.name != "Minecraft Server") {
-                append(newline())
-                append(text("Server List Entry Name: "))
-                append(text(serverInfo.name, color(COLOR)))
-            }
-
-            if (serverInfo.playerListSummary?.isNotEmpty() == true) {
-                append(newline())
-                append(text("Player List Summary: "))
-                serverInfo.playerListSummary?.forEach {
-                    append(it)
-                }
-            }
-
-            append(newline())
-        }
-
-        sendMessage(FabricClientAudiences.of().toNative(worldInfo))
-
-        val downloadInfo = Text.of(
-            "Saving ${
-                chunks.size
-            } chunks, ${
-                entityPartition.first.size
-            } players and ${
-                entityPartition.second.size
-            } entities to world ${
-                serverInfo.address
-            }"
-        )
-
-        sendMessage(downloadInfo)
-    }
-
-    private fun createMetadata(): String {
+    private fun createMetadataMd() = StringBuilder().apply {
         val localDateTime = LocalDateTime.now()
         val zoneId = ZoneId.systemDefault()
 
@@ -180,45 +138,77 @@ object StorageManager {
 
         val formattedDateTime = zonedDateTime.format(formatter)
 
-        val infoBuilder = StringBuilder()
+        appendLine("# ${serverInfo.address} World Save - Snapshot Details")
+        appendLine()
+        appendLine("- **Time**: `$formattedDateTime` (`${System.currentTimeMillis()}`)")
+        appendLine("- **Captured By**: `${mc.player?.name?.string}`")
 
-        infoBuilder.append("World save of ${serverInfo.address} captured at $formattedDateTime by ${mc.player?.name?.string}\n\n")
-        infoBuilder.append("Server Brand: ${mc.player?.serverBrand}\n")
-        infoBuilder.append("Server MOTD: ${serverInfo.label.string.split("\n").joinToString(" ")}\n")
-        infoBuilder.append("Version: ${serverInfo.version.string}\n")
-
-        if (serverInfo.playerCountLabel.string.isNotBlank()) {
-            infoBuilder.append("Player Count Label: ${serverInfo.playerCountLabel.string}\n")
-        }
-
+        appendLine("## Server")
         if (serverInfo.name != "Minecraft Server") {
-            infoBuilder.append("Server List Entry Name: ${serverInfo.name}\n")
+            appendLine("- **List Entry Name**: `${serverInfo.name}`")
         }
-
-        (mc.networkHandler?.connection?.address as? InetSocketAddress)?.let {
-            infoBuilder.append("Server Host Name: ${it.address.canonicalHostName}\n")
-            infoBuilder.append("Server Port: ${it.port}\n")
+        appendLine("- **IP**: `${serverInfo.address}`")
+        if (serverInfo.playerCountLabel.string.isNotBlank()) {
+            appendLine("- **Capacity**: `${serverInfo.playerCountLabel.string}`")
         }
-
-        mc.networkHandler?.playerList?.let { list ->
-            if (list.isEmpty()) return@let
-            infoBuilder.append("Online Players: ${list.joinToString { it.profile.name }}\n")
+        appendLine("- **Brand**: `${mc.player?.serverBrand}`")
+        appendLine("- **MOTD**: `${serverInfo.label.string.split("\n").joinToString(" ")}`")
+        appendLine("- **Version**: `${serverInfo.version.string}`")
+        appendLine()
+        serverInfo.players?.sample?.let { sample ->
+            if (sample.isEmpty()) return@let
+            appendLine("- **Short Label**: `${sample.joinToString { it.name }}`")
         }
-
         serverInfo.playerListSummary?.let {
             if (it.isEmpty()) return@let
-            infoBuilder.append("Player List Summary: ${it.joinToString(" ")}\n")
+            appendLine("- **Full Label**: `${it.joinToString(" ") { str -> str.string }}`")
         }
 
-        serverInfo.players?.let { players ->
-            if (players.sample.isEmpty()) return@let
-            infoBuilder.append("Players: ${players.sample.joinToString { it.name }}\n")
+        appendLine("## Connection")
+        (mc.networkHandler?.connection?.address as? InetSocketAddress)?.let {
+            appendLine("- **Host Name**: `${it.address.canonicalHostName}`")
+            appendLine("- **Port**: `${it.port}`")
+        }
+        mc.networkHandler?.sessionId?.let { id ->
+            appendLine("- **Session ID**: `$id`")
         }
 
-        infoBuilder.append("\n")
-        infoBuilder.append(CREDIT_MESSAGE)
+        appendLine()
+        appendLine(CREDIT_MESSAGE_MD)
+    }.toString()
 
-        return infoBuilder.toString()
+    private fun createPlayerListEntry(listEntries: List<PlayerListEntry>) = StringBuilder().apply {
+        appendLine("Name, ID, Legacy, Complete, Properties, Game Mode, Latency, Session ID, Scoreboard Team, Model")
+        listEntries.forEach {
+            serializePlayerListEntry(it)
+        }
+    }.toString()
+
+    private fun StringBuilder.serializePlayerListEntry(entry: PlayerListEntry) {
+        serializeGameProfile(entry.profile)
+        append("${entry.gameMode.name}, ")
+        append("${entry.latency}, ")
+        append("${entry.session?.sessionId}, ")
+//        entry.session?.publicKeyData?.let {
+//            append("Public Key Data: ${it.data} ")
+//        }
+        append("${entry.scoreboardTeam?.name}, ")
+        appendLine(entry.model)
+    }
+
+    private fun StringBuilder.serializeGameProfile(gameProfile: GameProfile) {
+        append(gameProfile.name)
+        append(", ")
+        append(gameProfile.id)
+        append(", ")
+        append(gameProfile.isLegacy)
+        append(", ")
+        append(gameProfile.isComplete)
+        append(", ")
+        gameProfile.properties.forEach { t, u ->
+            append("[key: $t | name: ${u.name} | value: ${u.value} | signature: ${u.signature}] ")
+        }
+        append(", ")
     }
 
     fun saveFavicon() {
@@ -239,9 +229,8 @@ object StorageManager {
             val path = session.getDirectory(WorldSavePath.ROOT).resolve(folder)
 
             chunkGroup.value.forEach { chunk ->
-                val chunkNbt = ClientChunkSerializer.serialize(chunk)
-                chunkNbt.copyFrom(creditNbt)
-                CustomRegionBasedStorage(path, false).write(chunk.pos, chunkNbt)
+                CustomRegionBasedStorage(path, false)
+                    .write(chunk.pos, ClientChunkSerializer.serialize(chunk))
 
                 cachedChunks.remove(chunk)
                 cachedBlockEntities.removeAll(chunk.blockEntities.map { it.value }.toSet())
@@ -279,42 +268,38 @@ object StorageManager {
             val path = session.getDirectory(WorldSavePath.ROOT).resolve(folder)
 
             worldGroup.value.groupBy { it.chunkPos }.forEach { entityGroup ->
-                val entityMain = NbtCompound()
-                val entityList = NbtList()
+                CustomRegionBasedStorage(path, false).write(entityGroup.key, NbtCompound().apply {
+                    put("Entities", NbtList().apply {
+                        entityGroup.value.forEach {
+                            add(NbtCompound().apply {
+                                addAuthor()
 
-                entityGroup.value.forEach {
-                    val entityNbt = NbtCompound()
-                    it.saveSelfNbt(entityNbt)
-                    if (freezeEntities) {
-                        entityNbt.putByte("NoAI", 1)
-                        entityNbt.putByte("NoGravity", 1)
-                        entityNbt.putByte("Invulnerable", 1)
-                        entityNbt.putByte("Silent", 1)
-                    }
-                    entityList.add(entityNbt)
+                                it.saveSelfNbt(this)
 
-                    cachedEntities.remove(it)
-                    updateCapture()
-                    stepsDone++
-                    savedEntities++
-                    BarManager.updateSaveEntity(
-                        stepsDone / totalSteps.toFloat(),
-                        savedEntities,
-                        entityPartition.second.size,
-                        it
-                    )
-                }
+                                if (freezeEntities) {
+                                    putByte("NoAI", 1)
+                                    putByte("NoGravity", 1)
+                                    putByte("Invulnerable", 1)
+                                    putByte("Silent", 1)
+                                }
+                            })
 
-                entityMain.put("Entities", entityList)
+                            cachedEntities.remove(it)
+                            updateCapture()
+                            stepsDone++
+                            savedEntities++
+                            BarManager.updateSaveEntity(
+                                stepsDone / totalSteps.toFloat(),
+                                savedEntities,
+                                entityPartition.second.size,
+                                it
+                            )
+                        }
+                    })
 
-                entityMain.putInt("DataVersion", 3465)
-
-                val pos = NbtIntArray(intArrayOf(entityGroup.key.x, entityGroup.key.z))
-                entityMain.put("Position", pos)
-
-                entityMain.copyFrom(creditNbt)
-
-                CustomRegionBasedStorage(path, false).write(entityGroup.key, entityMain)
+                    putInt("DataVersion", 3465)
+                    put("Position", NbtIntArray(intArrayOf(entityGroup.key.x, entityGroup.key.z)))
+                })
             }
         }
     }

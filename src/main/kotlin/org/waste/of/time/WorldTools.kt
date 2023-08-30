@@ -34,9 +34,10 @@ import java.util.concurrent.ConcurrentHashMap
 
 object WorldTools : ClientModInitializer {
     const val MOD_ID = "WorldTools"
-    const val VERSION = "1.0.0"
+    private const val VERSION = "1.0.0"
     private const val URL = "https://github.com/Avanatiker/WorldTools/"
     const val CREDIT_MESSAGE = "This file was created by $MOD_ID $VERSION ($URL)"
+    const val CREDIT_MESSAGE_MD = "This file was created by [$MOD_ID $VERSION]($URL)"
     const val MCA_EXTENSION = ".mca"
     const val DAT_EXTENSION = ".dat"
     const val MAX_CACHE_SIZE = 1000
@@ -58,9 +59,6 @@ object WorldTools : ClientModInitializer {
     val cachedEntities: ConcurrentHashMap.KeySetView<Entity, Boolean> = ConcurrentHashMap.newKeySet()
     val cachedBlockEntities: ConcurrentHashMap.KeySetView<ChestBlockEntity, Boolean> = ConcurrentHashMap.newKeySet()
     var lastOpenedContainer: ChestBlockEntity? = null
-
-    val creditNbt: NbtCompound
-        get() = NbtCompound().apply { putString("author", CREDIT_MESSAGE) }
 
     lateinit var session: Session
     lateinit var serverInfo: ServerInfo
@@ -91,9 +89,11 @@ object WorldTools : ClientModInitializer {
             }
         })
 
-        ClientPlayConnectionEvents.DISCONNECT.register(ClientPlayConnectionEvents.Disconnect { _, _ ->
-            StorageManager.save(silent = true, closeSession = true)
-        })
+        // ToDo: delay disconnection until save is complete! maybe use world creation screen?
+
+//        ClientPlayConnectionEvents.DISCONNECT.register(ClientPlayConnectionEvents.Disconnect { _, _ ->
+//            StorageManager.save(silent = true, closeSession = true)
+//        })
 
 //        ClientLifecycleEvents.CLIENT_STOPPING.register(ClientLifecycleEvents.ClientStopping {
 //            StorageManager.save(silent = true)
@@ -152,4 +152,6 @@ object WorldTools : ClientModInitializer {
         mc.inGameHud.chatHud.addMessage(Text.of("[").copy().append(BRAND).copy().append("] ").append(text))
 
     fun mm(text: String) = FabricClientAudiences.of().toNative(mm.deserialize(text))
+
+    fun NbtCompound.addAuthor() = apply { putString("Author", CREDIT_MESSAGE) }
 }

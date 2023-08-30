@@ -7,7 +7,7 @@ import net.minecraft.util.WorldSavePath
 import net.minecraft.world.GameRules
 import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.LOGGER
-import org.waste.of.time.WorldTools.creditNbt
+import org.waste.of.time.WorldTools.addAuthor
 import org.waste.of.time.WorldTools.mc
 import org.waste.of.time.WorldTools.serverInfo
 import org.waste.of.time.WorldTools.session
@@ -21,7 +21,7 @@ object LevelPropertySerializer {
         val resultingFile = session.getDirectory(WorldSavePath.ROOT).toFile()
         val dataNbt = serializeLevelData(freezeWorld)
         val levelNbt = NbtCompound().apply {
-            copyFrom(creditNbt)
+            addAuthor()
             put("Data", dataNbt)
         }
 

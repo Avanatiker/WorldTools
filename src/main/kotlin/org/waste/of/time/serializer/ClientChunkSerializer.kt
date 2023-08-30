@@ -16,11 +16,11 @@ import net.minecraft.world.ChunkSerializer
 import net.minecraft.world.LightType
 import net.minecraft.world.biome.BiomeKeys
 import net.minecraft.world.chunk.BelowZeroRetrogen
-import net.minecraft.world.chunk.ChunkStatus
 import net.minecraft.world.chunk.PalettedContainer
 import net.minecraft.world.chunk.WorldChunk
 import net.minecraft.world.gen.chunk.BlendingData
 import org.waste.of.time.WorldTools.LOGGER
+import org.waste.of.time.WorldTools.addAuthor
 
 object ClientChunkSerializer {
     private val BLOCK_CODEC = PalettedContainer.createPalettedContainerCodec(
@@ -34,6 +34,8 @@ object ClientChunkSerializer {
      * See [net.minecraft.world.ChunkSerializer.serialize]
      */
     fun serialize(chunk: WorldChunk) = NbtCompound().apply {
+        addAuthor()
+
         putInt("DataVersion", SharedConstants.getGameVersion().saveVersion.id)
         putInt(ChunkSerializer.X_POS_KEY, chunk.pos.x)
         putInt("yPos", chunk.bottomSectionCoord)
