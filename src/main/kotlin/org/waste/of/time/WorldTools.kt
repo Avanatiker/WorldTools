@@ -3,10 +3,12 @@ package org.waste.of.time
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
@@ -53,7 +55,7 @@ object WorldTools : ClientModInitializer {
     val mc: MinecraftClient = MinecraftClient.getInstance()
     var mm = MiniMessage.miniMessage()
 
-    var saving = false
+    val savingMutex = Mutex()
     private var capturing = true
     val caching: Boolean
         get() = capturing && !mc.isInSingleplayer
@@ -91,9 +93,9 @@ object WorldTools : ClientModInitializer {
         // ToDo: delay disconnection until save is complete! maybe use world creation screen?
 
 //        ClientPlayConnectionEvents.DISCONNECT.register(ClientPlayConnectionEvents.Disconnect { _, _ ->
-//            StorageManager.save(silent = true, closeSession = true)
+//            StorageManager.save(silent = true)
 //        })
-
+//
 //        ClientLifecycleEvents.CLIENT_STOPPING.register(ClientLifecycleEvents.ClientStopping {
 //            StorageManager.save(silent = true)
 //        })
@@ -127,6 +129,8 @@ object WorldTools : ClientModInitializer {
     }
 
     inline fun withSession(crossinline block: LevelStorage.Session.() -> Unit) {
+        if (savingMutex.tryLock().not()) return
+
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 mc.levelStorage.createSession(serverInfo.address).use { session ->
@@ -134,13 +138,15 @@ object WorldTools : ClientModInitializer {
                 }
             } catch (e: Exception) {
                 LOGGER.error("Failed to create session for ${serverInfo.address}", e)
+            } finally {
+                savingMutex.unlock()
             }
         }
     }
 
     fun checkCache() {
         BarManager.updateCapture()
-        if (cachedChunks.size + cachedEntities.size + cachedBlockEntities.size < MAX_CACHE_SIZE || saving) return
+        if (cachedChunks.size + cachedEntities.size + cachedBlockEntities.size < MAX_CACHE_SIZE) return
 
         StorageManager.save()
     }

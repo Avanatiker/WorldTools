@@ -12,7 +12,7 @@ import org.waste.of.time.WorldTools.cachedChunks
 import org.waste.of.time.WorldTools.cachedEntities
 import org.waste.of.time.WorldTools.caching
 import org.waste.of.time.WorldTools.mm
-import org.waste.of.time.WorldTools.saving
+import org.waste.of.time.WorldTools.savingMutex
 import java.util.*
 
 object BarManager {
@@ -41,8 +41,7 @@ object BarManager {
             false
         )
 
-
-    fun getProgressBar() = if (!saving) Optional.empty() else Optional.of(progressBar)
+    fun getProgressBar() = if (!savingMutex.isLocked) Optional.empty() else Optional.of(progressBar)
 
     fun getCaptureBar() = if (!caching) Optional.empty() else Optional.of(captureInfoBar)
 

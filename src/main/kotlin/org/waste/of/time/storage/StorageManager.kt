@@ -30,7 +30,6 @@ import org.waste.of.time.WorldTools.cachedChunks
 import org.waste.of.time.WorldTools.cachedEntities
 import org.waste.of.time.WorldTools.mc
 import org.waste.of.time.WorldTools.mm
-import org.waste.of.time.WorldTools.saving
 import org.waste.of.time.WorldTools.sendMessage
 import org.waste.of.time.WorldTools.serverInfo
 import org.waste.of.time.WorldTools.withSession
@@ -51,21 +50,14 @@ object StorageManager {
         freezeWorld: Boolean = true,
         silent: Boolean = false
     ): Int {
-        if (saving) {
-            LOGGER.warn("Already saving world.")
-            return -1
-        }
-
-        stepsDone = 0
-
-        val entitySnapshot = cachedEntities.partition { it is PlayerEntity }
-        val chunkSnapshot = cachedChunks.toSet()
-        val totalSteps = chunkSnapshot.size + entitySnapshot.second.size
-
         withSession {
-            try {
-                saving = true
+            stepsDone = 0
 
+            val entitySnapshot = cachedEntities.partition { it is PlayerEntity }
+            val chunkSnapshot = cachedChunks.toSet()
+            val totalSteps = chunkSnapshot.size + entitySnapshot.second.size
+
+            try {
                 writeMetaData()
                 saveFavicon()
                 backupLevelDataFile(freezeWorld = freezeWorld)
@@ -77,28 +69,27 @@ object StorageManager {
 
                 updateCapture()
                 resetProgressBar()
-
-                saving = false
             } catch (exception: Exception) {
                 if (silent) {
                     LOGGER.error("Failed to save world.", exception)
                     return@withSession
                 }
+                
+                mc.execute {
+                    val message = Text.of("Save failed: ${exception.localizedMessage}")
 
-                val message = Text.of("Save failed: ${exception.localizedMessage}")
-
-                mc.toastManager.add(
-                    SystemToast.create(
-                        mc,
-                        SystemToast.Type.WORLD_ACCESS_FAILURE,
-                        BRAND,
-                        message
+                    mc.toastManager.add(
+                        SystemToast.create(
+                            mc,
+                            SystemToast.Type.WORLD_ACCESS_FAILURE,
+                            BRAND,
+                            message
+                        )
                     )
-                )
-                sendMessage(message)
+                    sendMessage(message)
+                }
                 return@withSession
             }
-
         }
 
         return 0
