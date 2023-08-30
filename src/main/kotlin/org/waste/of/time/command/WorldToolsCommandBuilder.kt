@@ -34,7 +34,7 @@ object WorldToolsCommandBuilder {
                         StorageManager.save()
                     }
                     .then(argument("freezeEntities", bool()).executes {
-                        StorageManager.save(BoolArgumentType.getBool(it, "freezeEntities"), true)
+                        StorageManager.save(BoolArgumentType.getBool(it, "freezeEntities"))
                     })
                 )
         )

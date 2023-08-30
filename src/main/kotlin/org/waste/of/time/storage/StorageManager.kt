@@ -47,8 +47,7 @@ object StorageManager {
     private var stepsDone = 0
 
     fun save(
-        freezeWorld: Boolean = true,
-        silent: Boolean = false
+        freezeWorld: Boolean = true
     ): Int {
         withSession {
             stepsDone = 0
@@ -65,16 +64,11 @@ object StorageManager {
                 savePlayers(entitySnapshot.first.filterIsInstance<PlayerEntity>())
                 saveEntities(freezeWorld, totalSteps, entitySnapshot)
 
-                if (!silent) sendSuccess(entitySnapshot, chunkSnapshot)
-
+                sendSuccess(entitySnapshot, chunkSnapshot)
                 updateCapture()
                 resetProgressBar()
             } catch (exception: Exception) {
-                if (silent) {
-                    LOGGER.error("Failed to save world.", exception)
-                    return@withSession
-                }
-                
+                LOGGER.error("Failed to save world.", exception)
                 mc.execute {
                     val message = Text.of("Save failed: ${exception.localizedMessage}")
 
@@ -102,17 +96,23 @@ object StorageManager {
             resolve("Capture Metadata.md").toFile()
                 .writeText(createMetadataMd())
 
+            LOGGER.info("Saved capture metadata.")
+
             mc.networkHandler?.playerList?.let { playerList ->
                 if (playerList.isEmpty()) return@let
                 resolve("Player Entry List.csv").toFile()
                     .writeText(createPlayerListEntry(playerList.toList()))
             }
 
+            LOGGER.info("Saved player entry list.")
+
             mc.networkHandler?.worldKeys?.let { keys ->
                 if (keys.isEmpty()) return@let
                 resolve("Dimension Tree.txt").toFile()
                     .writeText(PathTreeNode.buildTree(keys.map { it.value.path }))
             }
+
+            LOGGER.info("Saved dimension tree.")
         }
     }
 
@@ -233,6 +233,8 @@ object StorageManager {
                 )
             }
         }
+
+        LOGGER.info("Saved ${chunks.size} chunks.")
     }
 
     private fun Session.savePlayers(players: List<PlayerEntity>) {
@@ -240,6 +242,8 @@ object StorageManager {
             createSaveHandler().savePlayerData(it)
             cachedEntities.remove(it)
         }
+
+        LOGGER.info("Saved ${players.size} players.")
     }
 
     private fun Session.saveEntities(
@@ -289,6 +293,8 @@ object StorageManager {
                 })
             }
         }
+
+        LOGGER.info("Saved ${entityPartition.second.size} entities.")
     }
 
     private fun Session.sendSuccess(
@@ -314,15 +320,17 @@ object StorageManager {
 
         val successMessage = FabricClientAudiences.of().toNative(message)
 
-        mc.toastManager.add(
-            SystemToast.create(
-                mc,
-                SystemToast.Type.WORLD_BACKUP,
-                BRAND,
-                successMessage
+        mc.execute {
+            mc.toastManager.add(
+                SystemToast.create(
+                    mc,
+                    SystemToast.Type.WORLD_BACKUP,
+                    BRAND,
+                    successMessage
+                )
             )
-        )
-        sendMessage(successMessage)
+            sendMessage(successMessage)
+        }
     }
 
     private fun dimensionFolder(dimension: String) = when (dimension) {
