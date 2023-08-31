@@ -1,4 +1,5 @@
 {
   "key.categories.world_tools": "WorldTools",
-  "key.world_tools.open_config": "Open configuration"
+  "key.world_tools.open_config": "Open configuration",
+  "gui.worldtools.download": "Download"
 }
