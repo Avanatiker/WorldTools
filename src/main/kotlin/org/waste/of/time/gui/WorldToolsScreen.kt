@@ -6,6 +6,7 @@ import io.github.cottonmc.cotton.gui.widget.*
 import io.github.cottonmc.cotton.gui.widget.data.Insets
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import org.waste.of.time.storage.StorageManager
 
 object WorldToolsScreen : CottonClientScreen(Gui()) {
 
@@ -20,6 +21,7 @@ object WorldToolsScreen : CottonClientScreen(Gui()) {
             root.add(icon, 0, 0, 1, 1)
 
             val button = WButton(Text.translatable("gui.worldtools.download"))
+            button.onClick = Runnable { StorageManager.save() }
             root.add(button, 1, 0, 4, 1)
 
             val textfield = WTextField()
