@@ -8,7 +8,8 @@ import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
@@ -18,30 +19,34 @@ import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.block.entity.ChestBlockEntity
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.network.ServerInfo
+import net.minecraft.client.option.KeyBinding
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactories
+import net.minecraft.client.util.InputUtil
 import net.minecraft.entity.Entity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.world.chunk.WorldChunk
 import net.minecraft.world.level.storage.LevelStorage
-import net.minecraft.world.level.storage.LevelStorage.Session
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import org.lwjgl.glfw.GLFW
 import org.waste.of.time.command.WorldToolsCommandBuilder
-import org.waste.of.time.renderer.UnscannedChestBlockEntityRenderer
-import org.waste.of.time.serializer.LevelPropertySerializer.backupLevelDataFile
+import org.waste.of.time.gui.WorldToolsScreen
+import org.waste.of.time.renderer.MissingChestBlockEntityRenderer
+import org.waste.of.time.serializer.LevelPropertySerializer.writeLevelDataFile
 import org.waste.of.time.storage.StorageManager
-import org.waste.of.time.storage.StorageManager.saveFavicon
+import org.waste.of.time.storage.StorageManager.writeFavicon
 import java.util.concurrent.ConcurrentHashMap
 
 
 object WorldTools : ClientModInitializer {
-    const val MOD_ID = "WorldTools"
+    const val MOD_NAME = "WorldTools"
+    private const val MOD_ID = "world_tools"
     private const val VERSION = "1.0.0"
     private const val URL = "https://github.com/Avanatiker/WorldTools/"
-    const val CREDIT_MESSAGE = "This file was created by $MOD_ID $VERSION ($URL)"
-    const val CREDIT_MESSAGE_MD = "This file was created by [$MOD_ID $VERSION]($URL)"
+    private const val CREDIT_MESSAGE = "This file was created by $MOD_NAME $VERSION ($URL)"
+    const val CREDIT_MESSAGE_MD = "This file was created by [$MOD_NAME $VERSION]($URL)"
     const val MCA_EXTENSION = ".mca"
     const val DAT_EXTENSION = ".dat"
     const val MAX_CACHE_SIZE = 1000
@@ -51,6 +56,10 @@ object WorldTools : ClientModInitializer {
     val BRAND: Text by lazy {
         mm("<color:green>W<color:gray>orld<color:green>T<color:gray>ools<reset>")
     }
+
+    private var GUI_KEY = KeyBinding("key.$MOD_ID.open_config", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F12,
+        "key.categories.$MOD_ID"
+    )
 
     val mc: MinecraftClient = MinecraftClient.getInstance()
     var mm = MiniMessage.miniMessage()
@@ -81,12 +90,20 @@ object WorldTools : ClientModInitializer {
             checkCache()
         })
 
+        KeyBindingHelper.registerKeyBinding(GUI_KEY)
+
+        ClientTickEvents.START_CLIENT_TICK.register(ClientTickEvents.StartTick { mc ->
+            if (GUI_KEY.wasPressed() && mc.world != null && mc.currentScreen == null) {
+                mc.setScreen(WorldToolsScreen)
+            }
+        })
+
         ClientPlayConnectionEvents.JOIN.register(ClientPlayConnectionEvents.Join { _, _, mc ->
             serverInfo = mc.currentServerEntry ?: return@Join
 
             withSession {
-                saveFavicon()
-                backupLevelDataFile()
+                writeFavicon()
+                writeLevelDataFile()
             }
         })
 
@@ -112,7 +129,7 @@ object WorldTools : ClientModInitializer {
         })
 
         BlockEntityRendererFactories.register(BlockEntityType.CHEST) {
-            UnscannedChestBlockEntityRenderer(it)
+            MissingChestBlockEntityRenderer(it)
         }
 
         ScreenEvents.AFTER_INIT.register(ScreenEvents.AfterInit { _, screen, _, _ ->

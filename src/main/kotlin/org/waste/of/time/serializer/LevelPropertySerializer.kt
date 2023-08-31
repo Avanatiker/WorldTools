@@ -15,9 +15,9 @@ import java.io.File
 
 object LevelPropertySerializer {
     /**
-     * See [net.minecraft.world.level.storage.LevelStorage.Session.backupLevelDataFile]
+     * See [net.minecraft.world.level.storage.LevelStorage.Session.writeLevelDataFile]
      */
-    fun Session.backupLevelDataFile(freezeWorld: Boolean = true) {
+    fun Session.writeLevelDataFile(freezeWorld: Boolean = true) {
         val resultingFile = getDirectory(WorldSavePath.ROOT).toFile()
         val dataNbt = serializeLevelData(freezeWorld)
         val levelNbt = NbtCompound().apply {

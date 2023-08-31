@@ -14,7 +14,7 @@ import org.waste.of.time.WorldTools.cachedBlockEntities
 import org.waste.of.time.WorldTools.mc
 import kotlin.math.sin
 
-class UnscannedChestBlockEntityRenderer(
+class MissingChestBlockEntityRenderer(
     ctx: BlockEntityRendererFactory.Context
 ) : ChestBlockEntityRenderer<ChestBlockEntity>(ctx) {
     private val stack = ItemStack(Items.CHEST, 1)
@@ -27,12 +27,20 @@ class UnscannedChestBlockEntityRenderer(
         light: Int,
         overlay: Int
     ) {
-        super.render(entity, tickDelta, matrices, vertexConsumers, light, overlay)
-        val world = entity?.world ?: return
+        val world = entity?.world
 
-        if (!(entity !in cachedBlockEntities && !mc.isInSingleplayer && matrices != null)) {
+        if (world == null) {
+            super.render(entity, tickDelta, matrices, vertexConsumers, light, overlay)
             return
         }
+
+        if (!(entity !in cachedBlockEntities && !mc.isInSingleplayer && matrices != null)) {
+            super.render(entity, tickDelta, matrices, vertexConsumers, light, overlay)
+            return
+        }
+
+        val outlineVertex = mc.bufferBuilders.outlineVertexConsumers
+        outlineVertex.setColor(255, 192, 203, 100)
 
         matrices.push()
 
@@ -52,5 +60,7 @@ class UnscannedChestBlockEntityRenderer(
         )
 
         matrices.pop()
+
+        super.render(entity, tickDelta, matrices, outlineVertex, light, overlay)
     }
 }

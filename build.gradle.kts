@@ -9,11 +9,9 @@ group = property("maven_group")!!
 version = property("mod_version")!!
 
 repositories {
-    // Add repositories to retrieve artifacts from in here.
-    // You should only use this when depending on other mods because
-    // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
-    // See https://docs.gradle.org/current/userguide/declaring_repositories.html
-    // for more information about repositories.
+    maven("https://server.bbkr.space/artifactory/libs-release") {
+        name = "CottonMC"
+    }
 }
 
 dependencies {
@@ -25,6 +23,7 @@ dependencies {
     modImplementation("net.fabricmc.fabric-api:fabric-api:${property("fabric_api_version")}")
 
     modImplementation(include("net.kyori:adventure-platform-fabric:5.9.0")!!) // for Minecraft 1.20.1
+    modImplementation(include("io.github.cottonmc:LibGui:8.0.2+1.20")!!)
 
 //    implementation("net.kyori:adventure-api:4.14.0")
 

@@ -23,7 +23,7 @@ import org.waste.of.time.BarManager.updateCapture
 import org.waste.of.time.WorldTools.BRAND
 import org.waste.of.time.WorldTools.CREDIT_MESSAGE_MD
 import org.waste.of.time.WorldTools.LOGGER
-import org.waste.of.time.WorldTools.MOD_ID
+import org.waste.of.time.WorldTools.MOD_NAME
 import org.waste.of.time.WorldTools.addAuthor
 import org.waste.of.time.WorldTools.cachedBlockEntities
 import org.waste.of.time.WorldTools.cachedChunks
@@ -34,7 +34,7 @@ import org.waste.of.time.WorldTools.sendMessage
 import org.waste.of.time.WorldTools.serverInfo
 import org.waste.of.time.WorldTools.withSession
 import org.waste.of.time.serializer.ClientChunkSerializer
-import org.waste.of.time.serializer.LevelPropertySerializer.backupLevelDataFile
+import org.waste.of.time.serializer.LevelPropertySerializer.writeLevelDataFile
 import org.waste.of.time.serializer.PathTreeNode
 import java.net.InetSocketAddress
 import java.time.LocalDateTime
@@ -58,11 +58,13 @@ object StorageManager {
 
             try {
                 writeMetaData()
-                saveFavicon()
-                backupLevelDataFile(freezeWorld = freezeWorld)
-                saveChunks(chunkSnapshot, totalSteps)
-                savePlayers(entitySnapshot.first.filterIsInstance<PlayerEntity>())
-                saveEntities(freezeWorld, totalSteps, entitySnapshot)
+                writeFavicon()
+                writeLevelDataFile(freezeWorld = freezeWorld)
+//                writeAdvancements()
+//                writeStats()
+                writePlayers(entitySnapshot.first.filterIsInstance<PlayerEntity>())
+                writeChunks(chunkSnapshot, totalSteps)
+                writeEntities(freezeWorld, totalSteps, entitySnapshot)
 
                 sendSuccess(entitySnapshot, chunkSnapshot)
                 updateCapture()
@@ -90,7 +92,7 @@ object StorageManager {
     }
 
     private fun Session.writeMetaData() {
-        getDirectory(WorldSavePath.ROOT).resolve(MOD_ID).apply {
+        getDirectory(WorldSavePath.ROOT).resolve(MOD_NAME).apply {
             PathUtil.createDirectories(this)
 
             resolve("Capture Metadata.md").toFile()
@@ -198,7 +200,7 @@ object StorageManager {
         append(", ")
     }
 
-    fun Session.saveFavicon() {
+    fun Session.writeFavicon() {
         serverInfo.favicon?.let { favicon ->
             iconFile.ifPresent {
                 it.writeBytes(favicon)
@@ -207,7 +209,15 @@ object StorageManager {
         }
     }
 
-    private fun Session.saveChunks(chunks: Set<WorldChunk>, totalSteps: Int) {
+    private fun Session.writeStats(player: PlayerEntity) {
+        val stats = getDirectory(WorldSavePath.STATS).resolve("${player.uuid}.json").toFile()
+    }
+
+    private fun Session.writeAdvancements(player: PlayerEntity) {
+        val advancements = getDirectory(WorldSavePath.ADVANCEMENTS).toFile()
+    }
+
+    private fun Session.writeChunks(chunks: Set<WorldChunk>, totalSteps: Int) {
         var savedChunks = 0
 
         chunks.groupBy { it.world }.forEach { chunkGroup ->
@@ -237,7 +247,7 @@ object StorageManager {
         LOGGER.info("Saved ${chunks.size} chunks.")
     }
 
-    private fun Session.savePlayers(players: List<PlayerEntity>) {
+    private fun Session.writePlayers(players: List<PlayerEntity>) {
         players.forEach {
             createSaveHandler().savePlayerData(it)
             cachedEntities.remove(it)
@@ -246,7 +256,7 @@ object StorageManager {
         LOGGER.info("Saved ${players.size} players.")
     }
 
-    private fun Session.saveEntities(
+    private fun Session.writeEntities(
         freezeEntities: Boolean,
         totalSteps: Int,
         entityPartition: Pair<List<Entity>, List<Entity>>
