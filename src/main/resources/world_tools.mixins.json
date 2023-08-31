@@ -4,7 +4,9 @@
   "package": "org.waste.of.time.mixin",
   "compatibilityLevel": "JAVA_17",
   "client": [
-    "MixinBossHealthOverlay"
+    "MixinBossHealthOverlay",
+    "MixinStatisticGrabber",
+    "StatHandlerAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

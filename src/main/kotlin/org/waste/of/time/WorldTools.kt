@@ -45,7 +45,7 @@ object WorldTools : ClientModInitializer {
     private const val MOD_ID = "world_tools"
     private const val VERSION = "1.0.0"
     private const val URL = "https://github.com/Avanatiker/WorldTools/"
-    private const val CREDIT_MESSAGE = "This file was created by $MOD_NAME $VERSION ($URL)"
+    const val CREDIT_MESSAGE = "This file was created by $MOD_NAME $VERSION ($URL)"
     const val CREDIT_MESSAGE_MD = "This file was created by [$MOD_NAME $VERSION]($URL)"
     const val MCA_EXTENSION = ".mca"
     const val DAT_EXTENSION = ".dat"
@@ -57,7 +57,8 @@ object WorldTools : ClientModInitializer {
         mm("<color:green>W<color:gray>orld<color:green>T<color:gray>ools<reset>")
     }
 
-    private var GUI_KEY = KeyBinding("key.$MOD_ID.open_config", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F12,
+    private var GUI_KEY = KeyBinding(
+        "key.$MOD_ID.open_config", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F12,
         "key.categories.$MOD_ID"
     )
 
@@ -101,7 +102,7 @@ object WorldTools : ClientModInitializer {
         ClientPlayConnectionEvents.JOIN.register(ClientPlayConnectionEvents.Join { _, _, mc ->
             serverInfo = mc.currentServerEntry ?: return@Join
 
-            withSession {
+            tryWithSession {
                 writeFavicon()
                 writeLevelDataFile()
             }
@@ -145,8 +146,24 @@ object WorldTools : ClientModInitializer {
         })
     }
 
-    inline fun withSession(crossinline block: LevelStorage.Session.() -> Unit) {
+    inline fun tryWithSession(crossinline block: LevelStorage.Session.() -> Unit) {
         if (savingMutex.tryLock().not()) return
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                mc.levelStorage.createSession(serverInfo.address).use { session ->
+                    session.block()
+                }
+            } catch (e: Exception) {
+                LOGGER.error("Failed to create session for ${serverInfo.address}", e)
+            } finally {
+                savingMutex.unlock()
+            }
+        }
+    }
+
+    suspend inline fun withSessionBlocking(crossinline block: LevelStorage.Session.() -> Unit) {
+        savingMutex.lock()
 
         CoroutineScope(Dispatchers.IO).launch {
             try {

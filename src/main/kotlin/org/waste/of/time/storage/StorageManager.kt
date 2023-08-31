@@ -12,6 +12,7 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtIntArray
 import net.minecraft.nbt.NbtList
+import net.minecraft.network.packet.c2s.play.ClientStatusC2SPacket
 import net.minecraft.text.Text
 import net.minecraft.util.PathUtil
 import net.minecraft.util.WorldSavePath
@@ -32,7 +33,7 @@ import org.waste.of.time.WorldTools.mc
 import org.waste.of.time.WorldTools.mm
 import org.waste.of.time.WorldTools.sendMessage
 import org.waste.of.time.WorldTools.serverInfo
-import org.waste.of.time.WorldTools.withSession
+import org.waste.of.time.WorldTools.tryWithSession
 import org.waste.of.time.serializer.ClientChunkSerializer
 import org.waste.of.time.serializer.LevelPropertySerializer.writeLevelDataFile
 import org.waste.of.time.serializer.PathTreeNode
@@ -49,7 +50,7 @@ object StorageManager {
     fun save(
         freezeWorld: Boolean = true
     ): Int {
-        withSession {
+        tryWithSession {
             stepsDone = 0
 
             val entitySnapshot = cachedEntities.partition { it is PlayerEntity }
@@ -60,8 +61,8 @@ object StorageManager {
                 writeMetaData()
                 writeFavicon()
                 writeLevelDataFile(freezeWorld = freezeWorld)
-//                writeAdvancements()
-//                writeStats()
+                writeAdvancements()
+
                 writePlayers(entitySnapshot.first.filterIsInstance<PlayerEntity>())
                 writeChunks(chunkSnapshot, totalSteps)
                 writeEntities(freezeWorld, totalSteps, entitySnapshot)
@@ -69,6 +70,8 @@ object StorageManager {
                 sendSuccess(entitySnapshot, chunkSnapshot)
                 updateCapture()
                 resetProgressBar()
+
+                mc.networkHandler?.sendPacket(ClientStatusC2SPacket(ClientStatusC2SPacket.Mode.REQUEST_STATS))
             } catch (exception: Exception) {
                 LOGGER.error("Failed to save world.", exception)
                 mc.execute {
@@ -84,7 +87,7 @@ object StorageManager {
                     )
                     sendMessage(message)
                 }
-                return@withSession
+                return@tryWithSession
             }
         }
 
@@ -209,11 +212,7 @@ object StorageManager {
         }
     }
 
-    private fun Session.writeStats(player: PlayerEntity) {
-        val stats = getDirectory(WorldSavePath.STATS).resolve("${player.uuid}.json").toFile()
-    }
-
-    private fun Session.writeAdvancements(player: PlayerEntity) {
+    private fun Session.writeAdvancements() {
         val advancements = getDirectory(WorldSavePath.ADVANCEMENTS).toFile()
     }
 
