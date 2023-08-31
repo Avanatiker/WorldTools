@@ -11,7 +11,7 @@ import org.waste.of.time.BarManager;
 import java.util.*;
 
 @Mixin(BossBarHud.class)
-public class MixinBossHealthOverlay {
+public class BossBarHudMixin {
 
     /**
      * This mixin is used to add the capture bar and the progress bar to the boss bar overlay and to make sure that

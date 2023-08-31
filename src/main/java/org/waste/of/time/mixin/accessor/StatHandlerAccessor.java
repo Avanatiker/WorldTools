@@ -1,4 +1,4 @@
-package org.waste.of.time.mixin;
+package org.waste.of.time.mixin.accessor;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.stat.Stat;

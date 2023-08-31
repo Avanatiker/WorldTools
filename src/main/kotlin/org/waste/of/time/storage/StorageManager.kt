@@ -1,10 +1,13 @@
 package org.waste.of.time.storage
 
+import com.google.gson.GsonBuilder
 import com.mojang.authlib.GameProfile
 import net.kyori.adventure.platform.fabric.FabricClientAudiences
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.format.TextColor.color
+import net.minecraft.SharedConstants
+import net.minecraft.advancement.AdvancementProgress
 import net.minecraft.client.network.PlayerListEntry
 import net.minecraft.client.toast.SystemToast
 import net.minecraft.entity.Entity
@@ -14,6 +17,7 @@ import net.minecraft.nbt.NbtIntArray
 import net.minecraft.nbt.NbtList
 import net.minecraft.network.packet.c2s.play.ClientStatusC2SPacket
 import net.minecraft.text.Text
+import net.minecraft.util.Identifier
 import net.minecraft.util.PathUtil
 import net.minecraft.util.WorldSavePath
 import net.minecraft.world.chunk.WorldChunk
@@ -34,9 +38,11 @@ import org.waste.of.time.WorldTools.mm
 import org.waste.of.time.WorldTools.sendMessage
 import org.waste.of.time.WorldTools.serverInfo
 import org.waste.of.time.WorldTools.tryWithSession
+import org.waste.of.time.mixin.accessor.AdvancementProgressesAccessor
 import org.waste.of.time.serializer.ClientChunkSerializer
 import org.waste.of.time.serializer.LevelPropertySerializer.writeLevelDataFile
 import org.waste.of.time.serializer.PathTreeNode
+import java.lang.reflect.Type
 import java.net.InetSocketAddress
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -46,6 +52,12 @@ import kotlin.io.path.writeBytes
 
 object StorageManager {
     private var stepsDone = 0
+    private val GSON =
+        GsonBuilder().registerTypeAdapter(AdvancementProgress::class.java as Type, AdvancementProgress.Serializer())
+            .registerTypeAdapter(
+                Identifier::class.java as Type, Identifier.Serializer()
+            ).setPrettyPrinting().create()
+
 
     fun save(
         freezeWorld: Boolean = true
@@ -71,6 +83,7 @@ object StorageManager {
                 updateCapture()
                 resetProgressBar()
 
+                // update the stats and trigger writeStats() in StatisticSerializer
                 mc.networkHandler?.sendPacket(ClientStatusC2SPacket(ClientStatusC2SPacket.Mode.REQUEST_STATS))
             } catch (exception: Exception) {
                 LOGGER.error("Failed to save world.", exception)
@@ -107,17 +120,15 @@ object StorageManager {
                 if (playerList.isEmpty()) return@let
                 resolve("Player Entry List.csv").toFile()
                     .writeText(createPlayerListEntry(playerList.toList()))
+                LOGGER.info("Saved ${playerList.size} player entry list entries.")
             }
-
-            LOGGER.info("Saved player entry list.")
 
             mc.networkHandler?.worldKeys?.let { keys ->
                 if (keys.isEmpty()) return@let
                 resolve("Dimension Tree.txt").toFile()
                     .writeText(PathTreeNode.buildTree(keys.map { it.value.path }))
+                LOGGER.info("Saved ${keys.size} dimensions in tree.")
             }
-
-            LOGGER.info("Saved dimension tree.")
         }
     }
 
@@ -213,7 +224,23 @@ object StorageManager {
     }
 
     private fun Session.writeAdvancements() {
-        val advancements = getDirectory(WorldSavePath.ADVANCEMENTS).toFile()
+        val uuid = mc.player?.uuid ?: return
+        val advancements = getDirectory(WorldSavePath.ADVANCEMENTS)
+        PathUtil.createDirectories(advancements)
+
+        val progress = (mc.player?.networkHandler?.advancementHandler as? AdvancementProgressesAccessor)?.advancementProgresses ?: return
+
+        val progressMap = LinkedHashMap<Identifier, AdvancementProgress>()
+        progress.entries.forEach { (key, advancementProgress) ->
+            if (!advancementProgress.isAnyObtained()) return@forEach
+            progressMap[key.id] = advancementProgress
+        }
+        val jsonElement = GSON.toJsonTree(progressMap)
+        jsonElement.asJsonObject.addProperty("DataVersion", SharedConstants.getGameVersion().saveVersion.id)
+
+        advancements.resolve("$uuid.json").toFile().writeText(jsonElement.toString())
+
+        LOGGER.info("Saved ${progressMap.size} advancements.")
     }
 
     private fun Session.writeChunks(chunks: Set<WorldChunk>, totalSteps: Int) {

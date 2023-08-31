@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.waste.of.time.serializer.StatisticSerializer;
 
 @Mixin(ClientPlayNetworkHandler.class)
-public class MixinStatisticGrabber {
+public class ClientPlayNetworkHandlerMixin {
     @Inject(method = "onStatistics", at = @At("RETURN"))
     private void onStatistics(StatisticsS2CPacket packet, CallbackInfo ci) {
         StatisticSerializer.INSTANCE.writeStats();
