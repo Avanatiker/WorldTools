@@ -20,7 +20,7 @@ object WorldToolsScreen : CottonClientScreen(Gui()) {
             val icon = WSprite(Identifier("minecraft:textures/item/redstone.png"))
             root.add(icon, 0, 0, 1, 1)
 
-            val button = WButton(Text.translatable("gui.worldtools.download"))
+            val button = WButton(Text.translatable("gui.world_tools.download"))
             button.onClick = Runnable { StorageManager.save() }
             root.add(button, 1, 0, 4, 1)
 

@@ -72,8 +72,6 @@ WorldTools is licensed under the [GNU General Public License v3.0](LICENSE.md).
 
 ---
 
-**Note**: WorldTools is a powerful tool for locally capturing and preserving an unaltered snapshot of server worlds. Please use it responsibly and respect the terms of the GNU GPL v3 license.
-
-If you have any questions, concerns, or suggestions, you can reach us at support@worldtools.com or visit our [official Discord server](https://discord.gg/worldtools).
+If you have any questions, concerns, or suggestions, you can visit our [official Discord server](https://discord.gg/worldtools).
 
 **Disclaimer:** WorldTools is not affiliated with Mojang Studios. Minecraft is a registered trademark of Mojang Studios. Use of the WorldTools software is subject to the terms outlined in the license agreement.
