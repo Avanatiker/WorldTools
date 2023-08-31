@@ -4,30 +4,32 @@ import net.minecraft.SharedConstants
 import net.minecraft.nbt.*
 import net.minecraft.util.Util
 import net.minecraft.util.WorldSavePath
+import net.minecraft.world.GameRules
 import net.minecraft.world.level.storage.LevelStorage.Session
 import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.LOGGER
-import org.waste.of.time.WorldTools.creditNbt
+import org.waste.of.time.WorldTools.addAuthor
 import org.waste.of.time.WorldTools.mc
+import org.waste.of.time.WorldTools.serverInfo
 import java.io.File
 
 object LevelPropertySerializer {
     /**
-     * See [net.minecraft.world.level.storage.LevelStorage.Session.backupLevelDataFile]
+     * See [net.minecraft.world.level.storage.LevelStorage.Session.writeLevelDataFile]
      */
-    fun backupLevelDataFile(session: Session, levelName: String) {
-        val resultingFile = session.getDirectory(WorldSavePath.ROOT).toFile()
-        val dataNbt = serialize(levelName)
+    fun Session.writeLevelDataFile(freezeWorld: Boolean = true) {
+        val resultingFile = getDirectory(WorldSavePath.ROOT).toFile()
+        val dataNbt = serializeLevelData(freezeWorld)
         val levelNbt = NbtCompound().apply {
+            addAuthor()
             put("Data", dataNbt)
-            copyFrom(creditNbt)
         }
 
         try {
             val newFile = File.createTempFile("level", WorldTools.DAT_EXTENSION, resultingFile)
             NbtIo.writeCompressed(levelNbt, newFile)
-            val backup = session.getDirectory(WorldSavePath.LEVEL_DAT_OLD).toFile()
-            val current = session.getDirectory(WorldSavePath.LEVEL_DAT).toFile()
+            val backup = getDirectory(WorldSavePath.LEVEL_DAT_OLD).toFile()
+            val current = getDirectory(WorldSavePath.LEVEL_DAT).toFile()
             Util.backupAndReplace(current, newFile, backup)
             LOGGER.info("Saved level data.")
         } catch (exception: Exception) {
@@ -38,7 +40,7 @@ object LevelPropertySerializer {
     /**
      * See [net.minecraft.world.level.LevelProperties.updateProperties]
      */
-    private fun serialize(levelName: String) = NbtCompound().apply {
+    private fun serializeLevelData(freezeWorld: Boolean) = NbtCompound().apply {
         val player = mc.player ?: return@apply
 
         player.serverBrand?.let {
@@ -75,7 +77,7 @@ object LevelPropertySerializer {
         putLong("Time", player.world.time)
         putLong("DayTime", player.world.timeOfDay)
         putLong("LastPlayed", System.currentTimeMillis())
-        putString("LevelName", levelName)
+        putString("LevelName", serverInfo.address)
         putInt("version", 19133)
         putInt("clearWeatherTime", 0) // not sure
         putInt("rainTime", 0) // not sure
@@ -90,7 +92,9 @@ object LevelPropertySerializer {
 
         putByte("Difficulty", player.world.levelProperties.difficulty.id.toByte())
         putBoolean("DifficultyLocked", false) // not sure
-        put("GameRules", player.world.levelProperties.gameRules.toNbt())
+
+        put("GameRules", genGameRules(player.world.gameRules, freezeWorld))
+
         put("DragonFight", NbtCompound()) // not sure
 
         put("Player", NbtCompound().apply {
@@ -104,6 +108,23 @@ object LevelPropertySerializer {
         putInt("WanderingTraderSpawnChance", 0) // not sure
 
         // skip wandering trader id
+    }
+
+    private fun genGameRules(gameRules: GameRules, freezeWorld: Boolean) = gameRules.toNbt().apply {
+        if (!freezeWorld) return@apply
+
+        putString(GameRules.DO_WARDEN_SPAWNING.name, "false")
+        putString(GameRules.DO_FIRE_TICK.name, "false")
+        putString(GameRules.DO_VINES_SPREAD.name, "false")
+        putString(GameRules.DO_MOB_SPAWNING.name, "false")
+        putString(GameRules.DO_DAYLIGHT_CYCLE.name, "false")
+        putString(GameRules.DO_TILE_DROPS.name, "false")
+        putString(GameRules.DO_MOB_LOOT.name, "false")
+        putString(GameRules.KEEP_INVENTORY.name, "true")
+        putString(GameRules.DO_ENTITY_DROPS.name, "false")
+        putString(GameRules.DO_MOB_GRIEFING.name, "false")
+        putString(GameRules.DO_TRADER_SPAWNING.name, "false")
+        putString(GameRules.DO_PATROL_SPAWNING.name, "false")
     }
 
     private fun generatorMockNbt() = NbtCompound().apply {

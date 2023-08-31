@@ -4,7 +4,10 @@
   "package": "org.waste.of.time.mixin",
   "compatibilityLevel": "JAVA_17",
   "client": [
-    "BossBarHudAccessor",
+    "accessor.AdvancementProgressesAccessor",
+    "BossBarHudMixin",
+    "ClientPlayNetworkHandlerMixin",
+    "accessor.StatHandlerAccessor",
     "ClientChunkManagerMixin"
   ],
   "injectors": {
