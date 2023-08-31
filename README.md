@@ -2,10 +2,10 @@
 
 # WorldTools: Minecraft World Downloader
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)
-[![Minecraft Version](https://img.shields.io/badge/Minecraft-1.20.1-brightgreen)](https://www.minecraft.net/)
-[![Fabric API](https://img.shields.io/badge/Fabric%20API-Required-orange)](https://www.curseforge.com/minecraft/mc-mods/fabric-api)
-[![fabric-language-kotlin](https://img.shields.io/badge/fabric--language--kotlin-Required-orange)](https://www.curseforge.com/minecraft/mc-mods/fabric-language-kotlin)
+[![License](https://img.shields.io/badge/License-GPL%20v3-blue?style=for-the-badge&link=https://www.gnu.org/licenses/gpl-3.0.en.html)](https://www.gnu.org/licenses/gpl-3.0.en.html)
+[![Minecraft](https://img.shields.io/badge/Minecraft-1.20.1-lime?style=for-the-badge&link=https://www.minecraft.net/)](https://www.minecraft.net/)
+[![FabricAPI](https://img.shields.io/badge/FabricAPI-Required-orange?style=for-the-badge&link=https://modrinth.com/mod/fabric-api)](https://modrinth.com/mod/fabric-api)
+[![Fabric Language Kotlin](https://img.shields.io/badge/Fabric%20Language%20Kotlin-Required-orange?style=for-the-badge&link=https://modrinth.com/mod/fabric-language-kotlin)](https://modrinth.com/mod/fabric-language-kotlin)
 
 WorldTools is a powerful Minecraft 1.20.1 Fabric Mod
 that allows you to capture and save high-detail snapshots of server worlds locally.
