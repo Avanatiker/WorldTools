@@ -1,11 +1,11 @@
+<p><img style="display: block; margin-left: auto; margin-right: auto;" src="src/main/resources/assets/world_tools/WorldTools.png" alt="" width="256" height="256" ></p>
+
 # WorldTools: Minecraft World Downloader
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)
 [![Minecraft Version](https://img.shields.io/badge/Minecraft-1.20.1-brightgreen)](https://www.minecraft.net/)
 [![Fabric API](https://img.shields.io/badge/Fabric%20API-Required-orange)](https://www.curseforge.com/minecraft/mc-mods/fabric-api)
 [![fabric-language-kotlin](https://img.shields.io/badge/fabric--language--kotlin-Required-orange)](https://www.curseforge.com/minecraft/mc-mods/fabric-language-kotlin)
-
-<p><img style="display: block; margin-left: auto; margin-right: auto;" src="src/main/resources/assets/world_tools/WorldTools.png" alt="" width="256" height="256" ></p>
 
 WorldTools is a powerful Minecraft 1.20.1 Fabric Mod
 that allows you to capture and save high-detail snapshots of server worlds locally.
