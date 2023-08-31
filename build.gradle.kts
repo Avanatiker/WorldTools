@@ -1,84 +1,83 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import net.fabricmc.loom.task.RemapJarTask
+
+val kotlinVersion = (project.properties["fabric_kotlin_version"]!! as String)
+    .split("+kotlin.")[1] // Grabs the sentence after `+kotlin.`
+    .split("+")[0] // Ensures sentences like `+build.1` are ignored
 plugins {
-    kotlin("jvm")
-    id("fabric-loom")
-    `maven-publish`
-    java
+    kotlin("jvm") version("1.9.10")
+    id("architectury-plugin") version "3.4-SNAPSHOT"
+    id("dev.architectury.loom") version "1.3-SNAPSHOT" apply false
+    id("com.github.johnrengelman.shadow") version "8.1.1" apply false
 }
 
-group = property("maven_group")!!
-version = property("mod_version")!!
-
-repositories {
-    // Add repositories to retrieve artifacts from in here.
-    // You should only use this when depending on other mods because
-    // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
-    // See https://docs.gradle.org/current/userguide/declaring_repositories.html
-    // for more information about repositories.
+architectury {
+    minecraft = project.properties["minecraft_version"]!! as String
 }
 
-dependencies {
-    minecraft("com.mojang:minecraft:${property("minecraft_version")}")
-    mappings("net.fabricmc:yarn:${property("yarn_mappings")}:v2")
-    modImplementation("net.fabricmc:fabric-loader:${property("loader_version")}")
+subprojects {
+    apply(plugin = "dev.architectury.loom")
+    dependencies {
+        "minecraft"("com.mojang:minecraft:${project.properties["minecraft_version"]!!}")
+        "mappings"("net.fabricmc:yarn:${project.properties["yarn_mappings"]}:v2")
+    }
+    if (path != ":common") {
+        apply(plugin = "com.github.johnrengelman.shadow")
 
-    modImplementation("net.fabricmc:fabric-language-kotlin:${property("fabric_kotlin_version")}")
-    modImplementation("net.fabricmc.fabric-api:fabric-api:${property("fabric_api_version")}")
-
-    modImplementation(include("net.kyori:adventure-platform-fabric:5.9.0")!!) // for Minecraft 1.20.1
-
-//    implementation("net.kyori:adventure-api:4.14.0")
-
-//    modApi("me.shedaniel.cloth:cloth-config-fabric:ABC") {
-//        exclude(group = "net.fabricmc.fabric-api")
-//    }
-}
-
-tasks {
-
-    processResources {
-        inputs.property("version", project.version)
-        filesMatching("fabric.mod.json") {
-            expand(getProperties())
-            expand(mutableMapOf("version" to project.version))
+        val shadowCommon by configurations.creating {
+            isCanBeConsumed = false
+            isCanBeResolved = true
         }
-    }
 
-    jar {
-        from("LICENSE")
-    }
+        tasks.withType<JavaCompile> {
+            options.encoding = "UTF-8"
+            options.release = 17
+        }
 
-    publishing {
-        publications {
-            create<MavenPublication>("mavenJava") {
-                artifact(remapJar) {
-                    builtBy(remapJar)
-                }
-                artifact(kotlinSourcesJar) {
-                    builtBy(remapSourcesJar)
-                }
+        tasks {
+            "shadowJar"(ShadowJar::class) {
+                archiveClassifier.set("dev-shadow")
+                configurations = listOf(shadowCommon)
+                exclude("org/intellij/**")
+                exclude("org/objectweb/**")
+                exclude("org/jetbrains/**")
+                exclude("com/google/**")
+            }
+
+            "remapJar"(RemapJarTask::class) {
+                dependsOn("shadowJar")
+                inputFile.set(named<ShadowJar>("shadowJar").flatMap { it.archiveFile })
             }
         }
+    }
+}
 
-        // select the repositories you want to publish to
-        repositories {
-            // uncomment to publish to the local maven
-            // mavenLocal()
+allprojects {
+    apply(plugin = "java")
+    apply(plugin = "architectury-plugin")
+    apply(plugin = "maven-publish")
+    apply(plugin = "org.jetbrains.kotlin.jvm")
+    base.archivesName.set("WorldTools")
+    group = project.properties["maven_group"]!!
+    version = project.properties["mod_version"]!!
+
+    repositories {
+        maven("https://api.modrinth.com/maven")
+        maven("https://jitpack.io")
+    }
+
+    tasks {
+        compileKotlin {
+            kotlinOptions.jvmTarget = "17"
         }
     }
 
-    compileKotlin {
-        kotlinOptions.jvmTarget = "17"
+    tasks.withType(JavaCompile::class.java) {
+        options.encoding = "UTF-8"
+        options.release = 17
     }
 
+    java {
+        withSourcesJar()
+    }
 }
-
-java {
-    // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-    // if it is present.
-    // If you remove this line, sources will not be generated.
-    withSourcesJar()
-}
-
-
-
-// configure the maven publication

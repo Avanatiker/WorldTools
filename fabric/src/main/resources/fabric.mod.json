@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "world_tools",
+  "version": "${version}",
+  "name": "WorldTools",
+  "description": "A minecraft world downloader built with Kotlin.",
+  "authors": [
+    "Constructor",
+    "P529"
+  ],
+  "contact": {
+    "homepage": "https://github.com/Avanatiker/WorldTools/",
+    "sources": "https://github.com/Avanatiker/WorldTools/"
+  },
+  "license": "GNU General Public License v3.0",
+  "icon": "assets/world_tools/WorldTools.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      {
+        "adapter": "kotlin",
+        "value": "org.waste.of.time.WorldToolsFabric"
+      }
+    ]
+  },
+  "mixins": [
+    "world_tools.mixins.common.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${fabric_loader_version}",
+    "fabric-api": "*",
+    "minecraft": "~1.20",
+    "java": ">=17",
+    "fabric-language-kotlin": ">=${fabric_kotlin_version}"
+  }
+}

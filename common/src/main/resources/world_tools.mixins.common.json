@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "org.waste.of.time.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "client": [
+    "BossBarHudAccessor",
+    "ClientChunkManagerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
