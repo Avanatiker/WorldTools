@@ -5,13 +5,16 @@ architectury {
 
 loom {
     forge {
-        mixinConfig("world_tools.mixins.common.json")
+        mixinConfig("worldtools.mixins.common.json")
     }
 }
 
 repositories {
     maven("https://thedarkcolour.github.io/KotlinForForge/") {
         name = "KotlinForForge"
+    }
+    maven("https://cursemaven.com") {
+        name = "Curse"
     }
 }
 
@@ -22,12 +25,12 @@ val common: Configuration by configurations.creating {
 }
 
 dependencies {
-    forge("net.minecraftforge:forge:${"1.20.1-47.1.0"}")
-    implementation("thedarkcolour:kotlinforforge:4.4.0")
+    forge("net.minecraftforge:forge:${project.properties["forge_version"]!!}")
+    implementation("thedarkcolour:kotlinforforge:${project.properties["kotlin_forge_version"]!!}")
     common(project(":common", configuration = "namedElements")) { isTransitive = false }
     shadowCommon(project(path = ":common", configuration = "transformProductionForge")) { isTransitive = false }
-    implementation(shadowCommon("net.kyori:adventure-text-minimessage:4.14.0")!!)
-    implementation(shadowCommon("net.kyori:adventure-text-serializer-gson:4.14.0")!!)
+    implementation(shadowCommon("net.kyori:adventure-text-minimessage:${project.properties["kyori_text_minimessage_version"]}")!!)
+    implementation(shadowCommon("net.kyori:adventure-text-serializer-gson:${project.properties["kyori_text_minimessage_version"]}")!!)
 }
 
 tasks {

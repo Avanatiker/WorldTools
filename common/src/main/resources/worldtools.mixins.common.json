@@ -4,11 +4,13 @@
   "package": "org.waste.of.time.mixin",
   "compatibilityLevel": "JAVA_17",
   "client": [
-    "accessor.AdvancementProgressesAccessor",
     "BossBarHudMixin",
+    "ClientChunkManagerMixin",
     "ClientPlayNetworkHandlerMixin",
-    "accessor.StatHandlerAccessor",
-    "ClientChunkManagerMixin"
+    "MinecraftClientMixin",
+    "ScreenMixin",
+    "accessor.AdvancementProgressesAccessor",
+    "accessor.StatHandlerAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -3,31 +3,31 @@ loaderVersion = "[47,)"
 license = "GNU General Public License v3.0"
 
 [[mods]]
-modId = "world_tools"
+modId = "worldtools"
 version = "${version}"
 displayName = "WorldTools"
 authors = "Constructor, P529, rfresh2"
 description = '''
 A Minecraft world downloader
 '''
-logoFile = "assets/world_tools/WorldTools.png"
+logoFile = "assets/worldtools/WorldTools.png"
 displayTest="IGNORE_ALL_VERSION"
 
-[[dependencies.world_tools]]
+[[dependencies.worldtools]]
 modId = "forge"
 mandatory = true
 versionRange = "[47,)"
 ordering = "NONE"
 side = "CLIENT"
 
-[[dependencies.world_tools]]
+[[dependencies.worldtools]]
 modId = "minecraft"
 mandatory = true
 versionRange = "[1.20,)"
 ordering = "NONE"
 side = "CLIENT"
 
-[[dependencies.world_tools]]
+[[dependencies.worldtools]]
 modId = "kotlinforforge"
 mandatory = true
 versionRange = "[4,)"

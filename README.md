@@ -1,4 +1,4 @@
-<p><img style="display: block; margin-left: auto; margin-right: auto;" src="src/main/resources/assets/world_tools/WorldTools.png" alt="" width="256" height="256" ></p>
+<p><img style="display: block; margin-left: auto; margin-right: auto;" src="src/main/resources/assets/worldtools/WorldTools.png" alt="" width="256" height="256" ></p>
 
 # WorldTools: Minecraft World Downloader
 

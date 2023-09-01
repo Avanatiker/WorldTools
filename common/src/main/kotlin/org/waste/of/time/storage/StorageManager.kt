@@ -2,10 +2,10 @@ package org.waste.of.time.storage
 
 import com.google.gson.GsonBuilder
 import com.mojang.authlib.GameProfile
-import net.kyori.adventure.platform.fabric.FabricClientAudiences
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.format.TextColor.color
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import net.minecraft.SharedConstants
 import net.minecraft.advancement.AdvancementProgress
 import net.minecraft.client.network.PlayerListEntry
@@ -354,7 +354,7 @@ object StorageManager {
             ).clickEvent(ClickEvent.openFile(savedPath.path))
         )
 
-        val successMessage = FabricClientAudiences.of().toNative(message)
+        val successMessage = Text.Serializer.fromJson(GsonComponentSerializer.gson().serialize(message)) as Text
 
         mc.execute {
             mc.toastManager.add(

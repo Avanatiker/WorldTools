@@ -4,6 +4,7 @@ architectury {
 }
 
 loom {
+    accessWidenerPath.set(project(":common").file("src/main/resources/worldtools.accesswidener"))
 }
 
 val common: Configuration by configurations.creating {
@@ -16,11 +17,10 @@ dependencies {
     common(project(":common", configuration = "namedElements")) { isTransitive = false }
     shadowCommon(project(path = ":common", configuration = "transformProductionFabric")) { isTransitive = false }
     modImplementation("net.fabricmc:fabric-loader:${project.properties["fabric_loader_version"]!!}")
-    // Fabric API. This is technically optional, but you probably want it anyway.
+    modImplementation("net.fabricmc.fabric-api:fabric-api:${project.properties["fabric_api_version"]!!}")
     modImplementation("net.fabricmc:fabric-language-kotlin:${project.properties["fabric_kotlin_version"]!!}")
     implementation(shadowCommon("net.kyori:adventure-text-minimessage:${project.properties["kyori_text_minimessage_version"]}")!!)
     implementation(shadowCommon("net.kyori:adventure-text-serializer-gson:${project.properties["kyori_text_minimessage_version"]}")!!)
-    modImplementation("net.fabricmc.fabric-api:fabric-api:${project.properties["fabric_api_version"]!!}")
 }
 
 tasks {

@@ -20,6 +20,10 @@ public class BossBarHudMixin {
      * @param bossBars The boss bars that are currently being rendered
      * @return A collection of boss bars that includes the capture bar and the progress bar
      */
+
+    // todo: remove redirects to avoid mod conflicts
+    //  either replace them with injects or use MixinExtras
+
     @Redirect(method = "render", at = @At(value = "INVOKE", target = "Ljava/util/Map;values()Ljava/util/Collection;"))
     public Collection<BossBar> modifyValues(Map<UUID, ClientBossBar> bossBars) {
         List<BossBar> newBossBars = new ArrayList<>(bossBars.size() + 2);

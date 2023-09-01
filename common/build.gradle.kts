@@ -4,7 +4,9 @@ plugins {
 
 architectury { common("fabric", "forge") }
 
-loom {  }
+loom {
+    accessWidenerPath.set(File("src/main/resources/worldtools.accesswidener"))
+}
 
 repositories {
     maven("https://maven.fabricmc.net/") {
@@ -20,13 +22,9 @@ dependencies {
     // Do NOT use other classes from fabric loader
     modImplementation("net.fabricmc:fabric-loader:${"0.14.21"}")
     // Add dependencies on the required Kotlin modules.
-//    implementation(kotlin("stdlib"))
-//    implementation(kotlin("reflect"))
-//    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
-//    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.7.3")
     modImplementation("net.fabricmc:fabric-language-kotlin:1.10.10+kotlin.1.9.10")
-    implementation(include("net.kyori:adventure-text-minimessage:4.14.0")!!)
-    implementation(include("net.kyori:adventure-text-serializer-gson:4.14.0")!!)
+    implementation("net.kyori:adventure-text-minimessage:4.14.0")
+    implementation("net.kyori:adventure-text-serializer-gson:4.14.0")
 }
 
 kotlin {

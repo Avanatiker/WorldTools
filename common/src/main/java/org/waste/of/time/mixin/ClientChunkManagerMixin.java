@@ -42,17 +42,17 @@ public class ClientChunkManagerMixin {
         Events.INSTANCE.onChunkUnload(this.world, chunk);
     }
 
-//    @Inject(
-//        method = "updateLoadDistance",
-//        at = @At(
-//            value = "INVOKE",
-//            target = "net/minecraft/client/world/ClientChunkManager$ClientChunkMap.isInRadius(II)Z"
-//        ),
-//        locals = LocalCapture.CAPTURE_FAILHARD
-//    )
-//    private void onUpdateLoadDistance(int loadDistance, CallbackInfo ci, int oldRadius, int newRadius, ClientChunkManager.ClientChunkMap clientChunkMap, int k, WorldChunk oldChunk, ChunkPos chunkPos) {
-//        if (!clientChunkMap.isInRadius(chunkPos.x, chunkPos.z)) {
-//            ClientChunkEvents.Companion.getUNLOAD_DATA().invoker().unload(this.world, oldChunk);
-//        }
-//    }
+    @Inject(
+        method = "updateLoadDistance",
+        at = @At(
+            value = "INVOKE",
+            target = "net/minecraft/client/world/ClientChunkManager$ClientChunkMap.isInRadius(II)Z"
+        ),
+        locals = LocalCapture.CAPTURE_FAILHARD
+    )
+    private void onUpdateLoadDistance(int loadDistance, CallbackInfo ci, int oldRadius, int newRadius, ClientChunkManager.ClientChunkMap clientChunkMap, int k, WorldChunk oldChunk, ChunkPos chunkPos) {
+        if (!clientChunkMap.isInRadius(chunkPos.x, chunkPos.z)) {
+            Events.INSTANCE.onChunkUnload(this.world, oldChunk);
+        }
+    }
 }

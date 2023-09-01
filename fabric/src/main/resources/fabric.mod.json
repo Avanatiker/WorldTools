@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "world_tools",
+  "id": "worldtools",
   "version": "${version}",
   "name": "WorldTools",
   "description": "A minecraft world downloader built with Kotlin.",
@@ -13,7 +13,7 @@
     "sources": "https://github.com/Avanatiker/WorldTools/"
   },
   "license": "GNU General Public License v3.0",
-  "icon": "assets/world_tools/WorldTools.png",
+  "icon": "assets/worldtools/WorldTools.png",
   "environment": "*",
   "entrypoints": {
     "client": [
@@ -24,7 +24,7 @@
     ]
   },
   "mixins": [
-    "world_tools.mixins.common.json"
+    "worldtools.mixins.common.json"
   ],
   "depends": {
     "fabricloader": ">=${fabric_loader_version}",

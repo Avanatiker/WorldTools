@@ -1,9 +1,6 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import net.fabricmc.loom.task.RemapJarTask
 
-val kotlinVersion = (project.properties["fabric_kotlin_version"]!! as String)
-    .split("+kotlin.")[1] // Grabs the sentence after `+kotlin.`
-    .split("+")[0] // Ensures sentences like `+build.1` are ignored
 plugins {
     kotlin("jvm") version("1.9.10")
     id("architectury-plugin") version "3.4-SNAPSHOT"
@@ -42,6 +39,20 @@ subprojects {
                 exclude("org/objectweb/**")
                 exclude("org/jetbrains/**")
                 exclude("com/google/**")
+                exclude("net/fabricmc/**")
+                exclude("client-fabric-**")
+                exclude("CREDITS.txt")
+                exclude("fabric-installer**")
+                exclude("fabric-lifecycle-events**")
+                exclude("fabric-networking**")
+                exclude("fabric-rendering**")
+                exclude("LICENSE-**")
+                exclude("LICENSE_**")
+                exclude("assets/fabric-api-base/**")
+                exclude("assets/fabricloader/**")
+                exclude("META-INF/jars/**")
+                exclude("META-INF/maven/**")
+                exclude("META-INF/services/net.f")
             }
 
             "remapJar"(RemapJarTask::class) {
@@ -57,13 +68,16 @@ allprojects {
     apply(plugin = "architectury-plugin")
     apply(plugin = "maven-publish")
     apply(plugin = "org.jetbrains.kotlin.jvm")
-    base.archivesName.set("WorldTools")
+    base.archivesName.set(project.properties["archives_base_name"]!! as String)
     group = project.properties["maven_group"]!!
     version = project.properties["mod_version"]!!
 
     repositories {
         maven("https://api.modrinth.com/maven")
         maven("https://jitpack.io")
+        maven("https://server.bbkr.space/artifactory/libs-release") {
+            name = "CottonMC"
+        }
     }
 
     tasks {
