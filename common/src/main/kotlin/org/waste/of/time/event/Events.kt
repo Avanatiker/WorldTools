@@ -4,6 +4,7 @@ import net.minecraft.block.entity.ChestBlockEntity
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.world.ClientWorld
+import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.Hand
 import net.minecraft.util.hit.BlockHitResult
@@ -11,7 +12,9 @@ import net.minecraft.world.World
 import net.minecraft.world.chunk.WorldChunk
 import org.waste.of.time.ChestHandler
 import org.waste.of.time.WorldTools
+import org.waste.of.time.WorldTools.cachedEntities
 import org.waste.of.time.WorldTools.caching
+import org.waste.of.time.WorldTools.checkCache
 import org.waste.of.time.WorldTools.serverInfo
 import org.waste.of.time.WorldTools.tryWithSession
 import org.waste.of.time.serializer.LevelPropertySerializer.writeLevelDataFile
@@ -22,13 +25,18 @@ object Events {
     fun onChunkLoad(world: ClientWorld, chunk: WorldChunk) {
         if (!caching) return
         WorldTools.cachedChunks.add(chunk)
-        WorldTools.checkCache()
+        checkCache()
     }
 
     fun onChunkUnload(world: ClientWorld, chunk: WorldChunk) {
+
+    }
+
+    fun onEntityLoad(entity: Entity) {
         if (!caching) return
-        WorldTools.cachedChunks.remove(chunk)
-        WorldTools.checkCache()
+
+        cachedEntities.add(entity)
+        checkCache()
     }
 
     fun onClientTickStart() {
@@ -56,9 +64,9 @@ object Events {
     }
 
     fun onAfterInitScreen(screen: Screen) {
-        // todo: don't think this is needed anymore
-//        if (!caching) return
-//        ChestHandler.register(screen)
+        if (!caching) return
+
+        ChestHandler.onScreenRemoved(screen)
     }
 
     fun onScreenRemoved(screen: Screen) {
