@@ -1,7 +1,3 @@
-plugins {
-    kotlin("jvm") version "1.9.10"
-}
-
 architectury { common("fabric", "forge") }
 
 loom {
@@ -25,15 +21,6 @@ dependencies {
     modImplementation("net.fabricmc:fabric-language-kotlin:1.10.10+kotlin.1.9.10")
     implementation("net.kyori:adventure-text-minimessage:4.14.0")
     implementation("net.kyori:adventure-text-serializer-gson:4.14.0")
-}
-
-kotlin {
-    jvmToolchain(17)
-}
-
-tasks.withType(JavaCompile::class.java) {
-    options.encoding = "UTF-8"
-    options.release = 17
 }
 
 tasks.named("remapJar") {

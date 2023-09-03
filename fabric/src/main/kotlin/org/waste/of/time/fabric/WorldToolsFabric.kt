@@ -1,4 +1,4 @@
-package org.waste.of.time
+package org.waste.of.time.fabric
 
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
@@ -8,8 +8,9 @@ import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactories
 import net.minecraft.util.ActionResult
-import org.waste.of.time.command.WorldToolsFabricCommandBuilder
+import org.waste.of.time.WorldTools
 import org.waste.of.time.event.Events
+import org.waste.of.time.fabric.command.WorldToolsFabricCommandBuilder
 import org.waste.of.time.renderer.MissingChestBlockEntityRenderer
 
 object WorldToolsFabric : ClientModInitializer {

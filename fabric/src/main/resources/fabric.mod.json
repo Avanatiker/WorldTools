@@ -19,7 +19,7 @@
     "client": [
       {
         "adapter": "kotlin",
-        "value": "org.waste.of.time.WorldToolsFabric"
+        "value": "org.waste.of.time.fabric.WorldToolsFabric"
       }
     ]
   },

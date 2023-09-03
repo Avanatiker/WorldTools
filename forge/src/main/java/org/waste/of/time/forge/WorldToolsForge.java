@@ -1,4 +1,4 @@
-package org.waste.of.time;
+package org.waste.of.time.forge;
 
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
@@ -13,28 +13,27 @@ import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import org.waste.of.time.WorldTools;
 import org.waste.of.time.command.WorldToolsForgeCommandBuilder;
 import org.waste.of.time.event.Events;
 import org.waste.of.time.renderer.MissingChestBlockEntityRenderer;
 
 @Mod("worldtools")
 public class WorldToolsForge {
-    public static IEventBus FORGE_EVENT_BUS = MinecraftForge.EVENT_BUS;
 
     public WorldToolsForge() {
-        WorldTools.INSTANCE.initialize();
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-        DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> () -> {
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+            IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
             modEventBus.addListener(this::onInitializeClient);
+            final IEventBus FORGE_EVENT_BUS = MinecraftForge.EVENT_BUS;
             FORGE_EVENT_BUS.addListener(this::onRegisterCommands);
             FORGE_EVENT_BUS.addListener(this::onRegisterKeybinds);
             FORGE_EVENT_BUS.addListener(this::onPlayerJoin);
             FORGE_EVENT_BUS.addListener(this::onRightClickBlock);
             BlockEntityRendererFactories.register(BlockEntityType.CHEST, MissingChestBlockEntityRenderer::new);
             FORGE_EVENT_BUS.register(modEventBus);
+            WorldTools.INSTANCE.getLOGGER().info("WorldTools Forge initialized");
         });
-
-        WorldTools.INSTANCE.getLOGGER().info("WorldTools Forge initialized");
     }
 
     public void onInitializeClient(final FMLClientSetupEvent event) {
