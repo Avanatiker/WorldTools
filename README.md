@@ -1,11 +1,11 @@
 <p align="center">
-  <img src="https://github.com/Avanatiker/WorldTools/blob/master/common/src/main/resources/assets/worldtools/WorldTools.png" alt="" width="256" height="256" style="display: block; margin-left: auto; margin-right: auto;">
+  <img src="https://github.com/Avanatiker/WorldTools/blob/master/common/src/main/resources/assets/worldtools/WorldTools.png?raw=true" alt="" width="256" height="256" style="display: block; margin-left: auto; margin-right: auto;">
 </p>
 
 # WorldTools: World Downloader (Fabric / Forge)
 
+[![CurseForge Downloads](https://cf.way2muchnoise.eu/worldtools.svg?badge_style=for_the_badge)](https://www.curseforge.com/minecraft/mc-mods/worldtools)
 [![Modrinth Downloads](https://img.shields.io/modrinth/dt/FlFKBOIX?style=for-the-badge&logo=modrinth&label=Modrinth&color=00AF5C)](https://modrinth.com/mod/worldtools)
-[![CurseForge Downloads](https://img.shields.io/badge/dynamic/json?color=e04e14&label=CurseForge&style=for-the-badge&query=downloadCount&url=https%3A%2F%2Faddons-ecs.forgesvc.net%2Fapi%2Fv2%2Faddon%2F391897&cacheSeconds=3600&logo=curseforge)](https://www.curseforge.com/minecraft/mc-mods/worldtools)
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.20.1-lime?style=for-the-badge&link=https://www.minecraft.net/)](https://www.minecraft.net/)
 [![License](https://img.shields.io/badge/License-GPL%20v3-blue?style=for-the-badge&link=https://www.gnu.org/licenses/gpl-3.0.en.html)](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
