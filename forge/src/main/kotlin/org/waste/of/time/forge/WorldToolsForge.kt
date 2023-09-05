@@ -1,4 +1,4 @@
-package org.waste.of.time.command
+package org.waste.of.time.forge
 
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.BoolArgumentType
