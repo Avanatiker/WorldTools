@@ -1,16 +1,12 @@
 package org.waste.of.time.event
 
 import net.minecraft.block.entity.ChestBlockEntity
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.world.ClientWorld
 import net.minecraft.entity.Entity
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.world.World
 import net.minecraft.world.chunk.WorldChunk
-import org.waste.of.time.ChestHandler
 import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.GUI_KEY
-import org.waste.of.time.WorldTools.LOGGER
 import org.waste.of.time.WorldTools.cachedEntities
 import org.waste.of.time.WorldTools.caching
 import org.waste.of.time.WorldTools.checkCache

@@ -53,11 +53,11 @@ import kotlin.io.path.writeBytes
 object StorageManager {
     private var stepsDone = 0
     private val GSON = GsonBuilder().registerTypeAdapter(
-            AdvancementProgress::class.java as Type,
-            AdvancementProgress.Serializer()
-        ).registerTypeAdapter(
-            Identifier::class.java as Type, Identifier.Serializer()
-        ).setPrettyPrinting().create()
+        AdvancementProgress::class.java as Type,
+        AdvancementProgress.Serializer()
+    ).registerTypeAdapter(
+        Identifier::class.java as Type, Identifier.Serializer()
+    ).setPrettyPrinting().create()
 
     fun save(freezeWorld: Boolean = true): Int {
         tryWithSession {

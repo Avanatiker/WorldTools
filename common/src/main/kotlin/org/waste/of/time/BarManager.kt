@@ -67,14 +67,16 @@ object BarManager {
     fun updateSaveChunk(percentage: Float, savedChunks: Int, totalChunks: Int, pos: ChunkPos, dimension: String) {
         mc.execute {
             progressBar.percent = percentage.coerceIn(.0f, 1.0f)
-            progressBar.name = "${"%.2f".format(percentage * 100)}% - Saving chunk <color:#FFA2C4>$savedChunks</color>/<color:#FFA2C4>$totalChunks</color> at <color:#FFA2C4>$pos</color> in <color:#FFA2C4>$dimension</color>...".mm()
+            progressBar.name =
+                "${"%.2f".format(percentage * 100)}% - Saving chunk <color:#FFA2C4>$savedChunks</color>/<color:#FFA2C4>$totalChunks</color> at <color:#FFA2C4>$pos</color> in <color:#FFA2C4>$dimension</color>...".mm()
         }
     }
 
     fun updateSaveEntity(percentage: Float, savedEntities: Int, totalEntitiesSaved: Int, entity: Entity) {
         mc.execute {
             progressBar.percent = percentage.coerceIn(.0f, 1.0f)
-            progressBar.name = "${"%.2f".format(percentage * 100)}% - Saving <color:#FFA2C4>${entity.name.string.sanitizeName()}</color> (<color:#FFA2C4>$savedEntities</color>/<color:#FFA2C4>$totalEntitiesSaved</color>) at <color:#FFA2C4>${entity.blockPos.toShortString()}</color>...".mm()
+            progressBar.name =
+                "${"%.2f".format(percentage * 100)}% - Saving <color:#FFA2C4>${entity.name.string.sanitizeName()}</color> (<color:#FFA2C4>$savedEntities</color>/<color:#FFA2C4>$totalEntitiesSaved</color>) at <color:#FFA2C4>${entity.blockPos.toShortString()}</color>...".mm()
         }
     }
 

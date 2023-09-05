@@ -13,7 +13,9 @@ import org.waste.of.time.event.Events;
 
 @Mixin(MinecraftClient.class)
 public class MinecraftClientMixin {
-    @Shadow @Nullable public Screen currentScreen;
+    @Shadow
+    @Nullable
+    public Screen currentScreen;
 
     @Inject(method = "tick", at = @At("HEAD"))
     public void tickHead(final CallbackInfo ci) {
