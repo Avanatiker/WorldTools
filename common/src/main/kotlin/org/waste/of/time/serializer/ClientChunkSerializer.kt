@@ -46,7 +46,7 @@ object ClientChunkSerializer {
 
         genBackwardsCompat(chunk)
 
-        if (!chunk.upgradeData.isDone()) {
+        if (!chunk.upgradeData.isDone) {
             put("UpgradeData", chunk.upgradeData.toNbt())
         }
 

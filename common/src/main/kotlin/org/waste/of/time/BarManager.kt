@@ -54,33 +54,27 @@ object BarManager {
         mc.execute {
             val cacheFilled = (cachedChunks.size + cachedEntities.size) / MAX_CACHE_SIZE.toFloat()
             captureInfoBar.percent = cacheFilled.coerceIn(.0f, 1.0f)
-            captureInfoBar.name = mm(
-                "Captured <color:#FFA2C4>${
-                    cachedChunks.size
-                }</color> chunks and <color:#FFA2C4>${
-                    cachedEntities.size
-                }</color> entities and <color:#FFA2C4>${
-                    cachedBlockEntities.size
-                }</color> chests."
-            )
+            captureInfoBar.name = "Captured <color:#FFA2C4>${
+                cachedChunks.size
+            }</color> chunks and <color:#FFA2C4>${
+                cachedEntities.size
+            }</color> entities and <color:#FFA2C4>${
+                cachedBlockEntities.size
+            }</color> chests.".mm()
         }
     }
 
     fun updateSaveChunk(percentage: Float, savedChunks: Int, totalChunks: Int, pos: ChunkPos, dimension: String) {
         mc.execute {
             progressBar.percent = percentage.coerceIn(.0f, 1.0f)
-            progressBar.name = mm(
-                "${"%.2f".format(percentage * 100)}% - Saving chunk <color:#FFA2C4>$savedChunks</color>/<color:#FFA2C4>$totalChunks</color> at <color:#FFA2C4>$pos</color> in <color:#FFA2C4>$dimension</color>..."
-            )
+            progressBar.name = "${"%.2f".format(percentage * 100)}% - Saving chunk <color:#FFA2C4>$savedChunks</color>/<color:#FFA2C4>$totalChunks</color> at <color:#FFA2C4>$pos</color> in <color:#FFA2C4>$dimension</color>...".mm()
         }
     }
 
     fun updateSaveEntity(percentage: Float, savedEntities: Int, totalEntitiesSaved: Int, entity: Entity) {
         mc.execute {
             progressBar.percent = percentage.coerceIn(.0f, 1.0f)
-            progressBar.name = mm(
-                "${"%.2f".format(percentage * 100)}% - Saving <color:#FFA2C4>${sanitizeName(entity.name.string)}</color> (<color:#FFA2C4>$savedEntities</color>/<color:#FFA2C4>$totalEntitiesSaved</color>) at <color:#FFA2C4>${entity.blockPos.toShortString()}</color>..."
-            )
+            progressBar.name = "${"%.2f".format(percentage * 100)}% - Saving <color:#FFA2C4>${entity.name.string.sanitizeName()}</color> (<color:#FFA2C4>$savedEntities</color>/<color:#FFA2C4>$totalEntitiesSaved</color>) at <color:#FFA2C4>${entity.blockPos.toShortString()}</color>...".mm()
         }
     }
 
@@ -88,5 +82,5 @@ object BarManager {
      * Certain resource packs inject legacy formatting codes into entity names.
      * These codes will cause the bar to throw exceptions if present in the content.
      */
-    private fun sanitizeName(name: String) = name.replace(Regex("§"), "")
+    private fun String.sanitizeName() = replace(Regex("§"), "")
 }

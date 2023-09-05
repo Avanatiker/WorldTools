@@ -23,7 +23,7 @@ import java.util.function.Consumer;
 public class ClientChunkManagerMixin {
     @Final
     @Shadow
-    private ClientWorld world;
+    ClientWorld world;
 
     @Inject(method = "loadChunkFromPacket", at = @At("TAIL"))
     private void onChunkLoad(final int x, final int z, final PacketByteBuf buf, final NbtCompound nbt, final Consumer<ChunkData.BlockEntityVisitor> consumer, final CallbackInfoReturnable<WorldChunk> cir) {
@@ -42,14 +42,7 @@ public class ClientChunkManagerMixin {
         Events.INSTANCE.onChunkUnload(this.world, chunk);
     }
 
-    @Inject(
-        method = "updateLoadDistance",
-        at = @At(
-            value = "INVOKE",
-            target = "net/minecraft/client/world/ClientChunkManager$ClientChunkMap.isInRadius(II)Z"
-        ),
-        locals = LocalCapture.CAPTURE_FAILHARD
-    )
+    @Inject(method = "updateLoadDistance", at = @At(value = "INVOKE", target = "net/minecraft/client/world/ClientChunkManager$ClientChunkMap.isInRadius(II)Z"), locals = LocalCapture.CAPTURE_FAILHARD)
     private void onUpdateLoadDistance(int loadDistance, CallbackInfo ci, int oldRadius, int newRadius, ClientChunkManager.ClientChunkMap clientChunkMap, int k, WorldChunk oldChunk, ChunkPos chunkPos) {
         if (!clientChunkMap.isInRadius(chunkPos.x, chunkPos.z)) {
             Events.INSTANCE.onChunkUnload(this.world, oldChunk);

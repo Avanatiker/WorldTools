@@ -1,5 +1,5 @@
 modLoader = "kotlinforforge"
-loaderVersion="[4,)"
+loaderVersion = "[4,)"
 license = "GNU General Public License v3.0"
 
 [[mods]]
@@ -11,7 +11,7 @@ description = '''
 A Minecraft world downloader
 '''
 logoFile = "assets/worldtools/WorldTools.png"
-displayTest="IGNORE_ALL_VERSION"
+displayTest = "IGNORE_ALL_VERSION"
 
 [[dependencies.worldtools]]
 modId = "forge"

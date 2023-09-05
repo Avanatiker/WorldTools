@@ -9,6 +9,7 @@ import net.minecraft.registry.Registries
 import net.minecraft.util.PathUtil
 import net.minecraft.util.WorldSavePath
 import org.waste.of.time.WorldTools
+import org.waste.of.time.WorldTools.withSessionBlocking
 import org.waste.of.time.mixin.accessor.StatHandlerAccessor
 
 object StatisticSerializer {
@@ -18,7 +19,7 @@ object StatisticSerializer {
         val completeStatMap = (WorldTools.mc.player?.statHandler as? StatHandlerAccessor)?.statMap?.toMap() ?: return
 
         CoroutineScope(Dispatchers.IO).launch {
-            WorldTools.withSessionBlocking {
+            withSessionBlocking {
                 val uuid = WorldTools.mc.player?.uuid ?: return@withSessionBlocking
                 val statDirectory = getDirectory(WorldSavePath.STATS)
                 val path = statDirectory.resolve("$uuid.json").toFile()

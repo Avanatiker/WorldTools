@@ -9,7 +9,8 @@
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.20.1-lime?style=for-the-badge&link=https://www.minecraft.net/)](https://www.minecraft.net/)
 [![License](https://img.shields.io/badge/License-GPL%20v3-blue?style=for-the-badge&link=https://www.gnu.org/licenses/gpl-3.0.en.html)](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-WorldTools is a powerful Minecraft 1.20.1 Mod that allows you to capture and save high-detail snapshots of server worlds locally.
+WorldTools is a powerful Minecraft 1.20.1 Mod that allows you to capture and save high-detail snapshots of server worlds
+locally.
 It empowers you to download comprehensive information, including chunks, entities,
 chests, players, statistics, advancements, and detailed metadata.
 WorldTools ensures that you can retain an accurate and unaltered representation of the server's world for analysis,
@@ -26,7 +27,8 @@ sharing, or backup purposes on your local machine.
 
 ## Features
 
-- **Comprehensive Data Capture**: WorldTools enables you to capture various critical aspects, preventing any detail from being overlooked.
+- **Comprehensive Data Capture**: WorldTools enables you to capture various critical aspects, preventing any detail from
+  being overlooked.
     - Chunks: Terrain and structures
     - Entities: Positions and attributes of all entities
     - Containers: Contents of chests, hoppers etc.
@@ -35,16 +37,20 @@ sharing, or backup purposes on your local machine.
     - Advancements: Player advancements and progress
     - Detailed Metadata: Exhaustive capture details
 
-- **Capture Mode**: Enable capture mode to continuously cache loaded chunks and entities from the server. The data is periodically saved to your local disk, ensuring you don't lose any valuable information.
+- **Capture Mode**: Enable capture mode to continuously cache loaded chunks and entities from the server. The data is
+  periodically saved to your local disk, ensuring you don't lose any valuable information.
 
 - **Configurable Options**:
-    - Access the menu by pressing `F12` (changeable in the controls screen), providing numerous options (work in progress) to customize WorldTools according to your requirements.
+    - Access the menu by pressing `F12` (changeable in the controls screen), providing numerous options (work in
+      progress) to customize WorldTools according to your requirements.
 
 - **Freeze Entities**: This option freezes all entities, preventing them from moving upon login.
 
-- **Freeze World**: Stop new chunks from generating using a custom world generator, freeze time and weather, and set other gamerules to ensure a non-altered snapshot of the world.
+- **Freeze World**: Stop new chunks from generating using a custom world generator, freeze time and weather, and set
+  other gamerules to ensure a non-altered snapshot of the world.
 
-- **Easy Access to Saved Worlds**: Your locally captured world save can be found in the single-player worlds list, allowing you to load and explore it conveniently.
+- **Easy Access to Saved Worlds**: Your locally captured world save can be found in the single-player worlds list,
+  allowing you to load and explore it conveniently.
 
 ## Getting Started
 
@@ -61,7 +67,8 @@ sharing, or backup purposes on your local machine.
 
 1. **Installation**:
     - Install Fabric by following the [Fabric Installation Guide](https://fabricmc.net/wiki/install).
-    - Download the latest Fabric version of WorldTools from the [releases page](https://github.com/Avanatiker/WorldTools/releases)
+    - Download the latest Fabric version of WorldTools from
+      the [releases page](https://github.com/Avanatiker/WorldTools/releases)
     - Place the WorldTools Fabric mod JAR file in the "mods" folder of your Fabric installation.
 
 2. **Prerequisites**: Make sure you have the following mods installed:
@@ -72,7 +79,8 @@ sharing, or backup purposes on your local machine.
 
 1. **Installation**:
     - Install Forge by following the [Forge Download Link](https://files.minecraftforge.net/net/minecraftforge/forge/).
-    - Download the latest Forge version of WorldTools from the [releases page](https://github.com/Avanatiker/WorldTools/releases)
+    - Download the latest Forge version of WorldTools from
+      the [releases page](https://github.com/Avanatiker/WorldTools/releases)
     - Place the WorldTools Forge mod JAR file in the "mods" folder of your Forge installation.
 
 2. **Prerequisites**: Make sure you have the following mods installed:
@@ -86,7 +94,8 @@ sharing, or backup purposes on your local machine.
     - Save captured data: Trigger `/worldtools save` to save the cached data to disk.
     - Disable capture mode: Use `/worldtools capture stop` to stop capturing data.
 
-2. **Access Configuration Menu**: Press `F12` to access the configuration menu and explore available options (work in progress).
+2. **Access Configuration Menu**: Press `F12` to access the configuration menu and explore available options (work in
+   progress).
 
 ### File Structure
 
@@ -102,7 +111,8 @@ After capturing data, WorldTools creates the following files in the world direct
 
 Contributions are welcome!
 Please read our [Code of Conduct](https://github.com/Avanatiker/WorldTools/blob/master/CODE_OF_CONDUCT.md)
-and [Contributing Guidelines](https://github.com/Avanatiker/WorldTools/blob/master/CONTRIBUTING.md) before submitting a Pull Request.
+and [Contributing Guidelines](https://github.com/Avanatiker/WorldTools/blob/master/CONTRIBUTING.md) before submitting a
+Pull Request.
 
 1. Fork the repository and clone it to your local machine.  
    `git clone https://github.com/Avanatiker/WorldTools`
@@ -119,16 +129,19 @@ and [Contributing Guidelines](https://github.com/Avanatiker/WorldTools/blob/mast
 ## Building
 
 1. Once forked and cloned, run `./gradlew build` to build the mod for both mod loaders.
-2. IntelliJ IDEA will generate run configurations for both mod loaders that can be used to run the mod in a test environment.
+2. IntelliJ IDEA will generate run configurations for both mod loaders that can be used to run the mod in a test
+   environment.
 3. The Fabric mod JAR file can be found in `fabric/build/libs` and the Forge mod JAR file in `forge/build/libs`.
 
 ## License
 
-WorldTools is distributed under the [GNU General Public License v3.0](https://github.com/Avanatiker/WorldTools/blob/master/LICENSE.md).
+WorldTools is distributed under
+the [GNU General Public License v3.0](https://github.com/Avanatiker/WorldTools/blob/master/LICENSE.md).
 
 ---
 
 If you have any questions, concerns, or suggestions,
 you can visit our [official Discord server](https://discord.gg/3y3ah5BtjB).
 
-**Disclaimer:** WorldTools is not affiliated with Mojang Studios. Minecraft is a registered trademark of Mojang Studios. Use of the WorldTools software is subject to the terms outlined in the license agreement.
+**Disclaimer:** WorldTools is not affiliated with Mojang Studios. Minecraft is a registered trademark of Mojang Studios.
+Use of the WorldTools software is subject to the terms outlined in the license agreement.

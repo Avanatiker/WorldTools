@@ -37,7 +37,7 @@ object WorldTools {
 
     val LOGGER: Logger = LogManager.getLogger()
     val BRAND: Text by lazy {
-        mm("<color:green>W<color:gray>orld<color:green>T<color:gray>ools<reset>")
+        "<color:green>W<color:gray>orld<color:green>T<color:gray>ools<reset>".mm()
     }
 
     var GUI_KEY = KeyBinding(
@@ -66,25 +66,19 @@ object WorldTools {
     inline fun tryWithSession(crossinline block: LevelStorage.Session.() -> Unit) {
         if (savingMutex.tryLock().not()) return
 
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                mc.levelStorage.createSession(sanitizeServerAddress(serverInfo.address)).use { session ->
-                    session.block()
-                }
-            } catch (e: Exception) {
-                LOGGER.error("Failed to create session for ${serverInfo.address}", e)
-            } finally {
-                savingMutex.unlock()
-            }
-        }
+        dispatchSessionThread { block() }
     }
 
     suspend inline fun withSessionBlocking(crossinline block: LevelStorage.Session.() -> Unit) {
         savingMutex.lock()
 
+        dispatchSessionThread { block() }
+    }
+
+    fun dispatchSessionThread(block: LevelStorage.Session.() -> Unit) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                mc.levelStorage.createSession(sanitizeServerAddress(serverInfo.address)).use { session ->
+                mc.levelStorage.createSession(serverInfo.address.sanitize()).use { session ->
                     session.block()
                 }
             } catch (e: Exception) {
@@ -95,9 +89,7 @@ object WorldTools {
         }
     }
 
-    fun sanitizeServerAddress(address: String): String {
-        return address.replace(":", "_")
-    }
+    private fun String.sanitize() = replace(":", "_")
 
     fun checkCache() {
         BarManager.updateCapture()
@@ -123,8 +115,8 @@ object WorldTools {
     fun sendMessage(text: Text) =
         mc.inGameHud.chatHud.addMessage(Text.of("[").copy().append(BRAND).copy().append("] ").append(text))
 
-    fun mm(text: String): Text {
-        val component = mm.deserialize(text)
+    fun String.mm(): Text {
+        val component = mm.deserialize(this)
         val json = GsonComponentSerializer.gson().serialize(component)
         return Text.Serializer.fromJson(json) as Text
     }

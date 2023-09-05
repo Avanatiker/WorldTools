@@ -18,18 +18,20 @@ import org.waste.of.time.renderer.MissingChestBlockEntityRenderer
 object WorldToolsFabric : ClientModInitializer {
     override fun onInitializeClient() {
         WorldTools.initialize()
-        KeyBindingHelper.registerKeyBinding(WorldTools.GUI_KEY)
-        ClientEntityEvents.ENTITY_LOAD.register(ClientEntityEvents.Load { entity, world ->
-            Events.onEntityLoad(entity)
-        })
+
         ClientCommandRegistrationCallback.EVENT.register(ClientCommandRegistrationCallback { dispatcher, _ ->
             WorldToolsFabricCommandBuilder.register(dispatcher)
         })
-        ClientPlayConnectionEvents.JOIN.register(ClientPlayConnectionEvents.Join { handler, sender, mc ->
+        KeyBindingHelper.registerKeyBinding(WorldTools.GUI_KEY)
+        ClientEntityEvents.ENTITY_LOAD.register(ClientEntityEvents.Load { entity, _ ->
+            Events.onEntityLoad(entity)
+        })
+
+        ClientPlayConnectionEvents.JOIN.register(ClientPlayConnectionEvents.Join { _, _, _ ->
             Events.onClientJoin()
         })
-        UseBlockCallback.EVENT.register(UseBlockCallback { player, world, hand, hitResult ->
-            Events.onInteractBlock(player, world, hand, hitResult)
+        UseBlockCallback.EVENT.register(UseBlockCallback { _, world, _, hitResult ->
+            Events.onInteractBlock(world, hitResult)
             ActionResult.PASS
         })
         ScreenEvents.AFTER_INIT.register(ScreenEvents.AfterInit { _, screen, _, _ ->
@@ -38,6 +40,7 @@ object WorldToolsFabric : ClientModInitializer {
         BlockEntityRendererFactories.register(BlockEntityType.CHEST) {
             MissingChestBlockEntityRenderer(it)
         }
+
         WorldTools.LOGGER.info("WorldTools Fabric initialized")
     }
 }
