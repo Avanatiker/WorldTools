@@ -9,7 +9,7 @@
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.20.1-lime?style=for-the-badge&link=https://www.minecraft.net/)](https://www.minecraft.net/)
 [![License](https://img.shields.io/badge/License-GPL%20v3-blue?style=for-the-badge&link=https://www.gnu.org/licenses/gpl-3.0.en.html)](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-WorldTools is a powerful Minecraft 1.20.1 Mod that allows you to capture and save high-detail snapshots of server worlds
+WorldTools is a powerful Minecraft mod that allows you to capture and save high-detail snapshots of server worlds
 locally.
 It empowers you to download comprehensive information, including chunks, entities,
 chests, players, statistics, advancements, and detailed metadata.

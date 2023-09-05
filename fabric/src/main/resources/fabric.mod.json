@@ -3,7 +3,7 @@
   "id": "worldtools",
   "version": "${version}",
   "name": "WorldTools",
-  "description": "A minecraft world downloader built with Kotlin.",
+  "description": "A powerful Minecraft mod that captures high-detail snapshots of server worlds locally.",
   "authors": [
     "Constructor",
     "P529"

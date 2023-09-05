@@ -8,7 +8,7 @@ version = "${version}"
 displayName = "WorldTools"
 authors = "Constructor, P529, rfresh2"
 description = '''
-A Minecraft world downloader
+A powerful Minecraft mod that captures high-detail snapshots of server worlds locally.
 '''
 logoFile = "assets/worldtools/WorldTools.png"
 displayTest = "IGNORE_ALL_VERSION"
