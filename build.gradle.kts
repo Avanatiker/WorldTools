@@ -1,83 +1,97 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import net.fabricmc.loom.task.RemapJarTask
+
 plugins {
-    kotlin("jvm")
-    id("fabric-loom")
-    `maven-publish`
-    java
+    kotlin("jvm") version("1.9.10")
+    id("architectury-plugin") version "3.4-SNAPSHOT"
+    id("dev.architectury.loom") version "1.3-SNAPSHOT" apply false
+    id("com.github.johnrengelman.shadow") version "8.1.1" apply false
 }
 
-group = property("maven_group")!!
-version = property("mod_version")!!
+architectury {
+    minecraft = project.properties["minecraft_version"]!! as String
+}
 
-repositories {
-    maven("https://server.bbkr.space/artifactory/libs-release") {
-        name = "CottonMC"
+subprojects {
+    apply(plugin = "dev.architectury.loom")
+    dependencies {
+        "minecraft"("com.mojang:minecraft:${project.properties["minecraft_version"]!!}")
+        "mappings"("net.fabricmc:yarn:${project.properties["yarn_mappings"]}:v2")
     }
-}
+    if (path != ":common") {
+        apply(plugin = "com.github.johnrengelman.shadow")
 
-dependencies {
-    minecraft("com.mojang:minecraft:${property("minecraft_version")}")
-    mappings("net.fabricmc:yarn:${property("yarn_mappings")}:v2")
-    modImplementation("net.fabricmc:fabric-loader:${property("loader_version")}")
-
-    modImplementation("net.fabricmc:fabric-language-kotlin:${property("fabric_kotlin_version")}")
-    modImplementation("net.fabricmc.fabric-api:fabric-api:${property("fabric_api_version")}")
-
-    modImplementation(include("net.kyori:adventure-platform-fabric:5.9.0")!!) // for Minecraft 1.20.1
-    modImplementation(include("io.github.cottonmc:LibGui:8.0.2+1.20")!!)
-
-//    implementation("net.kyori:adventure-api:4.14.0")
-
-//    modApi("me.shedaniel.cloth:cloth-config-fabric:ABC") {
-//        exclude(group = "net.fabricmc.fabric-api")
-//    }
-}
-
-tasks {
-
-    processResources {
-        inputs.property("version", project.version)
-        filesMatching("fabric.mod.json") {
-            expand(getProperties())
-            expand(mutableMapOf("version" to project.version))
+        val shadowCommon by configurations.creating {
+            isCanBeConsumed = false
+            isCanBeResolved = true
         }
-    }
 
-    jar {
-        from("LICENSE")
-    }
+        tasks.withType<JavaCompile> {
+            options.encoding = "UTF-8"
+            options.release = 17
+        }
 
-    publishing {
-        publications {
-            create<MavenPublication>("mavenJava") {
-                artifact(remapJar) {
-                    builtBy(remapJar)
-                }
-                artifact(kotlinSourcesJar) {
-                    builtBy(remapSourcesJar)
-                }
+        tasks {
+            "shadowJar"(ShadowJar::class) {
+                archiveClassifier.set("dev-shadow")
+                configurations = listOf(shadowCommon)
+                exclude("org/intellij/**")
+                exclude("org/objectweb/**")
+                exclude("org/jetbrains/**")
+                exclude("com/google/**")
+                exclude("net/fabricmc/**")
+                exclude("client-fabric-**")
+                exclude("CREDITS.txt")
+                exclude("fabric-installer**")
+                exclude("fabric-lifecycle-events**")
+                exclude("fabric-networking**")
+                exclude("fabric-rendering**")
+                exclude("LICENSE-**")
+                exclude("LICENSE_**")
+                exclude("assets/fabric-api-base/**")
+                exclude("assets/fabricloader/**")
+                exclude("META-INF/jars/**")
+                exclude("META-INF/maven/**")
+                exclude("META-INF/services/net.f")
+            }
+
+            "remapJar"(RemapJarTask::class) {
+                dependsOn("shadowJar")
+                inputFile.set(named<ShadowJar>("shadowJar").flatMap { it.archiveFile })
             }
         }
+    }
+}
 
-        // select the repositories you want to publish to
-        repositories {
-            // uncomment to publish to the local maven
-            // mavenLocal()
+allprojects {
+    apply(plugin = "java")
+    apply(plugin = "architectury-plugin")
+    apply(plugin = "maven-publish")
+    apply(plugin = "org.jetbrains.kotlin.jvm")
+    base.archivesName.set(project.properties["archives_base_name"]!! as String)
+    group = project.properties["maven_group"]!!
+    version = project.properties["mod_version"]!!
+
+    repositories {
+        maven("https://api.modrinth.com/maven")
+        maven("https://jitpack.io")
+        maven("https://server.bbkr.space/artifactory/libs-release") {
+            name = "CottonMC"
         }
     }
 
-    compileKotlin {
-        kotlinOptions.jvmTarget = "17"
+    tasks {
+        compileKotlin {
+            kotlinOptions.jvmTarget = "17"
+        }
     }
 
+    tasks.withType(JavaCompile::class.java) {
+        options.encoding = "UTF-8"
+        options.release = 17
+    }
+
+    java {
+        withSourcesJar()
+    }
 }
-
-java {
-    // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-    // if it is present.
-    // If you remove this line, sources will not be generated.
-    withSourcesJar()
-}
-
-
-
-// configure the maven publication
