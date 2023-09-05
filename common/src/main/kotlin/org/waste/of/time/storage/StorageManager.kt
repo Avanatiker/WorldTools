@@ -142,10 +142,12 @@ object StorageManager {
         val formattedDateTime = zonedDateTime.format(formatter)
 
         appendLine("# ${serverInfo.address} World Save - Snapshot Details")
+        appendLine("![Server Icon](../icon.png)")
         appendLine()
         appendLine("- **Time**: `$formattedDateTime` (`${System.currentTimeMillis()}`)")
         appendLine("- **Captured By**: `${mc.player?.name?.string}`")
 
+        appendLine()
         appendLine("## Server")
         if (serverInfo.name != "Minecraft Server") {
             appendLine("- **List Entry Name**: `${serverInfo.name}`")
@@ -157,7 +159,7 @@ object StorageManager {
         appendLine("- **Brand**: `${mc.player?.serverBrand}`")
         appendLine("- **MOTD**: `${serverInfo.label.string.split("\n").joinToString(" ")}`")
         appendLine("- **Version**: `${serverInfo.version.string}`")
-        appendLine()
+
         serverInfo.players?.sample?.let { sample ->
             if (sample.isEmpty()) return@let
             appendLine("- **Short Label**: `${sample.joinToString { it.name }}`")
@@ -167,6 +169,7 @@ object StorageManager {
             appendLine("- **Full Label**: `${it.joinToString(" ") { str -> str.string }}`")
         }
 
+        appendLine()
         appendLine("## Connection")
         (mc.networkHandler?.connection?.address as? InetSocketAddress)?.let {
             appendLine("- **Host Name**: `${it.address.canonicalHostName}`")
