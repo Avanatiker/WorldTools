@@ -257,7 +257,12 @@ object StorageManager {
                     .write(chunk.pos, ClientChunkSerializer.serialize(chunk))
 
                 cachedChunks.remove(chunk)
-                cachedBlockEntities.removeAll(chunk.blockEntities.map { it.value }.toSet())
+                chunk.blockEntities.forEach {
+                    cachedBlockEntities.remove(it.value)
+                    it.value.markRemoved()
+                }
+                chunk.blockEntities.clear()
+
                 updateCapture()
                 stepsDone++
                 savedChunks++
