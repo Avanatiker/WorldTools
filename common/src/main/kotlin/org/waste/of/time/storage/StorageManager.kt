@@ -315,6 +315,8 @@ object StorageManager {
                                     putByte("Invulnerable", 1)
                                     putByte("Silent", 1)
                                 }
+
+                                it.setRemoved(Entity.RemovalReason.DISCARDED)
                             })
 
                             cachedEntities.remove(it)
