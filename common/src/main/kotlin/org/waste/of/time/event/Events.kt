@@ -10,6 +10,7 @@ import net.minecraft.world.chunk.WorldChunk
 import org.waste.of.time.ChestHandler
 import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.GUI_KEY
+import org.waste.of.time.WorldTools.LOGGER
 import org.waste.of.time.WorldTools.cachedEntities
 import org.waste.of.time.WorldTools.caching
 import org.waste.of.time.WorldTools.checkCache
@@ -22,14 +23,10 @@ import org.waste.of.time.storage.StorageManager.writeFavicon
 
 object Events {
 
-    fun onChunkLoad(world: ClientWorld, chunk: WorldChunk) {
+    fun onChunkLoad(chunk: WorldChunk) {
         if (!caching) return
         WorldTools.cachedChunks.add(chunk)
         checkCache()
-    }
-
-    fun onChunkUnload(world: ClientWorld, chunk: WorldChunk) {
-
     }
 
     fun onEntityLoad(entity: Entity) {
@@ -60,15 +57,5 @@ object Events {
 
         val blockEntity = (world.getBlockEntity(hitResult.blockPos) as? ChestBlockEntity) ?: return
         WorldTools.lastOpenedContainer = blockEntity
-    }
-
-    fun onAfterInitScreen(screen: Screen) {
-        if (!caching) return
-
-        ChestHandler.onScreenRemoved(screen)
-    }
-
-    fun onScreenRemoved(screen: Screen) {
-        ChestHandler.onScreenRemoved(screen)
     }
 }

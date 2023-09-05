@@ -38,9 +38,6 @@ object WorldToolsForge {
         FORGE_BUS.addListener<EntityJoinLevelEvent> {
             Events.onEntityLoad(it.entity)
         }
-        FORGE_BUS.addListener<ScreenEvent.Init.Post> {
-            Events.onAfterInitScreen(it.screen)
-        }
         BlockEntityRendererFactories.register(BlockEntityType.CHEST) {
             MissingChestBlockEntityRenderer(it)
         }

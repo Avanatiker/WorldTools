@@ -13,10 +13,10 @@ object ChestHandler {
 
     fun onScreenRemoved(screen: Screen) {
         if (screen !is GenericContainerScreen) return
+
         val container = WorldTools.lastOpenedContainer ?: return
         val facing = container.cachedState[ChestBlock.FACING]
         val chestType = container.cachedState[ChestBlock.CHEST_TYPE]
-
         val containerSlots = screen.screenHandler.slots.filter { it.inventory is SimpleInventory }
 
         cachedBlockEntities.add(container)

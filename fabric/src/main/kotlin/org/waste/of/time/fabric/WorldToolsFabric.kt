@@ -34,9 +34,6 @@ object WorldToolsFabric : ClientModInitializer {
             Events.onInteractBlock(world, hitResult)
             ActionResult.PASS
         })
-        ScreenEvents.AFTER_INIT.register(ScreenEvents.AfterInit { _, screen, _, _ ->
-            Events.onAfterInitScreen(screen)
-        })
         BlockEntityRendererFactories.register(BlockEntityType.CHEST) {
             MissingChestBlockEntityRenderer(it)
         }

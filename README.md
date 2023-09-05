@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="common/src/main/resources/assets/worldtools/WorldTools.png" alt="" width="256" height="256" style="display: block; margin-left: auto; margin-right: auto;">
+  <img src="https://github.com/Avanatiker/WorldTools/blob/master/common/src/main/resources/assets/worldtools/WorldTools.png" alt="" width="256" height="256" style="display: block; margin-left: auto; margin-right: auto;">
 </p>
 
 # WorldTools: World Downloader (Fabric / Forge)
