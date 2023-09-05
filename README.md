@@ -89,10 +89,11 @@ sharing, or backup purposes on your local machine.
 ### Usage
 
 1. **Commands**:
-    - Enable capture mode: Use `/worldtools capture start` to start capturing data.
+    - Enable capture mode: Use `/worldtools capture start` to start capturing data. 
     - Play the game normally while WorldTools caches the necessary data.
-    - Save captured data: Trigger `/worldtools save` to save the cached data to disk.
+    - Save captured data: Trigger `/worldtools save [freeze]` to save the cached data to disk (default: true).
     - Disable capture mode: Use `/worldtools capture stop` to stop capturing data.
+    - Flush cached data: Use `/worldtools flush` to clear the captured data.
 
 2. **Access Configuration Menu**: Press `F12` to access the configuration menu and explore available options (work in
    progress).

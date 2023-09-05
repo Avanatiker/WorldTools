@@ -8,6 +8,7 @@
     "ClientChunkManagerMixin",
     "ClientPlayNetworkHandlerMixin",
     "MinecraftClientMixin",
+    "WorldChunkMixin",
     "accessor.AdvancementProgressesAccessor",
     "accessor.StatHandlerAccessor"
   ],
