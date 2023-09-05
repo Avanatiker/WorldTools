@@ -25,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 object WorldTools {
     const val MOD_NAME = "WorldTools"
-    private const val MOD_ID = "worldtools"
+    const val MOD_ID = "worldtools"
     private const val VERSION = "1.0.0"
     private const val URL = "https://github.com/Avanatiker/WorldTools/"
     const val CREDIT_MESSAGE = "This file was created by $MOD_NAME $VERSION ($URL)"

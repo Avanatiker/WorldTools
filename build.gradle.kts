@@ -35,24 +35,13 @@ subprojects {
             "shadowJar"(ShadowJar::class) {
                 archiveClassifier.set("dev-shadow")
                 configurations = listOf(shadowCommon)
-                exclude("org/intellij/**")
-                exclude("org/objectweb/**")
-                exclude("org/jetbrains/**")
-                exclude("com/google/**")
-                exclude("net/fabricmc/**")
-                exclude("client-fabric-**")
-                exclude("CREDITS.txt")
-                exclude("fabric-installer**")
-                exclude("fabric-lifecycle-events**")
-                exclude("fabric-networking**")
-                exclude("fabric-rendering**")
-                exclude("LICENSE-**")
-                exclude("LICENSE_**")
-                exclude("assets/fabric-api-base/**")
-                exclude("assets/fabricloader/**")
-                exclude("META-INF/jars/**")
-                exclude("META-INF/maven/**")
-                exclude("META-INF/services/net.f")
+                exclude(
+                    "org/intellij/**", "org/objectweb/**", "org/jetbrains/**", "com/google/**",
+                    "net/fabricmc/**", "client-fabric-**", "CREDITS.txt",
+                    "fabric-installer**", "fabric-lifecycle-events**", "fabric-networking**", "fabric-rendering**",
+                    "LICENSE-**", "LICENSE_**", "assets/fabric-api-base/**", "assets/fabricloader/**",
+                    "META-INF/jars/**", "META-INF/maven/**", "META-INF/services/net.f"
+                )
             }
 
             "remapJar"(RemapJarTask::class) {
