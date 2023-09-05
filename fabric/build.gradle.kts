@@ -3,6 +3,8 @@ architectury {
     fabric()
 }
 
+base.archivesName.set("${base.archivesName.get()}-fabric")
+
 loom {
     accessWidenerPath.set(project(":common").file("src/main/resources/worldtools.accesswidener"))
 }

@@ -3,6 +3,8 @@ architectury {
     forge()
 }
 
+base.archivesName.set("${base.archivesName.get()}-forge")
+
 loom {
     accessWidenerPath.set(project(":common").loom.accessWidenerPath)
     forge {

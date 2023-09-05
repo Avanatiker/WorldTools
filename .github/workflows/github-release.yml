@@ -1,0 +1,60 @@
+name: Github Release
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+
+env:
+  MINECRAFT_VERSION: "1.20.1"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Gradle Wrapper Verification
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Setup JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Elevate wrapper permissions
+        run: chmod +x ./gradlew
+
+      - name: Build Mod
+        run: ./gradlew build
+
+      - name: Upload Fabric Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: WorldTools-fabric-${{ github.ref_name }}
+          path: fabric/build/libs/WorldTools-fabric-${{ github.ref_name }}.jar
+
+      - name: Upload Forge Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: WorldTools-forge-${{ github.ref_name }}
+          path: forge/build/libs/WorldTools-forge-${{ github.ref_name }}.jar
+
+      - name: Generate Changelog
+        id: changelog
+        uses: metcalfc/changelog-generator@v4.1.0
+        with:
+          myToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Release
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          changelog: ${{steps.changelog.outputs.changelog}}
+          name: WorldTools-${{ github.ref_name }}
+          version: ${{ github.ref_name }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-files: |
+            fabric/build/libs/WorldTools-fabric-${{ github.ref_name }}.jar
+            forge/build/libs/WorldTools-forge-${{ github.ref_name }}.jar

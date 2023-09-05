@@ -1,0 +1,65 @@
+name: Forge Modrinth and CurseForge Release
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+
+env:
+  MINECRAFT_VERSION: "1.20.1"
+  KOTLIN_FOR_FORGE_VERSION: "4.4.0"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Gradle Wrapper Verification
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Setup JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Elevate wrapper permissions
+        run: chmod +x ./gradlew
+
+      - name: Build Mod
+        run: ./gradlew forge:build
+
+      - name: Upload Forge Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: WorldTools-forge-${{ github.ref_name }}
+          path: forge/build/libs/WorldTools-forge-${{ github.ref_name }}.jar
+
+      - name: Generate Changelog
+        id: changelog
+        uses: metcalfc/changelog-generator@v4.1.0
+        with:
+          myToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Release
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          changelog: ${{steps.changelog.outputs.changelog}}
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          curseforge-id: 909868
+
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          modrinth-id: FlFKBOIX
+
+          files: |
+            forge/build/libs/WorldTools-forge-${{ github.ref_name }}.jar
+          name: WorldTools-forge-${{ github.ref_name }}
+          version: ${{ github.ref_name }}
+          loaders: |
+            forge
+          game-versions: |
+            ${{ env.MINECRAFT_VERSION }}
+          dependencies: |
+            kotlinforforge@${{ env.KOTLIN_FOR_FORGE_VERSION }}(required){modrinth:ordsPcFz}{curseforge:351264}
