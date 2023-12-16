@@ -2,56 +2,74 @@ package org.waste.of.time.event
 
 import net.minecraft.block.entity.ChestBlockEntity
 import net.minecraft.entity.Entity
+import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.world.World
 import net.minecraft.world.chunk.WorldChunk
+import org.waste.of.time.BarManager.updateCapture
 import org.waste.of.time.WorldTools
-import org.waste.of.time.WorldTools.GUI_KEY
-import org.waste.of.time.WorldTools.cachedEntities
+import org.waste.of.time.WorldTools.CAPTURE_KEY
 import org.waste.of.time.WorldTools.caching
-import org.waste.of.time.WorldTools.checkCache
 import org.waste.of.time.WorldTools.mc
-import org.waste.of.time.WorldTools.serverInfo
-import org.waste.of.time.WorldTools.tryWithSession
-import org.waste.of.time.gui.WorldToolsScreen
-import org.waste.of.time.serializer.LevelPropertySerializer.writeLevelDataFile
-import org.waste.of.time.storage.StorageManager.writeFavicon
+import org.waste.of.time.WorldTools.stopCapture
+import org.waste.of.time.event.serializable.RegionBasedChunk
+import org.waste.of.time.event.serializable.EntityCacheable
+import org.waste.of.time.event.serializable.PlayerStoreable
 
 object Events {
-
     fun onChunkLoad(chunk: WorldChunk) {
-        if (!caching) return
-        WorldTools.cachedChunks.add(chunk)
-        checkCache()
+        RegionBasedChunk(chunk).cache()
+    }
+
+    fun onChunkUnload(chunk: WorldChunk) {
+        val chunkSerializable = RegionBasedChunk(chunk)
+        chunkSerializable.emit()
+        chunkSerializable.flush()
     }
 
     fun onEntityLoad(entity: Entity) {
-        if (!caching) return
+        if (entity is PlayerEntity) {
+            PlayerStoreable(entity).cache()
+        } else {
+            EntityCacheable(entity).cache()
+        }
+    }
 
-        cachedEntities.add(entity)
-        checkCache()
+    fun onEntityUnload(entity: Entity) {
+        if (entity is PlayerEntity) {
+            val playerStoreable = PlayerStoreable(entity)
+            playerStoreable.emit()
+            playerStoreable.flush()
+        }
     }
 
     fun onClientTickStart() {
-        if (GUI_KEY.wasPressed() && mc.world != null && mc.currentScreen == null) {
-            mc.setScreen(WorldToolsScreen)
+        if (CAPTURE_KEY.wasPressed() && mc.world != null && mc.currentScreen == null) {
+//            mc.setScreen(WorldToolsScreen)
+            WorldTools.toggleCapture()
+//            mc.toastManager.add(WorldToolsScreen.CAPTURE_TOAST)
         }
+
+        if (!caching) return
+
+        updateCapture()
     }
 
-    fun onClientJoin() {
-        if (!caching) return
-        serverInfo = mc.currentServerEntry ?: return
+    // ToDo: On world change relaunch capture
 
-        tryWithSession {
-            writeFavicon()
-            writeLevelDataFile()
-        }
+    fun onClientJoin() {
+    }
+
+    fun onClientDisconnect() {
+        if (!caching) return
+
+        stopCapture()
     }
 
     fun onInteractBlock(world: World, hitResult: BlockHitResult) {
         if (!caching) return
 
         val blockEntity = (world.getBlockEntity(hitResult.blockPos) as? ChestBlockEntity) ?: return
-        WorldTools.lastOpenedContainer = blockEntity
+        HotCache.lastOpenedContainer = blockEntity
     }
 }

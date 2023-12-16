@@ -6,14 +6,9 @@ import net.minecraft.entity.Entity
 import net.minecraft.entity.boss.BossBar
 import net.minecraft.text.Text
 import net.minecraft.util.math.ChunkPos
-import org.waste.of.time.WorldTools.MAX_CACHE_SIZE
-import org.waste.of.time.WorldTools.cachedBlockEntities
-import org.waste.of.time.WorldTools.cachedChunks
-import org.waste.of.time.WorldTools.cachedEntities
 import org.waste.of.time.WorldTools.caching
 import org.waste.of.time.WorldTools.mc
 import org.waste.of.time.WorldTools.mm
-import org.waste.of.time.WorldTools.savingMutex
 import java.util.*
 
 object BarManager {
@@ -42,26 +37,18 @@ object BarManager {
             false
         )
 
-    fun getProgressBar() = if (!savingMutex.isLocked) Optional.empty() else Optional.of(progressBar)
+    fun getProgressBar() = if (!caching) Optional.empty() else Optional.of(progressBar)
 
     fun getCaptureBar() = if (!caching) Optional.empty() else Optional.of(captureInfoBar)
 
-    fun resetProgressBar() {
-        mc.execute { progressBar.percent = 0f }
-    }
-
     fun updateCapture() {
-        mc.execute {
-            val cacheFilled = (cachedChunks.size + cachedEntities.size) / MAX_CACHE_SIZE.toFloat()
-            captureInfoBar.percent = cacheFilled.coerceIn(.0f, 1.0f)
-            captureInfoBar.name = "Captured <color:#FFA2C4>${
-                cachedChunks.size
-            }</color> chunks and <color:#FFA2C4>${
-                cachedEntities.size
-            }</color> entities and <color:#FFA2C4>${
-                cachedBlockEntities.size
-            }</color> chests.".mm()
-        }
+        captureInfoBar.name = "Saved <color:#FFA2C4>${
+            StatisticManager.chunks
+        }</color> chunks, <color:#FFA2C4>${
+            StatisticManager.players
+        }</color> players, and <color:#FFA2C4>${
+            StatisticManager.entities
+        }</color> entities to saves directory ".mm()
     }
 
     fun updateSaveChunk(percentage: Float, savedChunks: Int, totalChunks: Int, pos: ChunkPos, dimension: String) {

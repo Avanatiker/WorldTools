@@ -134,6 +134,14 @@ Pull Request.
    environment.
 3. The Fabric mod JAR file can be found in `fabric/build/libs` and the Forge mod JAR file in `forge/build/libs`.
 
+## ToDo
+
+- [ ] RenderService using drawables
+- [ ] CaptureService
+- [ ] CaptureModes
+- [ ] Live statistics: Downloaded chunks, entities, data downstream, etc.
+- [ ] Dimension, XP, selected item slot, player game type, is not saved to player
+
 ## License
 
 WorldTools is distributed under

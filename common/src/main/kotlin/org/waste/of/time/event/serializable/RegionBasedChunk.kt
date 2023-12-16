@@ -1,4 +1,4 @@
-package org.waste.of.time.serializer
+package org.waste.of.time.event.serializable
 
 import net.minecraft.SharedConstants
 import net.minecraft.block.Block
@@ -11,29 +11,58 @@ import net.minecraft.nbt.NbtLongArray
 import net.minecraft.nbt.NbtOps
 import net.minecraft.registry.Registries
 import net.minecraft.registry.RegistryKeys
+import net.minecraft.util.math.ChunkPos
 import net.minecraft.util.math.ChunkSectionPos
 import net.minecraft.world.ChunkSerializer
 import net.minecraft.world.LightType
+import net.minecraft.world.World
 import net.minecraft.world.biome.BiomeKeys
 import net.minecraft.world.chunk.BelowZeroRetrogen
 import net.minecraft.world.chunk.PalettedContainer
 import net.minecraft.world.chunk.WorldChunk
 import net.minecraft.world.gen.chunk.BlendingData
-import org.waste.of.time.WorldTools.LOGGER
+import org.waste.of.time.StatisticManager
+import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.addAuthor
+import org.waste.of.time.event.Cacheable
+import org.waste.of.time.event.RegionBased
+import org.waste.of.time.event.HotCache
 
-object ClientChunkSerializer {
-    private val BLOCK_CODEC = PalettedContainer.createPalettedContainerCodec(
+data class RegionBasedChunk(val chunk: WorldChunk) : RegionBased, Cacheable {
+    override fun toString() = "Chunk at $chunkPos"
+
+    override val chunkPos: ChunkPos
+        get() = chunk.pos
+
+    override val world: World
+        get() = chunk.world
+
+    override val suffix: String
+        get() = "region"
+
+    private val stateIdContainer = PalettedContainer.createPalettedContainerCodec(
         Block.STATE_IDS,
         BlockState.CODEC,
         PalettedContainer.PaletteProvider.BLOCK_STATE,
         Blocks.AIR.defaultState
     )
 
+    override fun cache() {
+        HotCache.chunks[chunkPos] = this
+    }
+
+    override fun flush() {
+        HotCache.chunks.remove(chunkPos)
+    }
+
+    override fun incrementStats() {
+        StatisticManager.chunks++
+    }
+
     /**
      * See [net.minecraft.world.ChunkSerializer.serialize]
      */
-    fun serialize(chunk: WorldChunk) = NbtCompound().apply {
+    override fun compound() = NbtCompound().apply {
         addAuthor()
 
         putInt("DataVersion", SharedConstants.getGameVersion().saveVersion.id)
@@ -94,15 +123,15 @@ object ClientChunkSerializer {
 
                     put(
                         "block_states",
-                        BLOCK_CODEC.encodeStart(NbtOps.INSTANCE, chunkSection.blockStateContainer).getOrThrow(
+                        stateIdContainer.encodeStart(NbtOps.INSTANCE, chunkSection.blockStateContainer).getOrThrow(
                             false
-                        ) { LOGGER.error(it) }
+                        ) { WorldTools.LOG.error(it) }
                     )
                     put(
                         "biomes",
                         biomeCodec.encodeStart(NbtOps.INSTANCE, chunkSection.biomeContainer).getOrThrow(
                             false
-                        ) { LOGGER.error(it) }
+                        ) { WorldTools.LOG.error(it) }
                     )
                 }
                 if (blockLightSection != null && !blockLightSection.isUninitialized) {
@@ -120,7 +149,7 @@ object ClientChunkSerializer {
     private fun NbtCompound.genBackwardsCompat(chunk: WorldChunk) {
         chunk.blendingData?.let { bleedingData ->
             BlendingData.CODEC.encodeStart(NbtOps.INSTANCE, bleedingData).resultOrPartial {
-                LOGGER.error(it)
+                WorldTools.LOG.error(it)
             }.ifPresent {
                 put("blending_data", it)
             }
@@ -128,7 +157,7 @@ object ClientChunkSerializer {
 
         chunk.belowZeroRetrogen?.let { belowZeroRetrogen ->
             BelowZeroRetrogen.CODEC.encodeStart(NbtOps.INSTANCE, belowZeroRetrogen).resultOrPartial {
-                LOGGER.error(it)
+                WorldTools.LOG.error(it)
             }.ifPresent {
                 put("below_zero_retrogen", it)
             }

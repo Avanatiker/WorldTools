@@ -7,7 +7,7 @@ import net.minecraft.util.WorldSavePath
 import net.minecraft.world.GameRules
 import net.minecraft.world.level.storage.LevelStorage.Session
 import org.waste.of.time.WorldTools
-import org.waste.of.time.WorldTools.LOGGER
+import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.addAuthor
 import org.waste.of.time.WorldTools.mc
 import org.waste.of.time.WorldTools.serverInfo
@@ -31,9 +31,9 @@ object LevelPropertySerializer {
             val backup = getDirectory(WorldSavePath.LEVEL_DAT_OLD).toFile()
             val current = getDirectory(WorldSavePath.LEVEL_DAT).toFile()
             Util.backupAndReplace(current, newFile, backup)
-            LOGGER.info("Saved level data.")
+            LOG.info("Saved level data.")
         } catch (exception: Exception) {
-            LOGGER.error("Failed to save level {}", resultingFile, exception)
+            LOG.error("Failed to save level {}", resultingFile, exception)
         }
     }
 

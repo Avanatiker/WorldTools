@@ -1,27 +1,22 @@
 package org.waste.of.time
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.Job
 import net.fabricmc.loader.api.FabricLoader
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
-import net.minecraft.block.entity.ChestBlockEntity
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.network.ServerInfo
 import net.minecraft.client.option.KeyBinding
 import net.minecraft.client.util.InputUtil
-import net.minecraft.entity.Entity
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.network.packet.c2s.play.ClientStatusC2SPacket
 import net.minecraft.text.Text
-import net.minecraft.world.chunk.WorldChunk
-import net.minecraft.world.level.storage.LevelStorage
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.lwjgl.glfw.GLFW
-import org.waste.of.time.storage.StorageManager
-import java.util.concurrent.ConcurrentHashMap
+import org.waste.of.time.event.HotCache
+import org.waste.of.time.event.StorageFlow
+import org.waste.of.time.event.serializable.MetadataStoreable
 
 object WorldTools {
     const val MOD_NAME = "WorldTools"
@@ -29,7 +24,6 @@ object WorldTools {
     private const val URL = "https://github.com/Avanatiker/WorldTools/"
     const val MCA_EXTENSION = ".mca"
     const val DAT_EXTENSION = ".dat"
-    const val MAX_CACHE_SIZE = 1000
     const val COLOR = 0xFFA2C4
 
     private val VERSION by lazy {
@@ -38,81 +32,76 @@ object WorldTools {
     val CREDIT_MESSAGE = "This file was created by $MOD_NAME $VERSION ($URL)"
     val CREDIT_MESSAGE_MD = "This file was created by [$MOD_NAME $VERSION]($URL)"
 
-    val LOGGER: Logger = LogManager.getLogger()
+    val LOG: Logger = LogManager.getLogger()
     val BRAND: Text by lazy {
         "<color:green>W<color:gray>orld<color:green>T<color:gray>ools<reset>".mm()
     }
 
-    var GUI_KEY = KeyBinding(
+    var CAPTURE_KEY = KeyBinding(
         "key.$MOD_ID.open_config", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F12,
         "key.categories.$MOD_ID"
     )
 
+//    var CAPTURE_KEY = KeyBinding(
+//        "key.$MOD_ID.capture", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F11,
+//        "key.categories.$MOD_ID"
+//    )
+
     val mc: MinecraftClient = MinecraftClient.getInstance()
     var mm = MiniMessage.miniMessage()
 
-    val savingMutex = Mutex()
-    private var capturing = true
     val caching: Boolean
         get() = capturing && !mc.isInSingleplayer
-    val cachedChunks: ConcurrentHashMap.KeySetView<WorldChunk, Boolean> = ConcurrentHashMap.newKeySet()
-    val cachedEntities: ConcurrentHashMap.KeySetView<Entity, Boolean> = ConcurrentHashMap.newKeySet()
-    val cachedBlockEntities: ConcurrentHashMap.KeySetView<ChestBlockEntity, Boolean> = ConcurrentHashMap.newKeySet()
-    var lastOpenedContainer: ChestBlockEntity? = null
+    val serverInfo: ServerInfo
+        get() = mc.networkHandler?.serverInfo ?: throw IllegalStateException("Server info should not be null")
+    private var storeJob: Job? = null
 
-    lateinit var serverInfo: ServerInfo
+    // Settings
+    var freezeWorld = true
+    private var capturing = false
 
     fun initialize() {
-        LOGGER.info("Initializing $MOD_NAME $VERSION")
+        LOG.info("Initializing $MOD_NAME $VERSION")
     }
 
-    inline fun tryWithSession(crossinline block: LevelStorage.Session.() -> Unit) {
-        if (savingMutex.tryLock().not()) return
-
-        dispatchSessionThread { block() }
-    }
-
-    suspend inline fun withSessionBlocking(crossinline block: LevelStorage.Session.() -> Unit) {
-        savingMutex.lock()
-
-        dispatchSessionThread { block() }
-    }
-
-    fun dispatchSessionThread(block: LevelStorage.Session.() -> Unit) {
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                mc.levelStorage.createSession(serverInfo.address.sanitize()).use { session ->
-                    session.block()
-                }
-            } catch (e: Exception) {
-                LOGGER.error("Failed to create session for ${serverInfo.address}", e)
-            } finally {
-                savingMutex.unlock()
-            }
+    fun toggleCapture() {
+        if (mc.isInSingleplayer) {
+            sendMessage(Text.of("World downloading is not available in singleplayer"))
+            return
         }
-    }
 
-    private fun String.sanitize() = replace(":", "_")
-
-    fun checkCache() {
-        BarManager.updateCapture()
-        if (cachedChunks.size + cachedEntities.size + cachedBlockEntities.size < MAX_CACHE_SIZE) return
-
-        StorageManager.save()
+        if (capturing) stopCapture() else startCapture()
     }
 
     fun startCapture() {
         capturing = true
+        sendMessage(Text.of("Started caching..."))
+
+        storeJob = StorageFlow.launch()
     }
 
     fun stopCapture() {
-        capturing = false
-    }
+        sendMessage(Text.of("Saving cache..."))
 
-    fun flush() {
-        cachedChunks.clear()
-        cachedEntities.clear()
-        BarManager.updateCapture()
+        // update the stats and trigger writeStats() in StatisticSerializer
+        mc.networkHandler?.sendPacket(ClientStatusC2SPacket(ClientStatusC2SPacket.Mode.REQUEST_STATS))
+
+        HotCache.chunks.values.forEach { chunk ->
+            chunk.emit()
+        }
+
+        HotCache.convertEntities().forEach { entity ->
+            entity.emit()
+        }
+
+        HotCache.players.forEach { player ->
+            player.emit()
+        }
+
+        MetadataStoreable().emit()
+        HotCache.clear()
+
+        capturing = false
     }
 
     fun sendMessage(text: Text) =

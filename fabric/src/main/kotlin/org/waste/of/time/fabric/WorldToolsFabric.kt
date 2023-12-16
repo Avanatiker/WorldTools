@@ -1,7 +1,6 @@
 package org.waste.of.time.fabric
 
 import com.mojang.brigadier.CommandDispatcher
-import com.mojang.brigadier.arguments.BoolArgumentType
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
@@ -16,7 +15,6 @@ import net.minecraft.util.ActionResult
 import org.waste.of.time.WorldTools
 import org.waste.of.time.event.Events
 import org.waste.of.time.renderer.MissingChestBlockEntityRenderer
-import org.waste.of.time.storage.StorageManager
 
 object WorldToolsFabric : ClientModInitializer {
     override fun onInitializeClient() {
@@ -25,13 +23,18 @@ object WorldToolsFabric : ClientModInitializer {
         ClientCommandRegistrationCallback.EVENT.register(ClientCommandRegistrationCallback { dispatcher, _ ->
             dispatcher.register()
         })
-        KeyBindingHelper.registerKeyBinding(WorldTools.GUI_KEY)
+        KeyBindingHelper.registerKeyBinding(WorldTools.CAPTURE_KEY)
         ClientEntityEvents.ENTITY_LOAD.register(ClientEntityEvents.Load { entity, _ ->
             Events.onEntityLoad(entity)
         })
-
+        ClientEntityEvents.ENTITY_UNLOAD.register(ClientEntityEvents.Unload { entity, _ ->
+            Events.onEntityUnload(entity)
+        })
         ClientPlayConnectionEvents.JOIN.register(ClientPlayConnectionEvents.Join { _, _, _ ->
             Events.onClientJoin()
+        })
+        ClientPlayConnectionEvents.DISCONNECT.register(ClientPlayConnectionEvents.Disconnect { _, _ ->
+            Events.onClientDisconnect()
         })
         UseBlockCallback.EVENT.register(UseBlockCallback { _, world, _, hitResult ->
             Events.onInteractBlock(world, hitResult)
@@ -41,7 +44,7 @@ object WorldToolsFabric : ClientModInitializer {
             MissingChestBlockEntityRenderer(it)
         }
 
-        WorldTools.LOGGER.info("WorldTools Fabric initialized")
+        WorldTools.LOG.info("WorldTools Fabric initialized")
     }
 
     private fun CommandDispatcher<FabricClientCommandSource>.register() {
@@ -57,19 +60,6 @@ object WorldToolsFabric : ClientModInitializer {
                         0
                     }
                     )
-                    .then(ClientCommandManager.literal("flush").executes {
-                        WorldTools.flush()
-                        0
-                    }
-                    )
-                )
-                .then(ClientCommandManager.literal("save")
-                    .executes {
-                        StorageManager.save()
-                    }
-                    .then(ClientCommandManager.argument("freezeEntities", BoolArgumentType.bool()).executes {
-                        StorageManager.save(BoolArgumentType.getBool(it, "freezeEntities"))
-                    })
                 )
         )
     }

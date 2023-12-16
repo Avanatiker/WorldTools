@@ -7,9 +7,7 @@
     "BossBarHudMixin",
     "ClientChunkManagerMixin",
     "ClientPlayNetworkHandlerMixin",
-    "EntityMixin",
     "MinecraftClientMixin",
-    "WorldChunkMixin",
     "accessor.AdvancementProgressesAccessor",
     "accessor.StatHandlerAccessor"
   ],
