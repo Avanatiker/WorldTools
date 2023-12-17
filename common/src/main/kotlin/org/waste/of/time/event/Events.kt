@@ -55,9 +55,8 @@ object Events {
         updateCapture()
     }
 
-    // ToDo: On world change relaunch capture
-
     fun onClientJoin() {
+        HotCache.clear()
     }
 
     fun onClientDisconnect() {

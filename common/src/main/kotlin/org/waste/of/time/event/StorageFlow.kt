@@ -43,7 +43,7 @@ object StorageFlow {
                         storeable.store(openSession, cachedStorages)
                     }
 
-                    LOG.info("Stored $storeable in $time")
+                    LOG.info("Saved $storeable in $time")
 
                     if (storeable is MetadataStoreable) {
                         throw StopCollectingException()

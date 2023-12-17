@@ -16,6 +16,7 @@ import net.minecraft.util.PathUtil
 import net.minecraft.util.WorldSavePath
 import net.minecraft.world.level.storage.LevelStorage.Session
 import org.waste.of.time.StatisticManager
+import org.waste.of.time.TimeUtils
 import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.CREDIT_MESSAGE_MD
 import org.waste.of.time.WorldTools.LOG
@@ -153,18 +154,10 @@ class MetadataStoreable : Storeable {
     }
 
     private fun createMetadataMd() = StringBuilder().apply {
-        val localDateTime = LocalDateTime.now()
-        val zoneId = ZoneId.systemDefault()
-
-        val zonedDateTime = ZonedDateTime.of(localDateTime, zoneId)
-        val formatter = DateTimeFormatter.RFC_1123_DATE_TIME
-
-        val formattedDateTime = zonedDateTime.format(formatter)
-
         appendLine("# ${serverInfo.address} World Save - Snapshot Details")
         appendLine("![Server Icon](../icon.png)")
         appendLine()
-        appendLine("- **Time**: `$formattedDateTime` (`${System.currentTimeMillis()}`)")
+        appendLine("- **Time**: `${TimeUtils.getTime()}` (Timestamp: `${System.currentTimeMillis()}`)")
         appendLine("- **Captured By**: `${mc.player?.name?.string}`")
 
         appendLine()

@@ -1,5 +1,6 @@
 package org.waste.of.time
 
+import dev.architectury.injectables.targets.ArchitecturyTarget
 import kotlinx.coroutines.Job
 import net.fabricmc.loader.api.FabricLoader
 import net.kyori.adventure.text.minimessage.MiniMessage
@@ -26,8 +27,12 @@ object WorldTools {
     const val DAT_EXTENSION = ".dat"
     const val COLOR = 0xFFA2C4
 
-    private val VERSION by lazy {
-        FabricLoader.getInstance().allMods.first { it.metadata.id == MOD_ID }.metadata.version
+    private val VERSION: String by lazy {
+        if (ArchitecturyTarget.getCurrentTarget() == "fabric") {
+            FabricLoader.getInstance().allMods.first { it.metadata.id == MOD_ID }.metadata.version.friendlyString
+        } else {
+            "1.1.1" // ToDo: Get version from forge loader
+        }
     }
     val CREDIT_MESSAGE = "This file was created by $MOD_NAME $VERSION ($URL)"
     val CREDIT_MESSAGE_MD = "This file was created by [$MOD_NAME $VERSION]($URL)"
@@ -99,7 +104,6 @@ object WorldTools {
         }
 
         MetadataStoreable().emit()
-        HotCache.clear()
 
         capturing = false
     }
