@@ -3,7 +3,7 @@ package org.waste.of.time.event
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import net.minecraft.client.toast.SystemToast
 import net.minecraft.text.Text
@@ -34,14 +34,13 @@ object StorageFlow {
         sharedFlow.tryEmit(storeable)
     }
 
-    fun launch() = CoroutineScope(Dispatchers.IO).launch {
+    fun launch(worldName: String) = CoroutineScope(Dispatchers.IO).launch {
         StatisticManager.reset()
-        val sanitizedName = WorldTools.serverInfo.address.replace(":", "_")
         val cachedStorages = mutableMapOf<String, CustomRegionBasedStorage>()
 
         try {
             LOG.info("Started caching")
-            mc.levelStorage.createSession(sanitizedName).use { openSession ->
+            mc.levelStorage.createSession(worldName).use { openSession ->
                 sharedFlow.collect { storeable ->
                     val time = measureTime {
                         storeable.store(openSession, cachedStorages)
@@ -60,10 +59,10 @@ object StorageFlow {
             LOG.info("Canceled caching flow")
         } catch (e: IOException) {
             onFail(e)
-            LOG.error("Failed to create session for $sanitizedName", e)
+            LOG.error("Failed to create session for $worldName", e)
         } catch (e: SymlinkValidationException) {
             onFail(e)
-            LOG.error("Failed to create session for $sanitizedName", e)
+            LOG.error("Failed to create session for $worldName", e)
         } catch (e: CancellationException) {
             LOG.info("Canceled caching thread")
         }

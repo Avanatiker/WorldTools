@@ -77,7 +77,7 @@ object LevelPropertySerializer {
         putLong("Time", player.world.time)
         putLong("DayTime", player.world.timeOfDay)
         putLong("LastPlayed", System.currentTimeMillis())
-        putString("LevelName", serverInfo.address)
+        putString("LevelName", WorldTools.capturingWorldName!!)
         putInt("version", 19133)
         putInt("clearWeatherTime", 0) // not sure
         putInt("rainTime", 0) // not sure

@@ -66,6 +66,7 @@ object WorldTools {
     // Settings
     var freezeWorld = true
     private var capturing = false
+    var capturingWorldName: String? = null
 
     fun initialize() {
         LOG.info("Initializing $MOD_NAME $VERSION")
@@ -81,14 +82,26 @@ object WorldTools {
     }
 
     private fun startCapture() {
+    fun startCapture(worldName: String? = null) {
+        val potentialWorldName = sanitizeWorldName(worldName ?: serverInfo.address)
+        if (potentialWorldName.isBlank() || potentialWorldName.length > 64) {
+            sendMessage(Text.of("Invalid world name"))
+            return
+        }
+        capturingWorldName = potentialWorldName
         capturing = true
-        sendMessage(Text.of("Started caching..."))
+        // todo: validate if a world already exists with this name. we need user to decide whether to merge or replace
+        sendMessage(Text.of("Started capturing $capturingWorldName..."))
 
-        storeJob = StorageFlow.launch()
+        storeJob = StorageFlow.launch(capturingWorldName!!)
+    }
+
+    private fun sanitizeWorldName(worldName: String): String {
+        return worldName.replace(":", "_")
     }
 
     fun stopCapture() {
-        sendMessage(Text.of("Saving cache..."))
+        sendMessage(Text.of("Saving $capturingWorldName..."))
 
         // update the stats and trigger writeStats() in StatisticSerializer
         mc.networkHandler?.sendPacket(ClientStatusC2SPacket(ClientStatusC2SPacket.Mode.REQUEST_STATS))
