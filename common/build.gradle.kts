@@ -21,6 +21,7 @@ dependencies {
     modImplementation("net.fabricmc:fabric-language-kotlin:1.10.10+kotlin.1.9.10")
     implementation("net.kyori:adventure-text-minimessage:4.14.0")
     implementation("net.kyori:adventure-text-serializer-gson:4.14.0")
+    implementation(annotationProcessor("io.github.llamalad7:mixinextras-common:0.3.2")!!)
 }
 
 tasks.named("remapJar") {

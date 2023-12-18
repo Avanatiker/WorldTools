@@ -36,6 +36,8 @@ dependencies {
     shadowCommon(project(path = ":common", configuration = "transformProductionForge")) { isTransitive = false }
     forgeRuntimeLibrary(shadowCommon("net.kyori:adventure-text-minimessage:${project.properties["kyori_text_minimessage_version"]}")!!)
     forgeRuntimeLibrary(shadowCommon("net.kyori:adventure-text-serializer-gson:${project.properties["kyori_text_minimessage_version"]}")!!)
+    implementation(annotationProcessor("io.github.llamalad7:mixinextras-common:0.3.2")!!)
+    implementation(include("io.github.llamalad7:mixinextras-forge:0.3.2")!!)
 }
 
 tasks {
