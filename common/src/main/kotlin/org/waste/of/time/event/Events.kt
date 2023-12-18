@@ -62,7 +62,7 @@ object Events {
 
     fun onClientJoin() {
         HotCache.clear()
-        StorageFlow.currentStoreable = null
+        StorageFlow.lastStored = null
         StatisticManager.reset()
     }
 
@@ -87,7 +87,7 @@ object Events {
 
         HotCache.chunks.values
             .flatMap { it.chunk.blockEntities.values }
-            .filter { !HotCache.blockEntities.contains(it) }
+            .filter { it !in HotCache.blockEntities }
             .forEach { blockEntity ->
                 val blockPos = blockEntity.pos
                 val blockState = blockEntity.cachedState

@@ -2,13 +2,10 @@ package org.waste.of.time
 
 
 import net.minecraft.client.gui.hud.ClientBossBar
-import net.minecraft.entity.Entity
 import net.minecraft.entity.boss.BossBar
 import net.minecraft.text.Text
-import net.minecraft.util.math.ChunkPos
-import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.caching
-import org.waste.of.time.WorldTools.mc
+import org.waste.of.time.WorldTools.highlight
 import org.waste.of.time.WorldTools.mm
 import org.waste.of.time.event.StorageFlow
 import java.util.*
@@ -39,7 +36,7 @@ object BarManager {
             false
         )
 
-    fun getProgressBar() = if (StorageFlow.currentStoreable != null) {
+    fun getProgressBar() = if (StorageFlow.lastStored != null) {
         Optional.of(progressBar)
     } else {
         Optional.empty()
@@ -54,15 +51,20 @@ object BarManager {
     fun updateCapture() {
         captureInfoBar.name = StatisticManager.message.mm()
 
-        StorageFlow.currentStoreable?.let {
+        StorageFlow.lastStored?.let {
             progressBar.percent = 1f
-            progressBar.name = it.message
+            progressBar.name = it.message.copy()
+                .append(" (took ")
+                .append(highlight(StorageFlow.lastStoredTimeNeeded.toString()).mm())
+                .append(")")
         } ?: run {
             progressBar.percent = 0f
         }
 
-        if (StorageFlow.lastStoreable != 0L && System.currentTimeMillis() - StorageFlow.lastStoreable > 1000) {
-            StorageFlow.currentStoreable = null
+        val timeout = System.currentTimeMillis() - StorageFlow.lastStoredTimestamp > 1500
+
+        if (StorageFlow.lastStoredTimestamp != 0L && timeout) {
+            StorageFlow.lastStored = null
             progressBar.percent = 0f
         }
     }

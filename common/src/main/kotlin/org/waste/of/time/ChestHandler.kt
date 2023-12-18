@@ -19,6 +19,7 @@ object ChestHandler {
         val containerSlots = screen.screenHandler.slots.filter { it.inventory is SimpleInventory }
 
         HotCache.blockEntities.add(container)
+        HotCache.lastOpenedContainer = null
         StatisticManager.container++
         val inventories = containerSlots.partition { it.index < 27 }
 

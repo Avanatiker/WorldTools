@@ -73,14 +73,14 @@ object WorldTools {
 
     fun toggleCapture() {
         if (mc.isInSingleplayer) {
-            sendMessage(Text.of("World downloading is not available in singleplayer"))
+            sendMessage(Text.of("$MOD_NAME is not available in singleplayer"))
             return
         }
 
         if (capturing) stopCapture() else startCapture()
     }
 
-    fun startCapture() {
+    private fun startCapture() {
         capturing = true
         sendMessage(Text.of("Started caching..."))
 
