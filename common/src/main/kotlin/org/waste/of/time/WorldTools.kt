@@ -58,10 +58,11 @@ object WorldTools {
     var mm = MiniMessage.miniMessage()
 
     val caching: Boolean
-        get() = capturing && !mc.isInSingleplayer
+        get() = capturing
     val serverInfo: ServerInfo
         get() = mc.networkHandler?.serverInfo ?: throw IllegalStateException("Server info should not be null")
     private var storeJob: Job? = null
+    var singlePlayer = mc.isInSingleplayer
 
     // Settings
     var freezeWorld = true
@@ -73,15 +74,9 @@ object WorldTools {
     }
 
     fun toggleCapture() {
-        if (mc.isInSingleplayer) {
-            sendMessage(Text.of("$MOD_NAME is not available in singleplayer"))
-            return
-        }
-
         if (capturing) stopCapture() else startCapture()
     }
 
-    private fun startCapture() {
     fun startCapture(worldName: String? = null) {
         val potentialWorldName = sanitizeWorldName(worldName ?: serverInfo.address)
         if (potentialWorldName.isBlank() || potentialWorldName.length > 64) {
@@ -89,6 +84,7 @@ object WorldTools {
             return
         }
         capturingWorldName = potentialWorldName
+        singlePlayer = mc.isInSingleplayer
         capturing = true
         // todo: validate if a world already exists with this name. we need user to decide whether to merge or replace
         sendMessage(Text.of("Started capturing $capturingWorldName..."))

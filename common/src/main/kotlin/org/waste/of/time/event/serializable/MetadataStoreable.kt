@@ -2,17 +2,13 @@ package org.waste.of.time.event.serializable
 
 import com.google.gson.GsonBuilder
 import com.mojang.authlib.GameProfile
-import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.event.ClickEvent
-import net.kyori.adventure.text.format.TextColor
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import net.minecraft.SharedConstants
 import net.minecraft.advancement.AdvancementProgress
 import net.minecraft.client.network.PlayerListEntry
+import net.minecraft.client.network.ServerInfo
 import net.minecraft.client.toast.SystemToast
-import net.minecraft.text.MutableText
+import net.minecraft.server.integrated.IntegratedServer
 import net.minecraft.text.Text
-import net.minecraft.text.TextContent
 import net.minecraft.util.Identifier
 import net.minecraft.util.PathUtil
 import net.minecraft.util.WorldSavePath
@@ -20,7 +16,6 @@ import net.minecraft.world.level.storage.LevelStorage.Session
 import org.waste.of.time.StatisticManager
 import org.waste.of.time.TimeUtils
 import org.waste.of.time.WorldTools
-import org.waste.of.time.WorldTools.COLOR
 import org.waste.of.time.WorldTools.CREDIT_MESSAGE_MD
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.MOD_NAME
@@ -36,10 +31,6 @@ import org.waste.of.time.storage.CustomRegionBasedStorage
 import java.lang.reflect.Type
 import java.net.InetSocketAddress
 import java.nio.file.Path
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 import kotlin.io.path.writeBytes
 
 class MetadataStoreable : Storeable {
@@ -74,12 +65,15 @@ class MetadataStoreable : Storeable {
 
     private fun Path.writeMetadata() {
         resolve("Capture Metadata.md").toFile()
-            .writeText(createMetadataMd())
+            .writeText(if (WorldTools.singlePlayer)
+                createMetadataSinglePlayer(WorldTools.capturingWorldName!!, mc.server!!)
+                else createMetadataMultiplayer(WorldTools.capturingWorldName!!, serverInfo))
 
         LOG.info("Saved capture metadata.")
     }
 
     private fun Path.writePlayerEntryList() {
+        if (WorldTools.singlePlayer) return
         mc.networkHandler?.playerList?.let { playerList ->
             if (playerList.isEmpty()) return@let
             resolve("Player Entry List.csv").toFile()
@@ -98,10 +92,18 @@ class MetadataStoreable : Storeable {
     }
 
     private fun Session.writeIconFile() {
-        serverInfo.favicon?.let { favicon ->
-            iconFile.ifPresent {
-                it.writeBytes(favicon)
-                LOG.info("Saved favicon.")
+        if (WorldTools.singlePlayer) {
+            mc.server?.iconFile?.ifPresent { spIconPath ->
+                iconFile.ifPresent {
+                    it.writeBytes(spIconPath.toFile().readBytes())
+                }
+                LOG.info("Saved favicon.") }
+        } else {
+            serverInfo.favicon?.let { favicon ->
+                iconFile.ifPresent {
+                    it.writeBytes(favicon)
+                    LOG.info("Saved favicon.")
+                }
             }
         }
     }
@@ -142,13 +144,13 @@ class MetadataStoreable : Storeable {
 
             val chatMessage = "${StatisticManager.message} to saves directory <click:open_file:${
                 savedPath.path
-            }>${serverInfo.address} (click to open)</click>".mm()
+            }>${WorldTools.capturingWorldName} (click to open)</click>".mm()
             WorldTools.sendMessage(chatMessage)
         }
     }
 
-    private fun createMetadataMd() = StringBuilder().apply {
-        appendLine("# ${serverInfo.address} World Save - Snapshot Details")
+    private fun createMetadataMultiplayer(worldName: String, serverInfo: ServerInfo) = StringBuilder().apply {
+        appendLine("# $worldName World Save - Snapshot Details")
         appendLine("![Server Icon](../icon.png)")
         appendLine()
         appendLine("- **Time**: `${TimeUtils.getTime()}` (Timestamp: `${System.currentTimeMillis()}`)")
@@ -186,6 +188,27 @@ class MetadataStoreable : Storeable {
             appendLine("- **Session ID**: `$id`")
         }
 
+        appendLine()
+        appendLine(CREDIT_MESSAGE_MD)
+    }.toString()
+
+    private fun createMetadataSinglePlayer(worldName: String, server: IntegratedServer) = StringBuilder().apply {
+        appendLine("# $worldName World Save - Snapshot Details")
+        appendLine("![Server Icon](../icon.png)")
+        appendLine()
+        appendLine("- **Time**: `${TimeUtils.getTime()}` (Timestamp: `${System.currentTimeMillis()}`)")
+        appendLine("- **Captured By**: `${mc.player?.name?.string}`")
+
+        appendLine()
+        appendLine("## SinglePlayer World Name: ${server.name}")
+        appendLine("- **Brand**: `Single Player`")
+        appendLine("- **Version**: `${server.version}`")
+
+        appendLine()
+        appendLine("## Connection")
+        mc.networkHandler?.sessionId?.let { id ->
+            appendLine("- **Session ID**: `$id`")
+        }
         appendLine()
         appendLine(CREDIT_MESSAGE_MD)
     }.toString()

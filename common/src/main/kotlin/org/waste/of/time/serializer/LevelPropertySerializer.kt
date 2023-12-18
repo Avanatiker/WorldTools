@@ -10,7 +10,6 @@ import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.addAuthor
 import org.waste.of.time.WorldTools.mc
-import org.waste.of.time.WorldTools.serverInfo
 import java.io.File
 
 object LevelPropertySerializer {
