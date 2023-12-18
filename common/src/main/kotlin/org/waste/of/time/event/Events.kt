@@ -1,6 +1,11 @@
 package org.waste.of.time.event
 
 import net.minecraft.block.entity.ChestBlockEntity
+import net.minecraft.client.render.Camera
+import net.minecraft.client.render.RenderLayer
+import net.minecraft.client.render.VertexConsumerProvider
+import net.minecraft.client.render.WorldRenderer
+import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.hit.BlockHitResult
@@ -16,6 +21,7 @@ import org.waste.of.time.WorldTools.stopCapture
 import org.waste.of.time.event.serializable.RegionBasedChunk
 import org.waste.of.time.event.serializable.EntityCacheable
 import org.waste.of.time.event.serializable.PlayerStoreable
+import java.awt.Color
 
 object Events {
     fun onChunkLoad(chunk: WorldChunk) {
@@ -71,5 +77,42 @@ object Events {
 
         val blockEntity = (world.getBlockEntity(hitResult.blockPos) as? ChestBlockEntity) ?: return
         HotCache.lastOpenedContainer = blockEntity
+    }
+
+    fun onBlockOutline(matrices: MatrixStack, vertexConsumers: VertexConsumerProvider, camera: Camera) {
+        if (!caching) return
+
+        val world = mc.world ?: return
+        val vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getLines()) ?: return
+
+        HotCache.chunks.values
+            .flatMap { it.chunk.blockEntities.values }
+            .filter { !HotCache.blockEntities.contains(it) }
+            .forEach { blockEntity ->
+                val blockPos = blockEntity.pos
+                val blockState = blockEntity.cachedState
+                val color = Color(222, 0, 0, 100)
+
+                val voxelShape = blockState.getOutlineShape(world, blockPos)
+                val offsetShape = voxelShape.offset(
+                    blockPos.x.toDouble(),
+                    blockPos.y.toDouble(),
+                    blockPos.z.toDouble()
+                )
+
+                WorldRenderer.drawShapeOutline(
+                    matrices,
+                    vertexConsumer,
+                    offsetShape,
+                    -camera.pos.x,
+                    -camera.pos.y,
+                    -camera.pos.z,
+                    color.red / 255.0f,
+                    color.green / 255.0f,
+                    color.blue / 255.0f,
+                    1.0f,
+                    false,
+                )
+            }
     }
 }

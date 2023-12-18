@@ -8,13 +8,11 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
-import net.minecraft.block.entity.BlockEntityType
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactories
 import net.minecraft.util.ActionResult
 import org.waste.of.time.WorldTools
 import org.waste.of.time.event.Events
-import org.waste.of.time.renderer.MissingChestBlockEntityRenderer
 
 object WorldToolsFabric : ClientModInitializer {
     override fun onInitializeClient() {
@@ -40,9 +38,16 @@ object WorldToolsFabric : ClientModInitializer {
             Events.onInteractBlock(world, hitResult)
             ActionResult.PASS
         })
-        BlockEntityRendererFactories.register(BlockEntityType.CHEST) {
-            MissingChestBlockEntityRenderer(it)
-        }
+        WorldRenderEvents.BLOCK_OUTLINE.register(WorldRenderEvents.BlockOutline { context, _ ->
+            context.consumers()?.let { vertex ->
+                Events.onBlockOutline(
+                    context.matrixStack(),
+                    vertex,
+                    context.camera()
+                )
+            }
+            true
+        })
 
         WorldTools.LOG.info("WorldTools Fabric initialized")
     }
