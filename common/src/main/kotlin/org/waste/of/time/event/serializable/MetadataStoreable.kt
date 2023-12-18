@@ -10,7 +10,9 @@ import net.minecraft.SharedConstants
 import net.minecraft.advancement.AdvancementProgress
 import net.minecraft.client.network.PlayerListEntry
 import net.minecraft.client.toast.SystemToast
+import net.minecraft.text.MutableText
 import net.minecraft.text.Text
+import net.minecraft.text.TextContent
 import net.minecraft.util.Identifier
 import net.minecraft.util.PathUtil
 import net.minecraft.util.WorldSavePath
@@ -18,6 +20,7 @@ import net.minecraft.world.level.storage.LevelStorage.Session
 import org.waste.of.time.StatisticManager
 import org.waste.of.time.TimeUtils
 import org.waste.of.time.WorldTools
+import org.waste.of.time.WorldTools.COLOR
 import org.waste.of.time.WorldTools.CREDIT_MESSAGE_MD
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.MOD_NAME
@@ -41,6 +44,9 @@ import kotlin.io.path.writeBytes
 
 class MetadataStoreable : Storeable {
     override fun toString() = "Metadata"
+
+    override val message: Text
+        get() = Text.of("Saving metadata...")
 
     private val gson = GsonBuilder().registerTypeAdapter(
         AdvancementProgress::class.java as Type,
@@ -122,34 +128,22 @@ class MetadataStoreable : Storeable {
 
     private fun Session.sendSuccess() {
         val savedPath = getDirectory(WorldSavePath.ROOT).toFile()
-
-        val message = mm.deserialize(
-            "Saved <color:#FFA2C4>${
-                StatisticManager.chunks
-            }</color> chunks, <color:#FFA2C4>${
-                StatisticManager.players
-            }</color> players, and <color:#FFA2C4>${
-                StatisticManager.entities
-            }</color> entities to saves directory "
-        ).append(
-            Component.text(
-                "${serverInfo.address} (click to open)",
-                TextColor.color(0xFFA2C4)
-            ).clickEvent(ClickEvent.openFile(savedPath.path))
-        )
-
-        val successMessage = Text.Serializer.fromJson(GsonComponentSerializer.gson().serialize(message)) as Text
-
         mc.execute {
+            val toastMessage = StatisticManager.message.mm()
+
             mc.toastManager.add(
                 SystemToast.create(
                     mc,
                     SystemToast.Type.WORLD_BACKUP,
                     WorldTools.BRAND,
-                    successMessage
+                    toastMessage
                 )
             )
-            WorldTools.sendMessage(successMessage)
+
+            val chatMessage = "${StatisticManager.message} to saves directory <click:open_file:${
+                savedPath.path
+            }>${serverInfo.address} (click to open)</click>".mm()
+            WorldTools.sendMessage(chatMessage)
         }
     }
 

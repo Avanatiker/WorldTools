@@ -35,14 +35,12 @@ sharing, or backup purposes on your local machine.
     - Players: Player positions and inventories
     - Statistics: Full personal player statistics
     - Advancements: Player advancements and progress
-    - Detailed Metadata: Exhaustive capture details
+    - Detailed Metadata: Exhaustive capture details like modt, server version, and more
 
-- **Capture Mode**: Enable capture mode to continuously cache loaded chunks and entities from the server. The data is
-  periodically saved to your local disk, ensuring you don't lose any valuable information.
+- **Capture Mode**: (Keybind `F12`) Enable capture mode to stream chunks and entities from the server directly to your local disk. Everytime a chunk is unloaded it will be saved to disk. After disabling capture mode, the remaining chunks and entities will be saved to disk as well.
 
-- **Configurable Options**:
-    - Access the menu by pressing `F12` (changeable in the controls screen), providing numerous options (work in
-      progress) to customize WorldTools according to your requirements.
+- **Configurable Options**: (NOT YET IMPLEMENTED) ~~Access the menu by pressing `F12` (changeable in the controls screen), providing numerous options (work in
+      progress) to customize WorldTools according to your requirements.~~
 
 - **Freeze Entities**: This option freezes all entities, preventing them from moving upon login.
 
@@ -88,15 +86,12 @@ sharing, or backup purposes on your local machine.
 
 ### Usage
 
-1. **Commands**:
-    - Enable capture mode: Use `/worldtools capture start` to start capturing data. 
-    - Play the game normally while WorldTools caches the necessary data.
-    - Save captured data: Trigger `/worldtools save [freeze]` to save the cached data to disk (default: true).
-    - Disable capture mode: Use `/worldtools capture stop` to stop capturing data.
-    - Flush cached data: Use `/worldtools flush` to clear the captured data.
-
-2. **Access Configuration Menu**: Press `F12` to access the configuration menu and explore available options (work in
-   progress).
+1. **Download**:
+    - Enable capture mode: Use `F12` or `/worldtools` to start capturing data. 
+    - Play the game normally while WorldTools downloads the all data.
+    - Save captured data: Trigger `F12` or `/worldtools` again to stop capturing data and save the world.
+2. **Access Downloaded World**: Your downloaded world can be found in the single-player worlds list.
+3. **Access Configuration Menu**: (NOT YET IMPLEMENTED) ~~Press `F2` to access the configuration menu and explore available options.~~
 
 ### File Structure
 

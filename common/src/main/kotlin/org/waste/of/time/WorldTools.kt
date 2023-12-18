@@ -27,9 +27,11 @@ object WorldTools {
     const val DAT_EXTENSION = ".dat"
     const val COLOR = 0xFFA2C4
 
+    fun highlight(string: String) = "<color:#FFA2C4>$string</color>"
+
     private val VERSION: String by lazy {
         if (ArchitecturyTarget.getCurrentTarget() == "fabric") {
-            FabricLoader.getInstance().allMods.first { it.metadata.id == MOD_ID }.metadata.version.friendlyString
+            FabricLoader.getInstance().getModContainer(MOD_ID).orElseThrow().metadata.version.friendlyString
         } else {
             "1.1.1" // ToDo: Get version from forge loader
         }

@@ -7,6 +7,7 @@ import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.world.World
 import net.minecraft.world.chunk.WorldChunk
 import org.waste.of.time.BarManager.updateCapture
+import org.waste.of.time.StatisticManager
 import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.CAPTURE_KEY
 import org.waste.of.time.WorldTools.caching
@@ -50,13 +51,13 @@ object Events {
 //            mc.toastManager.add(WorldToolsScreen.CAPTURE_TOAST)
         }
 
-        if (!caching) return
-
         updateCapture()
     }
 
     fun onClientJoin() {
         HotCache.clear()
+        StorageFlow.currentStoreable = null
+        StatisticManager.reset()
     }
 
     fun onClientDisconnect() {

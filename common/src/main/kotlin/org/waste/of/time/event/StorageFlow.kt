@@ -16,10 +16,13 @@ import org.waste.of.time.event.serializable.MetadataStoreable
 import org.waste.of.time.storage.CustomRegionBasedStorage
 import java.io.IOException
 import java.util.concurrent.CancellationException
+import kotlin.properties.Delegates
 import kotlin.time.measureTime
 
 object StorageFlow {
     private const val MAX_BUFFER_SIZE = 1000
+    var lastStoreable: Long = 0
+    var currentStoreable: Storeable? = null
 
     private val sharedFlow = MutableSharedFlow<Storeable>(
         extraBufferCapacity = MAX_BUFFER_SIZE,
@@ -39,6 +42,9 @@ object StorageFlow {
             LOG.info("Started caching")
             mc.levelStorage.createSession(sanitizedName).use { openSession ->
                 sharedFlow.collect { storeable ->
+                    currentStoreable = storeable
+                    lastStoreable = System.currentTimeMillis()
+
                     val time = measureTime {
                         storeable.store(openSession, cachedStorages)
                     }

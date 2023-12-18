@@ -6,9 +6,11 @@ import net.minecraft.entity.Entity
 import net.minecraft.entity.boss.BossBar
 import net.minecraft.text.Text
 import net.minecraft.util.math.ChunkPos
+import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.caching
 import org.waste.of.time.WorldTools.mc
 import org.waste.of.time.WorldTools.mm
+import org.waste.of.time.event.StorageFlow
 import java.util.*
 
 object BarManager {
@@ -37,39 +39,31 @@ object BarManager {
             false
         )
 
-    fun getProgressBar() = if (!caching) Optional.empty() else Optional.of(progressBar)
+    fun getProgressBar() = if (StorageFlow.currentStoreable != null) {
+        Optional.of(progressBar)
+    } else {
+        Optional.empty()
+    }
 
-    fun getCaptureBar() = if (!caching) Optional.empty() else Optional.of(captureInfoBar)
+    fun getCaptureBar() = if (caching) {
+        Optional.of(captureInfoBar)
+    } else {
+        Optional.empty()
+    }
 
     fun updateCapture() {
-        captureInfoBar.name = "Saved <color:#FFA2C4>${
-            StatisticManager.chunks
-        }</color> chunks, <color:#FFA2C4>${
-            StatisticManager.players
-        }</color> players, and <color:#FFA2C4>${
-            StatisticManager.entities
-        }</color> entities to saves directory ".mm()
-    }
+        captureInfoBar.name = StatisticManager.message.mm()
 
-    fun updateSaveChunk(percentage: Float, savedChunks: Int, totalChunks: Int, pos: ChunkPos, dimension: String) {
-        mc.execute {
-            progressBar.percent = percentage.coerceIn(.0f, 1.0f)
-            progressBar.name =
-                "${"%.2f".format(percentage * 100)}% - Saving chunk <color:#FFA2C4>$savedChunks</color>/<color:#FFA2C4>$totalChunks</color> at <color:#FFA2C4>$pos</color> in <color:#FFA2C4>$dimension</color>...".mm()
+        StorageFlow.currentStoreable?.let {
+            progressBar.percent = 1f
+            progressBar.name = it.message
+        } ?: run {
+            progressBar.percent = 0f
+        }
+
+        if (StorageFlow.lastStoreable != 0L && System.currentTimeMillis() - StorageFlow.lastStoreable > 1000) {
+            StorageFlow.currentStoreable = null
+            progressBar.percent = 0f
         }
     }
-
-    fun updateSaveEntity(percentage: Float, savedEntities: Int, totalEntitiesSaved: Int, entity: Entity) {
-        mc.execute {
-            progressBar.percent = percentage.coerceIn(.0f, 1.0f)
-            progressBar.name =
-                "${"%.2f".format(percentage * 100)}% - Saving <color:#FFA2C4>${entity.name.string.sanitizeName()}</color> (<color:#FFA2C4>$savedEntities</color>/<color:#FFA2C4>$totalEntitiesSaved</color>) at <color:#FFA2C4>${entity.blockPos.toShortString()}</color>...".mm()
-        }
-    }
-
-    /**
-     * Certain resource packs inject legacy formatting codes into entity names.
-     * These codes will cause the bar to throw exceptions if present in the content.
-     */
-    private fun String.sanitizeName() = replace(Regex("§"), "")
 }

@@ -11,6 +11,7 @@ import net.minecraft.nbt.NbtLongArray
 import net.minecraft.nbt.NbtOps
 import net.minecraft.registry.Registries
 import net.minecraft.registry.RegistryKeys
+import net.minecraft.text.Text
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.util.math.ChunkSectionPos
 import net.minecraft.world.ChunkSerializer
@@ -24,12 +25,17 @@ import net.minecraft.world.gen.chunk.BlendingData
 import org.waste.of.time.StatisticManager
 import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.addAuthor
+import org.waste.of.time.WorldTools.highlight
+import org.waste.of.time.WorldTools.mm
 import org.waste.of.time.event.Cacheable
 import org.waste.of.time.event.RegionBased
 import org.waste.of.time.event.HotCache
 
 data class RegionBasedChunk(val chunk: WorldChunk) : RegionBased, Cacheable {
     override fun toString() = "Chunk at $chunkPos"
+
+    override val message: Text
+        get() = "Saving chunk at ${highlight(chunkPos.toString())} in dimension ${highlight(dimension)}...".mm()
 
     override val chunkPos: ChunkPos
         get() = chunk.pos
@@ -57,6 +63,7 @@ data class RegionBasedChunk(val chunk: WorldChunk) : RegionBased, Cacheable {
 
     override fun incrementStats() {
         StatisticManager.chunks++
+        StatisticManager.dimensions.add(dimension)
     }
 
     /**

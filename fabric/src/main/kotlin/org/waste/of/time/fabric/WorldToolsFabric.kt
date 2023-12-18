@@ -49,18 +49,10 @@ object WorldToolsFabric : ClientModInitializer {
 
     private fun CommandDispatcher<FabricClientCommandSource>.register() {
         register(
-            ClientCommandManager.literal("worldtools")
-                .then(ClientCommandManager.literal("capture")
-                    .then(ClientCommandManager.literal("start").executes {
-                        WorldTools.startCapture()
-                        0
-                    }
-                    ).then(ClientCommandManager.literal("stop").executes {
-                        WorldTools.stopCapture()
-                        0
-                    }
-                    )
-                )
+            ClientCommandManager.literal("worldtools").executes {
+                WorldTools.toggleCapture()
+                0
+            }
         )
     }
 }

@@ -51,18 +51,10 @@ object WorldToolsForge {
 
     private fun CommandDispatcher<ServerCommandSource>.register() {
         register(
-            CommandManager.literal("worldtools")
-                .then(CommandManager.literal("capture")
-                    .then(CommandManager.literal("start").executes {
-                        WorldTools.startCapture()
-                        0
-                    }
-                    ).then(CommandManager.literal("stop").executes {
-                        WorldTools.stopCapture()
-                        0
-                    }
-                    )
-                )
+            CommandManager.literal("worldtools").executes {
+                WorldTools.toggleCapture()
+                0
+            }
         )
     }
 }
