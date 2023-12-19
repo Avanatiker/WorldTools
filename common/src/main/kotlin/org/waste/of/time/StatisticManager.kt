@@ -6,14 +6,14 @@ object StatisticManager {
     var chunks = 0
     var entities = 0
     var players = 0
-    var container = 0
+    var containers = 0
     val dimensions = mutableSetOf<String>()
 
     fun reset() {
         chunks = 0
         entities = 0
         players = 0
-        container = 0
+        containers = 0
         dimensions.clear()
     }
 
@@ -22,38 +22,40 @@ object StatisticManager {
             val elements = mutableListOf<String>()
 
             if (chunks != 0) {
-                elements.add("${highlight(String.format("%,d", chunks))} chunks")
+                elements.add("${highlight("%,d".format(chunks))} <lang:capture.chunks>")
             }
 
             if (entities != 0) {
-                elements.add("${highlight(String.format("%,d", entities))} entities")
+                elements.add("${highlight("%,d".format(entities))} <lang:capture.entities>")
             }
 
             if (players != 0) {
-                elements.add("${highlight(String.format("%,d", players))} players")
+                elements.add("${highlight("%,d".format(players))} <lang:capture.players>")
             }
 
-            if (container != 0) {
-                elements.add("${highlight(String.format("%,d", container))} containers")
+            if (containers != 0) {
+                elements.add("${highlight("%,d".format(containers))} <lang:capture.containers>")
             }
 
             return if (elements.isEmpty()) {
-                "Nothing saved yet."
+                "<lang:capture.nothing_saved_yet>"
             } else {
-                "Saved ${elements.joinWithAnd()}${
-                    if (dimensions.isNotEmpty()) {
-                        " in ${highlight(dimensions.joinToString())}"
-                    } else {
-                        ""
-                    }
-                }"
+                val dimensionsAppendix = if (dimensions.isNotEmpty()) {
+                    " <lang:capture.in_dimensions> ${highlight(dimensions.toList().joinWithAnd())}"
+                } else {
+                    ""
+                }
+
+                "<lang:capture.saved> ${elements.joinWithAnd()}$dimensionsAppendix"
             }
         }
 
     private fun List<String>.joinWithAnd() =
-        when (this.size) {
+        when (size) {
             0 -> ""
             1 -> this[0]
-            else -> this.dropLast(1).joinToString() + " and " + this.last()
+            else -> {
+                dropLast(1).joinToString() + " <lang:capture.and> " + last()
+            }
         }
 }

@@ -18,8 +18,8 @@ data class RegionBasedEntities(
 ) : RegionBased {
     override fun toString() = "${entities.size} entities in chunk $chunkPos"
 
-    override val message: Text
-        get() = "Saving ${highlight(entities.joinToString { it.entity.name.string })} in chunk ${highlight(chunkPos.toString())} in dimension ${highlight(dimension)}...".mm()
+    override val message: String
+        get() = "<lang:capture.saved.entities:${entities.joinToString { it.entity.name.string }}:$chunkPos:$dimension>"
 
     override val world: World = entities.first().entity.world
 

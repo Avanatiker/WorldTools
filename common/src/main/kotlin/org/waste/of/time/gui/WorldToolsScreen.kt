@@ -5,16 +5,14 @@ import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.TextFieldWidget
 import net.minecraft.client.gui.widget.TextWidget
 import net.minecraft.text.Text
-import org.waste.of.time.WorldTools
+import org.waste.of.time.CaptureManager
+import org.waste.of.time.CaptureManager.levelName
+import org.waste.of.time.MessageManager.BRAND
+import org.waste.of.time.WorldTools.mm
 
-object WorldToolsScreen : Screen(Text.of("WorldTools")) {
-    // todo: rewrite this without a fabric-only library :doomcat:
-
+object WorldToolsScreen : Screen(BRAND.mm()) {
     override fun init() {
-        val title = TextWidget(Text.of("WorldTools World Downloader"), textRenderer)
-        title.x = this.width / 2 - title.width / 2
-        title.y = 10
-        this.addDrawableChild(title)
+        val title = title()
 
 //        val browseExistingDownloadsButton = ButtonWidget.Builder(Text.of("Browse Existing Downloads"), { buttonWidget ->
 //            this.client?.setScreen(BrowseDownloadsScreen())
@@ -23,29 +21,48 @@ object WorldToolsScreen : Screen(Text.of("WorldTools")) {
 //        browseExistingDownloadsButton.y = 30
 //        addDrawableChild(browseExistingDownloadsButton)
 
-        val worldNameWidget = TextFieldWidget(textRenderer, 0, 0, 100, 20, Text.of("World Name"))
-        worldNameWidget.setPlaceholder(Text.of("Enter World Name"))
-        worldNameWidget.setMaxLength(64)
-        worldNameWidget.width = this.width - 150
-        worldNameWidget.x = 20
-//        worldNameWidget.y = browseExistingDownloadsButton.y + browseExistingDownloadsButton.height + 20
-        worldNameWidget.y = title.y + title.height + 20
-        addDrawableChild(worldNameWidget)
+        val worldNameWidget = textFieldWidget(title)
+        downloadButton(worldNameWidget)
+        cancelButton()
+    }
 
-        val startDownloadButton = ButtonWidget.Builder(Text.of("Start Download")) { _ ->
-            WorldTools.startCapture(worldNameWidget.text)
-            this.client?.setScreen(null)
+    private fun title(): TextWidget {
+        val title = TextWidget(Text.translatable("gui.title", Text.translatable("worldtools")), textRenderer)
+        title.x = width / 2 - title.width / 2
+        title.y = 10
+        addDrawableChild(title)
+        return title
+    }
+
+    private fun cancelButton() {
+        val cancelButton = ButtonWidget.Builder(Text.translatable("gui.cancel")) { _ ->
+            client?.setScreen(null)
+        }.build()
+        cancelButton.x = width / 2 - cancelButton.width / 2
+        cancelButton.y = height - cancelButton.height - 40
+        addDrawableChild(cancelButton)
+    }
+
+    private fun downloadButton(worldNameWidget: TextFieldWidget) {
+        val startDownloadButton = ButtonWidget.Builder(Text.translatable("gui.start_download")) { _ ->
+            CaptureManager.start(worldNameWidget.text)
+            client?.setScreen(null)
         }.build()
         startDownloadButton.x = worldNameWidget.x + worldNameWidget.width + 10
         startDownloadButton.y = worldNameWidget.y
         startDownloadButton.width = 90
         addDrawableChild(startDownloadButton)
+    }
 
-        val cancelButton = ButtonWidget.Builder(Text.of("Cancel")) { _ ->
-            this.client?.setScreen(null)
-        }.build()
-        cancelButton.x = this.width / 2 - cancelButton.width / 2
-        cancelButton.y = this.height - cancelButton.height - 40
-        addDrawableChild(cancelButton)
+    private fun textFieldWidget(title: TextWidget): TextFieldWidget {
+        val worldNameWidget = TextFieldWidget(textRenderer, 0, 0, 100, 20, Text.of(levelName))
+        worldNameWidget.setPlaceholder(Text.translatable("gui.world_name_placeholder", levelName))
+        worldNameWidget.setMaxLength(64)
+        worldNameWidget.width = width - 150
+        worldNameWidget.x = 20
+        //        worldNameWidget.y = browseExistingDownloadsButton.y + browseExistingDownloadsButton.height + 20
+        worldNameWidget.y = title.y + title.height + 20
+        addDrawableChild(worldNameWidget)
+        return worldNameWidget
     }
 }

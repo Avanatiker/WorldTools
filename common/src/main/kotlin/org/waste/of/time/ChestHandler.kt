@@ -20,7 +20,7 @@ object ChestHandler {
 
         HotCache.blockEntities.add(container)
         HotCache.lastOpenedContainer = null
-        StatisticManager.container++
+        StatisticManager.containers++
         val inventories = containerSlots.partition { it.index < 27 }
 
         when (chestType) {

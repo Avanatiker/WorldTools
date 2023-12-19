@@ -11,7 +11,9 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.minecraft.util.ActionResult
+import org.waste.of.time.CaptureManager
 import org.waste.of.time.WorldTools
+import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.event.Events
 
 object WorldToolsFabric : ClientModInitializer {
@@ -22,6 +24,7 @@ object WorldToolsFabric : ClientModInitializer {
             dispatcher.register()
         })
         KeyBindingHelper.registerKeyBinding(WorldTools.CAPTURE_KEY)
+        KeyBindingHelper.registerKeyBinding(WorldTools.CONFIG_KEY)
         ClientEntityEvents.ENTITY_LOAD.register(ClientEntityEvents.Load { entity, _ ->
             Events.onEntityLoad(entity)
         })
@@ -49,13 +52,13 @@ object WorldToolsFabric : ClientModInitializer {
             true
         })
 
-        WorldTools.LOG.info("WorldTools Fabric initialized")
+        LOG.info("WorldTools Fabric initialized")
     }
 
     private fun CommandDispatcher<FabricClientCommandSource>.register() {
         register(
             ClientCommandManager.literal("worldtools").executes {
-                WorldTools.toggleCapture()
+                CaptureManager.toggleCapture()
                 0
             }
         )

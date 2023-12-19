@@ -34,8 +34,8 @@ import org.waste.of.time.event.HotCache
 data class RegionBasedChunk(val chunk: WorldChunk) : RegionBased, Cacheable {
     override fun toString() = "Chunk at $chunkPos"
 
-    override val message: Text
-        get() = "Saving chunk at ${highlight(chunkPos.toString())} in dimension ${highlight(dimension)}...".mm()
+    override val message: String
+        get() = "<lang:capture.saved.chunks:$chunkPos:$dimension>"
 
     override val chunkPos: ChunkPos
         get() = chunk.pos

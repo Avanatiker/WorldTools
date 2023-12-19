@@ -16,12 +16,16 @@ import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.world.World
 import net.minecraft.world.chunk.WorldChunk
 import org.waste.of.time.BarManager.updateCapture
+import org.waste.of.time.CaptureManager
+import org.waste.of.time.CaptureManager.capturing
+import org.waste.of.time.CaptureManager.currentLevelName
+import org.waste.of.time.MessageManager
 import org.waste.of.time.StatisticManager
-import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.CAPTURE_KEY
-import org.waste.of.time.WorldTools.caching
+import org.waste.of.time.WorldTools.CONFIG_KEY
+import org.waste.of.time.WorldTools.highlight
 import org.waste.of.time.WorldTools.mc
-import org.waste.of.time.WorldTools.stopCapture
+import org.waste.of.time.WorldTools.mm
 import org.waste.of.time.event.serializable.EntityCacheable
 import org.waste.of.time.event.serializable.PlayerStoreable
 import org.waste.of.time.event.serializable.RegionBasedChunk
@@ -57,9 +61,11 @@ object Events {
 
     fun onClientTickStart() {
         if (CAPTURE_KEY.wasPressed() && mc.world != null && mc.currentScreen == null) {
-//            mc.setScreen(WorldToolsScreen)
-            WorldTools.toggleCapture()
-//            mc.toastManager.add(WorldToolsScreen.CAPTURE_TOAST)
+            CaptureManager.toggleCapture()
+        }
+
+        if (CONFIG_KEY.wasPressed() && mc.world != null && mc.currentScreen == null) {
+            mc.setScreen(WorldToolsScreen)
         }
 
         updateCapture()
@@ -72,20 +78,18 @@ object Events {
     }
 
     fun onClientDisconnect() {
-        if (!caching) return
-
-        stopCapture()
+        CaptureManager.stop()
     }
 
     fun onInteractBlock(world: World, hitResult: BlockHitResult) {
-        if (!caching) return
+        if (!capturing) return
 
         val blockEntity = (world.getBlockEntity(hitResult.blockPos) as? ChestBlockEntity) ?: return
         HotCache.lastOpenedContainer = blockEntity
     }
 
     fun onBlockOutline(matrices: MatrixStack, vertexConsumers: VertexConsumerProvider, camera: Camera) {
-        if (!caching) return
+        if (!capturing) return
 
         val world = mc.world ?: return
         val vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getLines()) ?: return
@@ -122,25 +126,18 @@ object Events {
     }
 
     fun onGameMenuScreenInitWidgets(adder: GridWidget.Adder) {
-        if (WorldTools.caching) {
-            adder.add(
-                ButtonWidget.builder(
-                    Text.of("Save WorldTools Capture")) {
-                        WorldTools.stopCapture()
-                        mc.setScreen(null)
-                    }
-                    .width(204)
-                    .build(),
-                2
-            )
+        val widget = if (capturing) {
+            val label = "<lang:gui.finish_download:$currentLevelName>".mm()
+            ButtonWidget.builder(label) {
+                CaptureManager.stop()
+                mc.setScreen(null)
+            }.width(204).build()
         } else {
-            adder.add(
-                ButtonWidget.builder(
-                    Text.of("WorldTools")) { MinecraftClient.getInstance().setScreen(WorldToolsScreen) }
-                    .width(204)
-                    .build(),
-                2
-            )
+            ButtonWidget.builder(MessageManager.BRAND.mm()) {
+                MinecraftClient.getInstance().setScreen(WorldToolsScreen)
+            }.width(204).build()
         }
+
+        adder.add(widget, 2)
     }
 }

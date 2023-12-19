@@ -12,5 +12,5 @@ interface Storeable {
 
     fun emit() = StorageFlow.emit(this)
 
-    val message: Text
+    val message: String
 }

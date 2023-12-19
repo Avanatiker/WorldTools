@@ -16,8 +16,8 @@ data class PlayerStoreable(
 ) : Cacheable, Storeable {
     override fun toString() = "Player ${player.name.string}"
 
-    override val message: Text
-        get() = "Saving player ${highlight(player.name.string)} at ${highlight(player.pos.toString())} in dimension ${highlight(player.world.registryKey.value.path)}...".mm()
+    override val message: String
+        get() = "<lang:capture.saved.player:${player.name.string}:${player.pos}:${player.world.registryKey.value.path}>"
 
     override fun cache() {
         HotCache.players.add(this)

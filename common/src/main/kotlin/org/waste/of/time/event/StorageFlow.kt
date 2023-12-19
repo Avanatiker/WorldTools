@@ -5,11 +5,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
-import net.minecraft.client.toast.SystemToast
-import net.minecraft.text.Text
 import net.minecraft.util.path.SymlinkValidationException
+import org.waste.of.time.MessageManager
 import org.waste.of.time.StatisticManager
-import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.mc
 import org.waste.of.time.event.serializable.MetadataStoreable
@@ -34,13 +32,13 @@ object StorageFlow {
         sharedFlow.tryEmit(storeable)
     }
 
-    fun launch(worldName: String) = CoroutineScope(Dispatchers.IO).launch {
+    fun launch(levelName: String) = CoroutineScope(Dispatchers.IO).launch {
         StatisticManager.reset()
         val cachedStorages = mutableMapOf<String, CustomRegionBasedStorage>()
 
         try {
             LOG.info("Started caching")
-            mc.levelStorage.createSession(worldName).use { openSession ->
+            mc.levelStorage.createSession(levelName).use { openSession ->
                 sharedFlow.collect { storeable ->
                     val time = measureTime {
                         storeable.store(openSession, cachedStorages)
@@ -58,33 +56,17 @@ object StorageFlow {
         } catch (e: StopCollectingException) {
             LOG.info("Canceled caching flow")
         } catch (e: IOException) {
-            onFail(e)
-            LOG.error("Failed to create session for $worldName", e)
+            MessageManager.sendError("error.failed_to_create_session", levelName)
+            LOG.error("Failed to create session for $levelName", e)
         } catch (e: SymlinkValidationException) {
-            onFail(e)
-            LOG.error("Failed to create session for $worldName", e)
+            MessageManager.sendError("error.failed_to_create_session", levelName)
+            LOG.error("Failed to create session for $levelName", e)
         } catch (e: CancellationException) {
             LOG.info("Canceled caching thread")
         }
 
         cachedStorages.values.forEach { it.close() }
         LOG.info("Finished caching")
-    }
-
-    private fun onFail(e: Exception) {
-        mc.execute {
-            val message = Text.of("Save failed: ${e.localizedMessage}")
-
-            mc.toastManager.add(
-                SystemToast.create(
-                    mc,
-                    SystemToast.Type.WORLD_ACCESS_FAILURE,
-                    WorldTools.BRAND,
-                    message
-                )
-            )
-            WorldTools.sendMessage(message)
-        }
     }
 
     class StopCollectingException : Exception()

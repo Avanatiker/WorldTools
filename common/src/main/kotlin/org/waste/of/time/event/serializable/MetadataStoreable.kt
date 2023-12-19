@@ -5,24 +5,23 @@ import com.mojang.authlib.GameProfile
 import net.minecraft.SharedConstants
 import net.minecraft.advancement.AdvancementProgress
 import net.minecraft.client.network.PlayerListEntry
-import net.minecraft.client.network.ServerInfo
-import net.minecraft.client.toast.SystemToast
-import net.minecraft.server.integrated.IntegratedServer
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import net.minecraft.util.PathUtil
 import net.minecraft.util.WorldSavePath
 import net.minecraft.world.level.storage.LevelStorage.Session
+import org.waste.of.time.CaptureManager.currentLevelName
+import org.waste.of.time.CaptureManager.serverInfo
+import org.waste.of.time.CaptureManager.levelName
+import org.waste.of.time.MessageManager.infoToast
+import org.waste.of.time.MessageManager.sendInfo
 import org.waste.of.time.StatisticManager
 import org.waste.of.time.TimeUtils
-import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.CREDIT_MESSAGE_MD
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.MOD_NAME
-import org.waste.of.time.WorldTools.freezeWorld
 import org.waste.of.time.WorldTools.mc
 import org.waste.of.time.WorldTools.mm
-import org.waste.of.time.WorldTools.serverInfo
 import org.waste.of.time.event.Storeable
 import org.waste.of.time.mixin.accessor.AdvancementProgressesAccessor
 import org.waste.of.time.serializer.LevelPropertySerializer.writeLevelDataFile
@@ -36,8 +35,8 @@ import kotlin.io.path.writeBytes
 class MetadataStoreable : Storeable {
     override fun toString() = "Metadata"
 
-    override val message: Text
-        get() = Text.of("Saving metadata...")
+    override val message: String
+        get() = "<lang:capture.saved.metadata>"
 
     private val gson = GsonBuilder().registerTypeAdapter(
         AdvancementProgress::class.java as Type,
@@ -57,23 +56,23 @@ class MetadataStoreable : Storeable {
         }
 
         session.writeIconFile()
-        session.writeLevelDataFile(freezeWorld = freezeWorld)
+        session.writeLevelDataFile()
         session.writeAdvancements()
 
         session.sendSuccess()
     }
 
     private fun Path.writeMetadata() {
-        resolve("Capture Metadata.md").toFile()
-            .writeText(if (WorldTools.singlePlayer)
-                createMetadataSinglePlayer(WorldTools.capturingWorldName!!, mc.server!!)
-                else createMetadataMultiplayer(WorldTools.capturingWorldName!!, serverInfo))
+        resolve("Capture Metadata.md")
+            .toFile()
+            .writeText(createMetadata())
 
         LOG.info("Saved capture metadata.")
     }
 
     private fun Path.writePlayerEntryList() {
-        if (WorldTools.singlePlayer) return
+        if (mc.isInSingleplayer) return
+
         mc.networkHandler?.playerList?.let { playerList ->
             if (playerList.isEmpty()) return@let
             resolve("Player Entry List.csv").toFile()
@@ -92,20 +91,20 @@ class MetadataStoreable : Storeable {
     }
 
     private fun Session.writeIconFile() {
-        if (WorldTools.singlePlayer) {
+        if (mc.isInSingleplayer) {
             mc.server?.iconFile?.ifPresent { spIconPath ->
                 iconFile.ifPresent {
                     it.writeBytes(spIconPath.toFile().readBytes())
                 }
-                LOG.info("Saved favicon.") }
+            }
         } else {
             serverInfo.favicon?.let { favicon ->
                 iconFile.ifPresent {
                     it.writeBytes(favicon)
-                    LOG.info("Saved favicon.")
                 }
             }
         }
+        LOG.info("Saved favicon.")
     }
 
     private fun Session.writeAdvancements() {
@@ -128,87 +127,63 @@ class MetadataStoreable : Storeable {
         LOG.info("Saved ${progressMap.size} advancements.")
     }
 
-    private fun Session.sendSuccess() {
-        val savedPath = getDirectory(WorldSavePath.ROOT).toFile()
-        mc.execute {
-            val toastMessage = StatisticManager.message.mm()
-
-            mc.toastManager.add(
-                SystemToast.create(
-                    mc,
-                    SystemToast.Type.WORLD_BACKUP,
-                    WorldTools.BRAND,
-                    toastMessage
-                )
-            )
-
-            val chatMessage = "${StatisticManager.message} to saves directory <click:open_file:${
-                savedPath.path
-            }>${WorldTools.capturingWorldName} (click to open)</click>".mm()
-            WorldTools.sendMessage(chatMessage)
+    private fun createMetadata() = StringBuilder().apply {
+        if (currentLevelName != levelName) {
+            appendLine("# $currentLevelName ($levelName) World Save - Snapshot Details")
+        } else {
+            appendLine("# $currentLevelName World Save - Snapshot Details")
         }
-    }
 
-    private fun createMetadataMultiplayer(worldName: String, serverInfo: ServerInfo) = StringBuilder().apply {
-        appendLine("# $worldName World Save - Snapshot Details")
-        appendLine("![Server Icon](../icon.png)")
+        if (mc.isInSingleplayer) {
+            appendLine("![World Icon](../icon.png)")
+        } else {
+            appendLine("![Server Icon](../icon.png)")
+        }
+
         appendLine()
         appendLine("- **Time**: `${TimeUtils.getTime()}` (Timestamp: `${System.currentTimeMillis()}`)")
         appendLine("- **Captured By**: `${mc.player?.name?.string}`")
 
         appendLine()
-        appendLine("## Server")
-        if (serverInfo.name != "Minecraft Server") {
-            appendLine("- **List Entry Name**: `${serverInfo.name}`")
-        }
-        appendLine("- **IP**: `${serverInfo.address}`")
-        if (serverInfo.playerCountLabel.string.isNotBlank()) {
-            appendLine("- **Capacity**: `${serverInfo.playerCountLabel.string}`")
-        }
-        appendLine("- **Brand**: `${mc.player?.serverBrand}`")
-        appendLine("- **MOTD**: `${serverInfo.label.string.split("\n").joinToString(" ")}`")
-        appendLine("- **Version**: `${serverInfo.version.string}`")
 
-        serverInfo.players?.sample?.let { sample ->
-            if (sample.isEmpty()) return@let
-            appendLine("- **Short Label**: `${sample.joinToString { it.name }}`")
-        }
-        serverInfo.playerListSummary?.let {
-            if (it.isEmpty()) return@let
-            appendLine("- **Full Label**: `${it.joinToString(" ") { str -> str.string }}`")
+        if (!mc.isInSingleplayer) {
+            appendLine("## Server")
+            if (serverInfo.name != "Minecraft Server") {
+                appendLine("- **List Entry Name**: `${serverInfo.name}`")
+            }
+            appendLine("- **IP**: `${serverInfo.address}`")
+            if (serverInfo.playerCountLabel.string.isNotBlank()) {
+                appendLine("- **Capacity**: `${serverInfo.playerCountLabel.string}`")
+            }
+            appendLine("- **Brand**: `${mc.player?.serverBrand}`")
+            appendLine("- **MOTD**: `${serverInfo.label.string.split("\n").joinToString(" ")}`")
+            appendLine("- **Version**: `${serverInfo.version.string}`")
+
+            serverInfo.players?.sample?.let { sample ->
+                if (sample.isEmpty()) return@let
+                appendLine("- **Short Label**: `${sample.joinToString { it.name }}`")
+            }
+            serverInfo.playerListSummary?.let {
+                if (it.isEmpty()) return@let
+                appendLine("- **Full Label**: `${it.joinToString(" ") { str -> str.string }}`")
+            }
+
+            appendLine()
+            appendLine("## Connection")
+            (mc.networkHandler?.connection?.address as? InetSocketAddress)?.let {
+                appendLine("- **Host Name**: `${it.address.canonicalHostName}`")
+                appendLine("- **Port**: `${it.port}`")
+            }
+        } else {
+            appendLine("## Singleplayer Capture")
+            appendLine("- **Source World Name**: `${mc.server?.name}`")
+            appendLine("- **Version**: `${mc.server?.version}`")
         }
 
-        appendLine()
-        appendLine("## Connection")
-        (mc.networkHandler?.connection?.address as? InetSocketAddress)?.let {
-            appendLine("- **Host Name**: `${it.address.canonicalHostName}`")
-            appendLine("- **Port**: `${it.port}`")
-        }
         mc.networkHandler?.sessionId?.let { id ->
             appendLine("- **Session ID**: `$id`")
         }
 
-        appendLine()
-        appendLine(CREDIT_MESSAGE_MD)
-    }.toString()
-
-    private fun createMetadataSinglePlayer(worldName: String, server: IntegratedServer) = StringBuilder().apply {
-        appendLine("# $worldName World Save - Snapshot Details")
-        appendLine("![Server Icon](../icon.png)")
-        appendLine()
-        appendLine("- **Time**: `${TimeUtils.getTime()}` (Timestamp: `${System.currentTimeMillis()}`)")
-        appendLine("- **Captured By**: `${mc.player?.name?.string}`")
-
-        appendLine()
-        appendLine("## SinglePlayer World Name: ${server.name}")
-        appendLine("- **Brand**: `Single Player`")
-        appendLine("- **Version**: `${server.version}`")
-
-        appendLine()
-        appendLine("## Connection")
-        mc.networkHandler?.sessionId?.let { id ->
-            appendLine("- **Session ID**: `$id`")
-        }
         appendLine()
         appendLine(CREDIT_MESSAGE_MD)
     }.toString()
@@ -245,5 +220,13 @@ class MetadataStoreable : Storeable {
             append("[key: $t | name: ${u.name} | value: ${u.value} | signature: ${u.signature}] ")
         }
         append(", ")
+    }
+
+    private fun Session.sendSuccess() {
+        val savedPath = getDirectory(WorldSavePath.ROOT).toFile()
+        val message = StatisticManager.message
+
+        message.mm().infoToast()
+        "$message <lang:capture.in_directory> <click:open_file:${savedPath.path}>$currentLevelName (<lang:capture.click_to_open>)</click>".mm().sendInfo()
     }
 }

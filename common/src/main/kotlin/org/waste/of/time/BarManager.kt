@@ -4,7 +4,8 @@ package org.waste.of.time
 import net.minecraft.client.gui.hud.ClientBossBar
 import net.minecraft.entity.boss.BossBar
 import net.minecraft.text.Text
-import org.waste.of.time.WorldTools.caching
+import org.waste.of.time.CaptureManager.capturing
+import org.waste.of.time.WorldTools.BOSS_BAR_TIMEOUT
 import org.waste.of.time.WorldTools.highlight
 import org.waste.of.time.WorldTools.mm
 import org.waste.of.time.event.StorageFlow
@@ -42,7 +43,7 @@ object BarManager {
         Optional.empty()
     }
 
-    fun getCaptureBar() = if (caching) {
+    fun getCaptureBar() = if (capturing) {
         Optional.of(captureInfoBar)
     } else {
         Optional.empty()
@@ -53,15 +54,12 @@ object BarManager {
 
         StorageFlow.lastStored?.let {
             progressBar.percent = 1f
-            progressBar.name = it.message.copy()
-                .append(" (took ")
-                .append(highlight(StorageFlow.lastStoredTimeNeeded.toString()).mm())
-                .append(")")
+            progressBar.name = "${it.message} (<lang:capture.took:${StorageFlow.lastStoredTimeNeeded}>)".mm()
         } ?: run {
             progressBar.percent = 0f
         }
 
-        val timeout = System.currentTimeMillis() - StorageFlow.lastStoredTimestamp > 1500
+        val timeout = System.currentTimeMillis() - StorageFlow.lastStoredTimestamp > BOSS_BAR_TIMEOUT
 
         if (StorageFlow.lastStoredTimestamp != 0L && timeout) {
             StorageFlow.lastStored = null

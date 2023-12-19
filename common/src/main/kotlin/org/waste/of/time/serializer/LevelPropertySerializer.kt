@@ -6,9 +6,11 @@ import net.minecraft.util.Util
 import net.minecraft.util.WorldSavePath
 import net.minecraft.world.GameRules
 import net.minecraft.world.level.storage.LevelStorage.Session
+import org.waste.of.time.CaptureManager.currentLevelName
 import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.addAuthor
+import org.waste.of.time.WorldTools.freezeWorld
 import org.waste.of.time.WorldTools.mc
 import java.io.File
 
@@ -16,9 +18,9 @@ object LevelPropertySerializer {
     /**
      * See [net.minecraft.world.level.storage.LevelStorage.Session.writeLevelDataFile]
      */
-    fun Session.writeLevelDataFile(freezeWorld: Boolean = true) {
+    fun Session.writeLevelDataFile() {
         val resultingFile = getDirectory(WorldSavePath.ROOT).toFile()
-        val dataNbt = serializeLevelData(freezeWorld)
+        val dataNbt = serializeLevelData()
         val levelNbt = NbtCompound().apply {
             addAuthor()
             put("Data", dataNbt)
@@ -39,7 +41,7 @@ object LevelPropertySerializer {
     /**
      * See [net.minecraft.world.level.LevelProperties.updateProperties]
      */
-    private fun serializeLevelData(freezeWorld: Boolean) = NbtCompound().apply {
+    private fun serializeLevelData() = NbtCompound().apply {
         val player = mc.player ?: return@apply
 
         player.serverBrand?.let {
@@ -76,7 +78,7 @@ object LevelPropertySerializer {
         putLong("Time", player.world.time)
         putLong("DayTime", player.world.timeOfDay)
         putLong("LastPlayed", System.currentTimeMillis())
-        putString("LevelName", WorldTools.capturingWorldName!!)
+        putString("LevelName", currentLevelName)
         putInt("version", 19133)
         putInt("clearWeatherTime", 0) // not sure
         putInt("rainTime", 0) // not sure
@@ -92,7 +94,7 @@ object LevelPropertySerializer {
         putByte("Difficulty", player.world.levelProperties.difficulty.id.toByte())
         putBoolean("DifficultyLocked", false) // not sure
 
-        put("GameRules", genGameRules(player.world.gameRules, freezeWorld))
+        put("GameRules", genGameRules(player.world.gameRules))
 
         put("DragonFight", NbtCompound()) // not sure
 
@@ -109,7 +111,7 @@ object LevelPropertySerializer {
         // skip wandering trader id
     }
 
-    private fun genGameRules(gameRules: GameRules, freezeWorld: Boolean) = gameRules.toNbt().apply {
+    private fun genGameRules(gameRules: GameRules) = gameRules.toNbt().apply {
         if (!freezeWorld) return@apply
 
         putString(GameRules.DO_WARDEN_SPAWNING.name, "false")
@@ -117,10 +119,7 @@ object LevelPropertySerializer {
         putString(GameRules.DO_VINES_SPREAD.name, "false")
         putString(GameRules.DO_MOB_SPAWNING.name, "false")
         putString(GameRules.DO_DAYLIGHT_CYCLE.name, "false")
-        putString(GameRules.DO_TILE_DROPS.name, "false")
-        putString(GameRules.DO_MOB_LOOT.name, "false")
         putString(GameRules.KEEP_INVENTORY.name, "true")
-        putString(GameRules.DO_ENTITY_DROPS.name, "false")
         putString(GameRules.DO_MOB_GRIEFING.name, "false")
         putString(GameRules.DO_TRADER_SPAWNING.name, "false")
         putString(GameRules.DO_PATROL_SPAWNING.name, "false")

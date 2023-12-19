@@ -11,7 +11,9 @@ import net.minecraftforge.event.entity.EntityJoinLevelEvent
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent
 import net.minecraftforge.event.entity.player.PlayerInteractEvent
 import net.minecraftforge.fml.common.Mod
+import org.waste.of.time.CaptureManager
 import org.waste.of.time.WorldTools
+import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.event.Events
 import thedarkcolour.kotlinforforge.forge.FORGE_BUS
 
@@ -24,6 +26,7 @@ object WorldToolsForge {
         }
         FORGE_BUS.addListener<RegisterKeyMappingsEvent> {
             it.register(WorldTools.CAPTURE_KEY)
+            it.register(WorldTools.CONFIG_KEY)
         }
         FORGE_BUS.addListener<ClientPlayerNetworkEvent.LoggingIn> {
             Events.onClientJoin()
@@ -44,13 +47,13 @@ object WorldToolsForge {
             Events.onBlockOutline(it.poseStack, it.multiBufferSource, it.camera)
         }
 
-        WorldTools.LOG.info("WorldTools Forge initialized")
+        LOG.info("WorldTools Forge initialized")
     }
 
     private fun CommandDispatcher<ServerCommandSource>.register() {
         register(
             CommandManager.literal("worldtools").executes {
-                WorldTools.toggleCapture()
+                CaptureManager.toggleCapture()
                 0
             }
         )
