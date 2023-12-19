@@ -1,6 +1,6 @@
 package org.waste.of.time.event
 
-import net.minecraft.block.entity.ChestBlockEntity
+import net.minecraft.block.entity.LockableContainerBlockEntity
 import net.minecraft.util.math.ChunkPos
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.event.serializable.RegionBasedChunk
@@ -13,8 +13,8 @@ object HotCache {
     val chunks = ConcurrentHashMap<ChunkPos, RegionBasedChunk>()
     val entities = ConcurrentHashMap<ChunkPos, MutableList<EntityCacheable>>()
     val players: ConcurrentHashMap.KeySetView<PlayerStoreable, Boolean> = ConcurrentHashMap.newKeySet()
-    val blockEntities: ConcurrentHashMap.KeySetView<ChestBlockEntity, Boolean> = ConcurrentHashMap.newKeySet()
-    var lastOpenedContainer: ChestBlockEntity? = null
+    val blockEntities: ConcurrentHashMap.KeySetView<LockableContainerBlockEntity, Boolean> = ConcurrentHashMap.newKeySet()
+    var lastOpenedContainer: LockableContainerBlockEntity? = null
 
     fun getEntitySerializableForChunk(chunkPos: ChunkPos) =
         entities[chunkPos]?.let { entities ->

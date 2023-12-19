@@ -8,7 +8,7 @@
   "capture.in_directory": "im Verzeichnis",
   "capture.nothing_saved_yet": "Noch nichts gespeichert",
   "capture.players": "Spieler",
-  "capture.saved": "Speicherte",
+  "capture.saved": "Gespeichert:",
   "capture.saved.chunks": "Chunk bei %s in Dimension %s gespeichert.",
   "capture.saved.entities": "Entitäten %s in Chunk %s in Dimension %s gespeichert.",
   "capture.saved.metadata": "Metadaten gespeichert.",

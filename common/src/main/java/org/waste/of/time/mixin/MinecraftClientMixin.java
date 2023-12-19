@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.waste.of.time.ChestHandler;
+import org.waste.of.time.LootableInjectionHandler;
 import org.waste.of.time.event.Events;
 
 @Mixin(MinecraftClient.class)
@@ -25,7 +25,7 @@ public class MinecraftClientMixin {
     @Inject(method = "setScreen", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/Screen;removed()V", shift = At.Shift.AFTER))
     private void onScreenRemove(@Nullable Screen screen, CallbackInfo ci) {
         if (currentScreen != null) {
-            ChestHandler.INSTANCE.onScreenRemoved(currentScreen);
+            LootableInjectionHandler.INSTANCE.onScreenRemoved(currentScreen);
         }
     }
 }

@@ -1,6 +1,6 @@
 package org.waste.of.time.event
 
-import net.minecraft.block.entity.ChestBlockEntity
+import net.minecraft.block.entity.LockableContainerBlockEntity
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.GridWidget
@@ -11,7 +11,6 @@ import net.minecraft.client.render.WorldRenderer
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.text.Text
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.world.World
 import net.minecraft.world.chunk.WorldChunk
@@ -23,7 +22,6 @@ import org.waste.of.time.MessageManager
 import org.waste.of.time.StatisticManager
 import org.waste.of.time.WorldTools.CAPTURE_KEY
 import org.waste.of.time.WorldTools.CONFIG_KEY
-import org.waste.of.time.WorldTools.highlight
 import org.waste.of.time.WorldTools.mc
 import org.waste.of.time.WorldTools.mm
 import org.waste.of.time.event.serializable.EntityCacheable
@@ -84,7 +82,7 @@ object Events {
     fun onInteractBlock(world: World, hitResult: BlockHitResult) {
         if (!capturing) return
 
-        val blockEntity = (world.getBlockEntity(hitResult.blockPos) as? ChestBlockEntity) ?: return
+        val blockEntity = (world.getBlockEntity(hitResult.blockPos) as? LockableContainerBlockEntity) ?: return
         HotCache.lastOpenedContainer = blockEntity
     }
 
@@ -96,6 +94,7 @@ object Events {
 
         HotCache.chunks.values
             .flatMap { it.chunk.blockEntities.values }
+            .filterIsInstance<LockableContainerBlockEntity>()
             .filter { it !in HotCache.blockEntities }
             .forEach { blockEntity ->
                 val blockPos = blockEntity.pos

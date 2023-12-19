@@ -30,5 +30,6 @@ data class PlayerStoreable(
     override fun store(session: Session, cachedStorages: MutableMap<String, CustomRegionBasedStorage>) {
         session.createSaveHandler().savePlayerData(player)
         StatisticManager.players++
+        StatisticManager.dimensions.add(player.world.registryKey.value.path)
     }
 }
