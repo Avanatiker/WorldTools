@@ -19,6 +19,7 @@ dependencies {
     modImplementation("net.fabricmc:fabric-loader:${project.properties["fabric_loader_version"]!!}")
     // Add dependencies on the required Kotlin modules.
     modImplementation("net.fabricmc:fabric-language-kotlin:${project.properties["fabric_kotlin_version"]!!}")
+    implementation("net.kyori:adventure-api:${project.properties["kyori_adventure_version"]}")
     implementation("net.kyori:adventure-text-minimessage:${project.properties["kyori_adventure_version"]}")
     implementation("net.kyori:adventure-text-serializer-gson:${project.properties["kyori_adventure_version"]}")
     implementation(annotationProcessor("io.github.llamalad7:mixinextras-common:${project.properties["mixinextras_version"]}")!!)
