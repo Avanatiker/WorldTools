@@ -31,7 +31,7 @@ val common: Configuration by configurations.creating {
 
 dependencies {
     forge("net.minecraftforge:forge:${project.properties["forge_version"]!!}")
-    modImplementation("thedarkcolour:kotlinforforge:${project.properties["kotlin_forge_version"]!!}")
+    implementation("thedarkcolour:kotlinforforge:${project.properties["kotlin_forge_version"]!!}")
     common(project(":common", configuration = "namedElements")) { isTransitive = false }
     shadowCommon(project(path = ":common", configuration = "transformProductionForge")) { isTransitive = false }
     forgeRuntimeLibrary(shadowCommon("net.kyori:adventure-text-minimessage:${project.properties["kyori_text_minimessage_version"]}")!!)

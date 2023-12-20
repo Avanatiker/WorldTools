@@ -7,7 +7,7 @@ on:
 
 env:
   MINECRAFT_VERSION: "1.20.1"
-  KOTLIN_FOR_FORGE_VERSION: "4.4.0"
+  KOTLIN_FOR_FORGE_VERSION: "4.9.0"
 
 jobs:
   build:
