@@ -21,6 +21,9 @@
         "adapter": "kotlin",
         "value": "org.waste.of.time.fabric.WorldToolsFabric"
       }
+    ],
+    "modmenu": [
+      "org.waste.of.time.fabric.WorldToolsModMenuIntegration"
     ]
   },
   "mixins": [
@@ -31,6 +34,7 @@
     "fabric-api": "*",
     "minecraft": "~1.20",
     "java": ">=17",
-    "fabric-language-kotlin": ">=${fabric_kotlin_version}"
+    "fabric-language-kotlin": ">=${fabric_kotlin_version}",
+    "cloth-config": ">=11"
   }
 }

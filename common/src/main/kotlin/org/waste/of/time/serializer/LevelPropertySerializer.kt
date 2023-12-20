@@ -10,7 +10,6 @@ import org.waste.of.time.CaptureManager.currentLevelName
 import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.addAuthor
-import org.waste.of.time.WorldTools.freezeWorld
 import org.waste.of.time.WorldTools.mc
 import java.io.File
 
@@ -112,7 +111,7 @@ object LevelPropertySerializer {
     }
 
     private fun genGameRules(gameRules: GameRules) = gameRules.toNbt().apply {
-        if (!freezeWorld) return@apply
+        if (!WorldTools.config.freezeWorld) return@apply
 
         putString(GameRules.DO_WARDEN_SPAWNING.name, "false")
         putString(GameRules.DO_FIRE_TICK.name, "false")

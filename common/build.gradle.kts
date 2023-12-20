@@ -22,6 +22,9 @@ dependencies {
     implementation("net.kyori:adventure-text-minimessage:4.14.0")
     implementation("net.kyori:adventure-text-serializer-gson:4.14.0")
     implementation(annotationProcessor("io.github.llamalad7:mixinextras-common:0.3.2")!!)
+    modCompileOnly("me.shedaniel.cloth:cloth-config-fabric:11.1.106") {
+        exclude(group = "net.fabricmc.fabric-api", module = "fabric-api")
+    }
 }
 
 tasks.named("remapJar") {

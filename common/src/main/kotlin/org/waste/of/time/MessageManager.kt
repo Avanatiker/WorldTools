@@ -6,8 +6,6 @@ import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import org.waste.of.time.WorldTools.mc
 import org.waste.of.time.WorldTools.mm
-import org.waste.of.time.WorldTools.showChatMessages
-import org.waste.of.time.WorldTools.showToasts
 
 object MessageManager {
     const val BRAND = "<color:green>W<color:white>orld<color:green>T<color:white>ools<reset>"
@@ -55,7 +53,7 @@ object MessageManager {
     }
 
     private fun Text.addMessage() {
-        if (!showChatMessages) return
+        if (!WorldTools.config.showChatMessages) return
 
         mc.execute {
             mc.inGameHud.chatHud.addMessage(this)
@@ -63,7 +61,7 @@ object MessageManager {
     }
 
     private fun Toast.addToast() {
-        if (!showToasts) return
+        if (!WorldTools.config.showToasts) return
 
         mc.execute {
             mc.toastManager.add(this)

@@ -1,5 +1,6 @@
 package org.waste.of.time.gui
 
+import me.shedaniel.autoconfig.AutoConfig
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.*
 import net.minecraft.text.Text
@@ -7,6 +8,7 @@ import org.waste.of.time.CaptureManager
 import org.waste.of.time.CaptureManager.levelName
 import org.waste.of.time.MessageManager.BRAND
 import org.waste.of.time.WorldTools.mm
+import org.waste.of.time.config.WorldToolsConfig
 
 object WorldToolsScreen : Screen(BRAND.mm()) {
     override fun init() {
@@ -29,11 +31,23 @@ object WorldToolsScreen : Screen(BRAND.mm()) {
         SimplePositioningWidget.setPos(entryGridWidget, 0, title.y, this.width, this.height, 0.5f, 0.05f)
         entryGridWidget.forEachChild(this::addDrawableChild)
 
+        val bottomGridWidget = GridWidget()
+        bottomGridWidget.mainPositioner.margin(4, 4, 4, 4)
+        val bottomAdder = bottomGridWidget.createAdder(2)
+        // no mod menu on forge so we need a way to get to the config screen ~somewhere~
+        val configButton = ButtonWidget.Builder(Text.translatable("gui.config")) { _ ->
+            client?.setScreen(AutoConfig.getConfigScreen(WorldToolsConfig::class.java, this).get())
+        }.width(90).build()
+        bottomAdder.add(configButton, 1)
+
         val cancelButton = ButtonWidget.Builder(Text.translatable("gui.cancel")) { _ ->
             client?.setScreen(null)
-        }.build()
-        SimplePositioningWidget.setPos(cancelButton, 0, 0, this.width, this.height, 0.5f, 0.95f)
-        addDrawableChild(cancelButton)
+        }.width(90).build()
+        bottomAdder.add(cancelButton, 1)
+
+        bottomGridWidget.refreshPositions()
+        SimplePositioningWidget.setPos(bottomGridWidget, 0, 0, this.width, this.height, 0.5f, .95f)
+        bottomGridWidget.forEachChild(this::addDrawableChild)
     }
 }
 

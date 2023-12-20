@@ -67,6 +67,8 @@ allprojects {
         maven("https://server.bbkr.space/artifactory/libs-release") {
             name = "CottonMC"
         }
+        maven("https://maven.shedaniel.me/")
+        maven("https://maven.terraformersmc.com/releases/")
     }
 
     tasks {

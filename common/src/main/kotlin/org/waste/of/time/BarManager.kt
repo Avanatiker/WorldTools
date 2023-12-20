@@ -5,8 +5,6 @@ import net.minecraft.client.gui.hud.ClientBossBar
 import net.minecraft.entity.boss.BossBar
 import net.minecraft.text.Text
 import org.waste.of.time.CaptureManager.capturing
-import org.waste.of.time.WorldTools.BOSS_BAR_TIMEOUT
-import org.waste.of.time.WorldTools.highlight
 import org.waste.of.time.WorldTools.mm
 import org.waste.of.time.event.StorageFlow
 import java.util.*
@@ -59,7 +57,7 @@ object BarManager {
             progressBar.percent = 0f
         }
 
-        val timeout = System.currentTimeMillis() - StorageFlow.lastStoredTimestamp > BOSS_BAR_TIMEOUT
+        val timeout = System.currentTimeMillis() - StorageFlow.lastStoredTimestamp > WorldTools.config.bossBarTimeout
 
         if (StorageFlow.lastStoredTimestamp != 0L && timeout) {
             StorageFlow.lastStored = null

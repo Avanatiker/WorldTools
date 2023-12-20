@@ -3,8 +3,8 @@ package org.waste.of.time.event.serializable
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityType
 import net.minecraft.nbt.NbtCompound
+import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.addAuthor
-import org.waste.of.time.WorldTools.freezeEntities
 import org.waste.of.time.event.Cacheable
 import org.waste.of.time.event.HotCache
 
@@ -18,7 +18,7 @@ data class EntityCacheable(
         EntityType.getId(entity.type)?.let { putString(Entity.ID_KEY, it.toString()) }
         entity.writeNbt(this)
 
-        if (freezeEntities) {
+        if (WorldTools.config.freezeEntities) {
             putByte("NoAI", 1)
             putByte("NoGravity", 1)
             putByte("Invulnerable", 1)

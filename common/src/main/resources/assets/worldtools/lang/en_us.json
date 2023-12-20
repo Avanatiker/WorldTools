@@ -28,5 +28,14 @@
   "key.categories.worldtools": "WorldTools",
   "key.worldtools.open_config": "Open configuration",
   "key.worldtools.toggle_capture": "Quick download",
-  "worldtools": "WorldTools"
+  "worldtools": "WorldTools",
+  "gui.config": "Config",
+  "text.autoconfig.worldtools.title": "WorldTools Config",
+  "text.autoconfig.worldtools.option.bossBarTimeout": "Boss Bar Timeout",
+  "text.autoconfig.worldtools.option.showToasts": "Toasts",
+  "text.autoconfig.worldtools.option.showChatMessages": "Info Chat Messages",
+  "text.autoconfig.worldtools.option.showActionBarMessages": "Action Bar Messages",
+  "text.autoconfig.worldtools.option.customWorldGenerator": "Custom World Generator",
+  "text.autoconfig.worldtools.option.freezeWorld": "Freeze World",
+  "text.autoconfig.worldtools.option.freezeEntities": "Freeze Entities"
 }
