@@ -77,7 +77,7 @@ object Events {
     }
 
     fun onClientDisconnect() {
-        CaptureManager.stop()
+        if (capturing) CaptureManager.stop()
     }
 
     fun onInteractBlock(world: World, hitResult: BlockHitResult) {
