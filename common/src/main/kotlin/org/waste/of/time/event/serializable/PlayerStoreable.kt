@@ -7,6 +7,7 @@ import org.waste.of.time.StatisticManager
 import org.waste.of.time.WorldTools.config
 import org.waste.of.time.WorldTools.highlight
 import org.waste.of.time.WorldTools.mm
+import org.waste.of.time.WorldTools.sanitize
 import org.waste.of.time.event.Cacheable
 import org.waste.of.time.event.HotCache
 import org.waste.of.time.event.Storeable
@@ -20,7 +21,7 @@ data class PlayerStoreable(
     override fun shouldStore() = config.capture.players
 
     override val message: String
-        get() = "<lang:worldtools.capture.saved.player:${player.name.string}:${player.pos}:${player.world.registryKey.value.path}>"
+        get() = "<lang:worldtools.capture.saved.player:${player.name.string.sanitize()}:${player.pos}:${player.world.registryKey.value.path}>"
 
     override fun cache() {
         HotCache.players.add(this)

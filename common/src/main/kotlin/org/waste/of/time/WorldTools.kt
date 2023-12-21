@@ -64,5 +64,6 @@ object WorldTools {
 
     // Why cant I use the std lib?
     fun Boolean.toByte(): Byte = if (this) 1 else 0
+    fun String.sanitize() = replace("§", "")
     fun NbtCompound.addAuthor() = apply { putString("Author", CREDIT_MESSAGE) }
 }
