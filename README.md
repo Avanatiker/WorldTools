@@ -132,9 +132,14 @@ Pull Request.
 - [ ] Save ender chest contents
 - [ ] Save lectern contents
 - [ ] Anonymous censored mode
+- [ ] Fix chests being removed from the chunk and then the data is lost until the chunk is serialized
 - [ ] On capture switch config button functionality
 - [ ] Save more entity data (NBT) like trades, inventory from boats and minecarts, etc.
 - [ ] Live statistics: Data usage, time elapsed, etc.
+- [ ] Support for different mc versions and ViaVersion
+- [ ] Different world generators and seed setting
+- [ ] Automatic World Downloading (Disabled by default) - decides whether or not the mod automatically starts downloading worlds upon join
+- [ ] Download Distance (locked to client's chunkloading distance by default) - decides the chunk radius around the player in which world data is downloaded, has 3 options: Custom, Client View Distance, and Server View Distance.
 - [ ] Dimension, XP, selected item slot, player game type, is not saved to player
 
 ## License
