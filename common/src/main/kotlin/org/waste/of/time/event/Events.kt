@@ -19,6 +19,7 @@ import org.waste.of.time.CaptureManager.capturing
 import org.waste.of.time.CaptureManager.currentLevelName
 import org.waste.of.time.MessageManager
 import org.waste.of.time.StatisticManager
+import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.CAPTURE_KEY
 import org.waste.of.time.WorldTools.CONFIG_KEY
 import org.waste.of.time.WorldTools.mc
@@ -92,7 +93,7 @@ object Events {
         cameraY: Double,
         cameraZ: Double
     ) {
-        if (!capturing) return
+        if (!capturing || !WorldTools.config.renderUncapturedStoragesOutline) return
 
         val world = mc.world ?: return
         val vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getLines()) ?: return

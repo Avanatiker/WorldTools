@@ -31,6 +31,7 @@
   "worldtools": "WorldTools",
   "gui.config": "Config",
   "text.autoconfig.worldtools.title": "WorldTools Config",
+  "text.autoconfig.worldtools.option.renderUncapturedStoragesOutline": "Render Uncaptured Storages Outline",
   "text.autoconfig.worldtools.option.bossBarTimeout": "Boss Bar Timeout",
   "text.autoconfig.worldtools.option.showToasts": "Toasts",
   "text.autoconfig.worldtools.option.showChatMessages": "Info Chat Messages",

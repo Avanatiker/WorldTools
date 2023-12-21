@@ -11,6 +11,7 @@ class WorldToolsConfig : ConfigData {
      *
      * we could create config categories or collapsable stuff here
      */
+    var renderUncapturedStoragesOutline = true
     var bossBarTimeout: Long = 1500L
     var showToasts = true
     var showChatMessages = true
