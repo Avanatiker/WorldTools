@@ -22,6 +22,7 @@ object WorldTools {
     private const val URL = "https://github.com/Avanatiker/WorldTools/"
     const val MCA_EXTENSION = ".mca"
     const val DAT_EXTENSION = ".dat"
+    const val MAX_LEVEL_NAME_LENGTH = 16
     private const val HIGHLIGHT_COLOR = 0xFFA2C4
     private val VERSION: String by lazy {
         if (ArchitecturyTarget.getCurrentTarget() == "fabric") {
@@ -34,12 +35,12 @@ object WorldTools {
     val CREDIT_MESSAGE_MD = "This file was created by [$MOD_NAME $VERSION]($URL)"
     val LOG: Logger = LogManager.getLogger()
     var CAPTURE_KEY = KeyBinding(
-        "key.$MOD_ID.toggle_capture", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F12,
-        "key.categories.$MOD_ID"
+        "$MOD_ID.key.toggle_capture", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F12,
+        "$MOD_ID.key.categories"
     )
     var CONFIG_KEY = KeyBinding(
-        "key.$MOD_ID.open_config", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F11,
-        "key.categories.$MOD_ID"
+        "$MOD_ID.key.open_config", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F10,
+        "$MOD_ID.key.categories"
     )
 
     val mc: MinecraftClient = MinecraftClient.getInstance()
@@ -61,5 +62,7 @@ object WorldTools {
 
     fun highlight(string: String) = "<color:#${HIGHLIGHT_COLOR.toString(16)}>$string</color>"
 
+    // Why cant I use the std lib?
+    fun Boolean.toByte(): Byte = if (this) 1 else 0
     fun NbtCompound.addAuthor() = apply { putString("Author", CREDIT_MESSAGE) }
 }

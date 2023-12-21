@@ -7,11 +7,14 @@ import net.minecraft.util.WorldSavePath
 import net.minecraft.world.GameRules
 import net.minecraft.world.level.storage.LevelStorage.Session
 import org.waste.of.time.CaptureManager.currentLevelName
+import org.waste.of.time.MessageManager
 import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.addAuthor
+import org.waste.of.time.WorldTools.config
 import org.waste.of.time.WorldTools.mc
 import java.io.File
+import java.io.IOException
 
 object LevelPropertySerializer {
     /**
@@ -32,8 +35,8 @@ object LevelPropertySerializer {
             val current = getDirectory(WorldSavePath.LEVEL_DAT).toFile()
             Util.backupAndReplace(current, newFile, backup)
             LOG.info("Saved level data.")
-        } catch (exception: Exception) {
-            LOG.error("Failed to save level {}", resultingFile, exception)
+        } catch (exception: IOException) {
+            MessageManager.sendError("worldtools.log.error.failed_to_save_level", resultingFile.path, exception.localizedMessage)
         }
     }
 
@@ -111,17 +114,18 @@ object LevelPropertySerializer {
     }
 
     private fun genGameRules(gameRules: GameRules) = gameRules.toNbt().apply {
-        if (!WorldTools.config.freezeWorld) return@apply
+        if (!config.world.modifyGameRules) return@apply
 
-        putString(GameRules.DO_WARDEN_SPAWNING.name, "false")
-        putString(GameRules.DO_FIRE_TICK.name, "false")
-        putString(GameRules.DO_VINES_SPREAD.name, "false")
-        putString(GameRules.DO_MOB_SPAWNING.name, "false")
-        putString(GameRules.DO_DAYLIGHT_CYCLE.name, "false")
-        putString(GameRules.KEEP_INVENTORY.name, "true")
-        putString(GameRules.DO_MOB_GRIEFING.name, "false")
-        putString(GameRules.DO_TRADER_SPAWNING.name, "false")
-        putString(GameRules.DO_PATROL_SPAWNING.name, "false")
+        putString(GameRules.DO_WARDEN_SPAWNING.name, config.world.doWardenSpawning.toString())
+        putString(GameRules.DO_FIRE_TICK.name, config.world.doFireTick.toString())
+        putString(GameRules.DO_VINES_SPREAD.name, config.world.doVinesSpread.toString())
+        putString(GameRules.DO_MOB_SPAWNING.name, config.world.doMobSpawning.toString())
+        putString(GameRules.DO_DAYLIGHT_CYCLE.name, config.world.doDaylightCycle.toString())
+        putString(GameRules.KEEP_INVENTORY.name, config.world.keepInventory.toString())
+        putString(GameRules.DO_MOB_GRIEFING.name, config.world.doMobGriefing.toString())
+        putString(GameRules.DO_TRADER_SPAWNING.name, config.world.doTraderSpawning.toString())
+        putString(GameRules.DO_PATROL_SPAWNING.name, config.world.doPatrolSpawning.toString())
+        putString(GameRules.DO_WEATHER_CYCLE.name, config.world.doWeatherCycle.toString())
     }
 
     private fun generatorMockNbt() = NbtCompound().apply {

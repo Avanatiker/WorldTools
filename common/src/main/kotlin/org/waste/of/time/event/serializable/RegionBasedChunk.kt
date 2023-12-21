@@ -25,6 +25,7 @@ import net.minecraft.world.gen.chunk.BlendingData
 import org.waste.of.time.StatisticManager
 import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.addAuthor
+import org.waste.of.time.WorldTools.config
 import org.waste.of.time.WorldTools.highlight
 import org.waste.of.time.WorldTools.mm
 import org.waste.of.time.event.Cacheable
@@ -34,8 +35,10 @@ import org.waste.of.time.event.HotCache
 data class RegionBasedChunk(val chunk: WorldChunk) : RegionBased, Cacheable {
     override fun toString() = "Chunk at $chunkPos"
 
+    override fun shouldStore() = config.capture.chunks
+
     override val message: String
-        get() = "<lang:capture.saved.chunks:$chunkPos:$dimension>"
+        get() = "<lang:worldtools.capture.saved.chunks:$chunkPos:$dimension>"
 
     override val chunkPos: ChunkPos
         get() = chunk.pos

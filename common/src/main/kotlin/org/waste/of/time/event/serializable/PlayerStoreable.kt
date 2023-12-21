@@ -4,6 +4,7 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.world.level.storage.LevelStorage.Session
 import org.waste.of.time.StatisticManager
+import org.waste.of.time.WorldTools.config
 import org.waste.of.time.WorldTools.highlight
 import org.waste.of.time.WorldTools.mm
 import org.waste.of.time.event.Cacheable
@@ -16,8 +17,10 @@ data class PlayerStoreable(
 ) : Cacheable, Storeable {
     override fun toString() = "Player ${player.name.string}"
 
+    override fun shouldStore() = config.capture.players
+
     override val message: String
-        get() = "<lang:capture.saved.player:${player.name.string}:${player.pos}:${player.world.registryKey.value.path}>"
+        get() = "<lang:worldtools.capture.saved.player:${player.name.string}:${player.pos}:${player.world.registryKey.value.path}>"
 
     override fun cache() {
         HotCache.players.add(this)

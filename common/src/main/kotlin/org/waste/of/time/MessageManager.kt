@@ -4,6 +4,8 @@ import net.minecraft.client.toast.SystemToast
 import net.minecraft.client.toast.Toast
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
+import org.waste.of.time.WorldTools.LOG
+import org.waste.of.time.WorldTools.config
 import org.waste.of.time.WorldTools.mc
 import org.waste.of.time.WorldTools.mm
 
@@ -15,9 +17,7 @@ object MessageManager {
     private val fullBrand: MutableText
         get() = converted.copy()
 
-    private val INFO_COLOR = 0x00FF00
-    private val WARN_COLOR = 0xFFFF00
-    private val ERROR_COLOR = 0xFF0000
+    private const val ERROR_COLOR = 0xff3333
 
     fun String.info() =
         Text.of(this).sendInfo()
@@ -47,13 +47,18 @@ object MessageManager {
     fun Text.sendInfo() =
         fullBrand.append(this).addMessage()
 
-    fun Text.sendError() {
-        fullBrand.append(this).addMessage()
-        errorToast()
+    private fun Text.sendError() {
+        LOG.error(this.string)
+        val errorText = copy().styled {
+            it.withColor(ERROR_COLOR)
+        }
+
+        fullBrand.append(errorText).addMessage()
+        errorText.errorToast()
     }
 
     private fun Text.addMessage() {
-        if (!WorldTools.config.showChatMessages) return
+        if (!config.advanced.showChatMessages) return
 
         mc.execute {
             mc.inGameHud.chatHud.addMessage(this)
@@ -61,7 +66,7 @@ object MessageManager {
     }
 
     private fun Toast.addToast() {
-        if (!WorldTools.config.showToasts) return
+        if (!config.advanced.showToasts) return
 
         mc.execute {
             mc.toastManager.add(this)

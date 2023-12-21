@@ -40,6 +40,10 @@ object StorageFlow {
             LOG.info("Started caching")
             mc.levelStorage.createSession(levelName).use { openSession ->
                 sharedFlow.collect { storeable ->
+                    if (!storeable.shouldStore()) {
+                        return@collect
+                    }
+
                     val time = measureTime {
                         storeable.store(openSession, cachedStorages)
                     }
@@ -56,11 +60,9 @@ object StorageFlow {
         } catch (e: StopCollectingException) {
             LOG.info("Canceled caching flow")
         } catch (e: IOException) {
-            MessageManager.sendError("error.failed_to_create_session", levelName)
-            LOG.error("Failed to create session for $levelName", e)
+            MessageManager.sendError("worldtools.log.error.failed_to_create_session", levelName, e.localizedMessage)
         } catch (e: SymlinkValidationException) {
-            MessageManager.sendError("error.failed_to_create_session", levelName)
-            LOG.error("Failed to create session for $levelName", e)
+            MessageManager.sendError("worldtools.log.error.failed_to_create_session", levelName, e.localizedMessage)
         } catch (e: CancellationException) {
             LOG.info("Canceled caching thread")
         }

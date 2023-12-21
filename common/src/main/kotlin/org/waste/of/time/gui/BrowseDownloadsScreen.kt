@@ -7,7 +7,7 @@ import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget
 import net.minecraft.text.Text
 
 // todo: we need a local database of downloads like original wdl mod
-object BrowseDownloadsScreen : Screen(Text.of("WorldTools Downloads")) {
+object BrowseDownloadsScreen : Screen(Text.translatable("worldtools.gui.browser.title")) {
     override fun init() {
 
     }

@@ -1,7 +1,9 @@
 package org.waste.of.time.forge
 
 import com.mojang.brigadier.CommandDispatcher
-import net.minecraft.server.command.CommandManager
+import com.mojang.brigadier.arguments.StringArgumentType
+import net.minecraft.server.command.CommandManager.argument
+import net.minecraft.server.command.CommandManager.literal
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent
 import net.minecraftforge.client.event.RegisterClientCommandsEvent
@@ -20,12 +22,12 @@ import thedarkcolour.kotlinforforge.forge.FORGE_BUS
 object WorldToolsForge {
     init {
         WorldTools.initialize()
-        FORGE_BUS.addListener<RegisterClientCommandsEvent> {
-            it.dispatcher.register()
-        }
         FORGE_BUS.addListener<RegisterKeyMappingsEvent> {
             it.register(WorldTools.CAPTURE_KEY)
             it.register(WorldTools.CONFIG_KEY)
+        }
+        FORGE_BUS.addListener<RegisterClientCommandsEvent> {
+            it.dispatcher.register()
         }
         FORGE_BUS.addListener<ClientPlayerNetworkEvent.LoggingIn> {
             Events.onClientJoin()
@@ -48,10 +50,25 @@ object WorldToolsForge {
 
     private fun CommandDispatcher<ServerCommandSource>.register() {
         register(
-            CommandManager.literal("worldtools").executes {
-                CaptureManager.toggleCapture()
-                0
-            }
+            literal("worldtools")
+                .then(literal("capture")
+                    .then(argument("name", StringArgumentType.string()).executes {
+                        CaptureManager.start(it.getArgument("name", String::class.java))
+                        0
+                    })
+                    .then(literal("start").executes {
+                        CaptureManager.start()
+                        0
+                    })
+                    .then(literal("stop").executes {
+                        CaptureManager.stop()
+                        0
+                    })
+                    .executes {
+                        CaptureManager.toggleCapture()
+                        0
+                    }
+                )
         )
     }
 }

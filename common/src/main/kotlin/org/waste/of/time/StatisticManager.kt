@@ -22,31 +22,31 @@ object StatisticManager {
             val elements = mutableListOf<String>()
 
             if (chunks != 0) {
-                elements.add("${highlight("%,d".format(chunks))} <lang:capture.chunks>")
+                elements.add("${highlight("%,d".format(chunks))} <lang:worldtools.capture.chunks>")
             }
 
             if (entities != 0) {
-                elements.add("${highlight("%,d".format(entities))} <lang:capture.entities>")
+                elements.add("${highlight("%,d".format(entities))} <lang:worldtools.capture.entities>")
             }
 
             if (players != 0) {
-                elements.add("${highlight("%,d".format(players))} <lang:capture.players>")
+                elements.add("${highlight("%,d".format(players))} <lang:worldtools.capture.players>")
             }
 
             if (containers != 0) {
-                elements.add("${highlight("%,d".format(containers))} <lang:capture.containers>")
+                elements.add("${highlight("%,d".format(containers))} <lang:worldtools.capture.containers>")
             }
 
             return if (elements.isEmpty()) {
-                "<lang:capture.nothing_saved_yet>"
+                "<lang:worldtools.capture.nothing_saved_yet>"
             } else {
                 val dimensionsAppendix = if (dimensions.isNotEmpty()) {
-                    " <lang:capture.in_dimensions> ${highlight(dimensions.toList().joinWithAnd())}"
+                    " <lang:worldtools.capture.in_dimensions> ${highlight(dimensions.toList().joinWithAnd())}"
                 } else {
                     ""
                 }
 
-                "<lang:capture.saved> ${elements.joinWithAnd()}$dimensionsAppendix"
+                "<lang:worldtools.capture.saved> ${elements.joinWithAnd()}$dimensionsAppendix"
             }
         }
 
@@ -55,7 +55,7 @@ object StatisticManager {
             0 -> ""
             1 -> this[0]
             else -> {
-                dropLast(1).joinToString() + " <lang:capture.and> " + last()
+                dropLast(1).joinToString() + " <lang:worldtools.capture.and> " + last()
             }
         }
 }

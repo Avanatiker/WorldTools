@@ -9,6 +9,12 @@ import org.waste.of.time.event.serializable.PlayerStoreable
 import org.waste.of.time.event.serializable.RegionBasedEntities
 import java.util.concurrent.ConcurrentHashMap
 
+/**
+ * [HotCache] that caches all currently loaded objects in the world that are needed for the world download.
+ * It will be maintained until the user stops the capture process.
+ * Then the data will be released into the storage data flow to be serialized in the storage thread.
+ * This is needed because objects won't be saved to disk until they are unloaded from the world.
+ */
 object HotCache {
     val chunks = ConcurrentHashMap<ChunkPos, RegionBasedChunk>()
     val entities = ConcurrentHashMap<ChunkPos, MutableList<EntityCacheable>>()
@@ -18,11 +24,6 @@ object HotCache {
 
     fun getEntitySerializableForChunk(chunkPos: ChunkPos) =
         entities[chunkPos]?.let { entities ->
-            if (entities.isEmpty()) {
-                LOG.info("No entities in chunk $chunkPos")
-                return@let null
-            }
-
             RegionBasedEntities(chunkPos, entities)
         }
 

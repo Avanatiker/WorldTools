@@ -1,8 +1,10 @@
 package org.waste.of.time.fabric
 
 import com.mojang.brigadier.CommandDispatcher
+import com.mojang.brigadier.arguments.StringArgumentType.string
 import net.fabricmc.api.ClientModInitializer
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.argument
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents
@@ -19,11 +21,12 @@ object WorldToolsFabric : ClientModInitializer {
     override fun onInitializeClient() {
         WorldTools.initialize()
 
+        KeyBindingHelper.registerKeyBinding(WorldTools.CAPTURE_KEY)
+        KeyBindingHelper.registerKeyBinding(WorldTools.CONFIG_KEY)
+
         ClientCommandRegistrationCallback.EVENT.register(ClientCommandRegistrationCallback { dispatcher, _ ->
             dispatcher.register()
         })
-        KeyBindingHelper.registerKeyBinding(WorldTools.CAPTURE_KEY)
-        KeyBindingHelper.registerKeyBinding(WorldTools.CONFIG_KEY)
         ClientEntityEvents.ENTITY_LOAD.register(ClientEntityEvents.Load { entity, _ ->
             Events.onEntityLoad(entity)
         })
@@ -46,10 +49,25 @@ object WorldToolsFabric : ClientModInitializer {
 
     private fun CommandDispatcher<FabricClientCommandSource>.register() {
         register(
-            ClientCommandManager.literal("worldtools").executes {
-                CaptureManager.toggleCapture()
-                0
-            }
+            literal("worldtools")
+                .then(literal("capture")
+                    .then(argument("name", string()).executes {
+                        CaptureManager.start(it.getArgument("name", String::class.java))
+                        0
+                    })
+                    .then(literal("start").executes {
+                        CaptureManager.start()
+                        0
+                    })
+                    .then(literal("stop").executes {
+                        CaptureManager.stop()
+                        0
+                    })
+                    .executes {
+                        CaptureManager.toggleCapture()
+                        0
+                    }
+                )
         )
     }
 }

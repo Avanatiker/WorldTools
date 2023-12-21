@@ -27,28 +27,24 @@ sharing, or backup purposes on your local machine.
 
 ## Features
 
-- **Comprehensive Data Capture**: WorldTools enables you to capture various critical aspects, preventing any detail from
-  being overlooked.
-    - Chunks: Terrain and structures
+- **World Download (_default keybind:_ `F12`)**:
+  Initiate a quick download by hitting the `F12` key, which can be altered in the keybind settings.
+  Alternatively, you can access the GUI (_default keybind:_ `F10`) via the escape menu.
+  The GUI allows you to tailor the capture process according to your requirements.
+  WorldTools facilitates the capture of a wide range of crucial elements, ensuring no detail is missed.
+    - Chunks: Terrain, biomes and structures
     - Entities: Positions and attributes of all entities
-    - Containers: Contents of chests, hoppers etc.
+    - Containers: Contents of all tile entities like chests, shulkers, hoppers, furnaces, brewing stands, droppers, dispensers etc...
     - Players: Player positions and inventories
     - Statistics: Full personal player statistics
     - Advancements: Player advancements and progress
     - Detailed Metadata: Exhaustive capture details like modt, server version, and more
 
-- **Capture Mode**: (Keybind `F12`) Enable capture mode to stream chunks and entities from the server directly to your local disk. Everytime a chunk is unloaded it will be saved to disk. After disabling capture mode, the remaining chunks and entities will be saved to disk as well.
-
-- **Configurable Options**: (NOT YET IMPLEMENTED) ~~Access the menu by pressing `F12` (changeable in the controls screen), providing numerous options (work in
-      progress) to customize WorldTools according to your requirements.~~
-
-- **Freeze Entities**: This option freezes all entities, preventing them from moving upon login.
-
-- **Freeze World**: Stop new chunks from generating using a custom world generator, freeze time and weather, and set
-  other gamerules to ensure a non-altered snapshot of the world.
-
 - **Easy Access to Saved Worlds**: Your locally captured world save can be found in the single-player worlds list,
   allowing you to load and explore it conveniently.
+
+- **Advanced Configuration**: WorldTools provides a wide range of settings to customize the capture process to your needs.
+  Select elements to capture, modify game rules, alter entity NBT data, and configure the capture process in detail.
 
 ## Getting Started
 
@@ -87,11 +83,10 @@ sharing, or backup purposes on your local machine.
 ### Usage
 
 1. **Download**:
-    - Enable capture mode: Use `F12` or `/worldtools` to start capturing data. 
-    - Play the game normally while WorldTools downloads the all data.
-    - Save captured data: Trigger `F12` or `/worldtools` again to stop capturing data and save the world.
+    - Enable capture mode: Hit `F12` the GUI or `/worldtools capture` to start capturing data. 
+    - Play the game normally while WorldTools downloads the all data. You need to open containers like chests to capture their contents.
+    - Save captured data: Hit `F12` the GUI or `/worldtools capture` again to stop capturing data and save the world.
 2. **Access Downloaded World**: Your downloaded world can be found in the single-player worlds list.
-3. **Access Configuration Menu**: (NOT YET IMPLEMENTED) ~~Press `F2` to access the configuration menu and explore available options.~~
 
 ### File Structure
 
@@ -131,10 +126,15 @@ Pull Request.
 
 ## ToDo
 
-- [ ] RenderService using drawables
-- [ ] CaptureService
-- [ ] CaptureModes
-- [ ] Live statistics: Downloaded chunks, entities, data downstream, etc.
+- [ ] Capture Mode: Choose between two capture modes: Full and Incremental.
+  The Full mode captures all data from the server, while the Incremental mode only captures data that has changed
+  since the last capture.
+- [ ] Save ender chest contents
+- [ ] Save lectern contents
+- [ ] Anonymous censored mode
+- [ ] On capture switch config button functionality
+- [ ] Save more entity data (NBT) like trades, inventory from boats and minecarts, etc.
+- [ ] Live statistics: Data usage, time elapsed, etc.
 - [ ] Dimension, XP, selected item slot, player game type, is not saved to player
 
 ## License

@@ -22,12 +22,13 @@ import org.waste.of.time.StatisticManager
 import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.CAPTURE_KEY
 import org.waste.of.time.WorldTools.CONFIG_KEY
+import org.waste.of.time.WorldTools.config
 import org.waste.of.time.WorldTools.mc
 import org.waste.of.time.WorldTools.mm
 import org.waste.of.time.event.serializable.EntityCacheable
 import org.waste.of.time.event.serializable.PlayerStoreable
 import org.waste.of.time.event.serializable.RegionBasedChunk
-import org.waste.of.time.gui.WorldToolsScreen
+import org.waste.of.time.gui.ManagerScreen
 import java.awt.Color
 
 object Events {
@@ -63,7 +64,7 @@ object Events {
         }
 
         if (CONFIG_KEY.wasPressed() && mc.world != null && mc.currentScreen == null) {
-            mc.setScreen(WorldToolsScreen)
+            mc.setScreen(ManagerScreen)
         }
 
         updateCapture()
@@ -93,7 +94,7 @@ object Events {
         cameraY: Double,
         cameraZ: Double
     ) {
-        if (!capturing || !WorldTools.config.renderUncapturedStoragesOutline) return
+        if (!capturing || !config.advanced.renderNotYetCachedContainers) return
 
         val world = mc.world ?: return
         val vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getLines()) ?: return
@@ -132,14 +133,14 @@ object Events {
 
     fun onGameMenuScreenInitWidgets(adder: GridWidget.Adder) {
         val widget = if (capturing) {
-            val label = "<lang:gui.finish_download:$currentLevelName>".mm()
+            val label = "<lang:worldtools.gui.escape.button.finish_download:$currentLevelName>".mm()
             ButtonWidget.builder(label) {
                 CaptureManager.stop()
                 mc.setScreen(null)
             }.width(204).build()
         } else {
             ButtonWidget.builder(MessageManager.BRAND.mm()) {
-                MinecraftClient.getInstance().setScreen(WorldToolsScreen)
+                MinecraftClient.getInstance().setScreen(ManagerScreen)
             }.width(204).build()
         }
 

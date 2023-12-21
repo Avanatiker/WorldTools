@@ -28,11 +28,14 @@ object CaptureManager {
     }
 
     fun start(customName: String? = null) {
-        if (capturing) return
+        if (capturing) {
+            MessageManager.sendError("worldtools.log.error.already_capturing", currentLevelName)
+            return
+        }
 
         val potentialName = customName?.let { potentialName ->
             if (potentialName.length > MAX_WORLD_NAME_LENGTH) {
-                MessageManager.sendError("error.world_name_too_long", potentialName, MAX_WORLD_NAME_LENGTH)
+                MessageManager.sendError("worldtools.log.error.world_name_too_long", potentialName, MAX_WORLD_NAME_LENGTH)
                 return
             }
 
@@ -43,16 +46,19 @@ object CaptureManager {
 
         currentLevelName = potentialName
         // todo: validate if a world already exists with this name. we need user to decide whether to merge or replace
-        MessageManager.sendInfo("info.started_capture", potentialName)
+        MessageManager.sendInfo("worldtools.log.info.started_capture", potentialName)
 
         storeJob = StorageFlow.launch(potentialName)
         capturing = true
     }
 
     fun stop() {
-        if (!capturing) return
+        if (!capturing) {
+            MessageManager.sendError("worldtools.log.error.not_capturing")
+            return
+        }
 
-        MessageManager.sendInfo("info.stopping_capture", currentLevelName)
+        MessageManager.sendInfo("worldtools.log.info.stopping_capture", currentLevelName)
 
         // update the stats and trigger writeStats() in StatisticSerializer
         mc.networkHandler?.sendPacket(ClientStatusC2SPacket(ClientStatusC2SPacket.Mode.REQUEST_STATS))

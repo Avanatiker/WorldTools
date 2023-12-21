@@ -8,6 +8,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.world.World
 import org.waste.of.time.StatisticManager
+import org.waste.of.time.WorldTools.config
 import org.waste.of.time.WorldTools.highlight
 import org.waste.of.time.WorldTools.mm
 import org.waste.of.time.event.RegionBased
@@ -18,8 +19,10 @@ data class RegionBasedEntities(
 ) : RegionBased {
     override fun toString() = "${entities.size} entities in chunk $chunkPos"
 
+    override fun shouldStore() = config.capture.entities
+
     override val message: String
-        get() = "<lang:capture.saved.entities:${entities.joinToString { it.entity.name.string }}:$chunkPos:$dimension>"
+        get() = "<lang:worldtools.capture.saved.entities:${entities.joinToString { it.entity.name.string }}:$chunkPos:$dimension>"
 
     override val world: World = entities.first().entity.world
 

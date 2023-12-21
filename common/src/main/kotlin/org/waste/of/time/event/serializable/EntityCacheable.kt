@@ -5,6 +5,8 @@ import net.minecraft.entity.EntityType
 import net.minecraft.nbt.NbtCompound
 import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.addAuthor
+import org.waste.of.time.WorldTools.config
+import org.waste.of.time.WorldTools.toByte
 import org.waste.of.time.event.Cacheable
 import org.waste.of.time.event.HotCache
 
@@ -18,11 +20,11 @@ data class EntityCacheable(
         EntityType.getId(entity.type)?.let { putString(Entity.ID_KEY, it.toString()) }
         entity.writeNbt(this)
 
-        if (WorldTools.config.freezeEntities) {
-            putByte("NoAI", 1)
-            putByte("NoGravity", 1)
-            putByte("Invulnerable", 1)
-            putByte("Silent", 1)
+        if (config.entity.modifyNBT) {
+            putByte("NoAI", config.entity.noAI.toByte())
+            putByte("NoGravity", config.entity.noGravity.toByte())
+            putByte("Invulnerable", config.entity.invulnerable.toByte())
+            putByte("Silent", config.entity.silent.toByte())
         }
     }
 

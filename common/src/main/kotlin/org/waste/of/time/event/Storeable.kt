@@ -1,6 +1,5 @@
 package org.waste.of.time.event
 
-import net.minecraft.text.Text
 import net.minecraft.world.level.storage.LevelStorage.Session
 import org.waste.of.time.storage.CustomRegionBasedStorage
 
@@ -11,6 +10,8 @@ interface Storeable {
     )
 
     fun emit() = StorageFlow.emit(this)
+
+    fun shouldStore(): Boolean
 
     val message: String
 }

@@ -20,6 +20,7 @@ import org.waste.of.time.TimeUtils
 import org.waste.of.time.WorldTools.CREDIT_MESSAGE_MD
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.MOD_NAME
+import org.waste.of.time.WorldTools.config
 import org.waste.of.time.WorldTools.mc
 import org.waste.of.time.WorldTools.mm
 import org.waste.of.time.event.Storeable
@@ -35,8 +36,10 @@ import kotlin.io.path.writeBytes
 class MetadataStoreable : Storeable {
     override fun toString() = "Metadata"
 
+    override fun shouldStore() = config.capture.metadata
+
     override val message: String
-        get() = "<lang:capture.saved.metadata>"
+        get() = "<lang:worldtools.capture.saved.metadata>"
 
     private val gson = GsonBuilder().registerTypeAdapter(
         AdvancementProgress::class.java as Type,
