@@ -6,7 +6,6 @@ import net.minecraft.server.command.ServerCommandSource
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent
 import net.minecraftforge.client.event.RegisterClientCommandsEvent
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent
-import net.minecraftforge.client.event.RenderHighlightEvent
 import net.minecraftforge.event.entity.EntityJoinLevelEvent
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent
 import net.minecraftforge.event.entity.player.PlayerInteractEvent
@@ -42,9 +41,6 @@ object WorldToolsForge {
         }
         FORGE_BUS.addListener<EntityLeaveLevelEvent> {
             Events.onEntityUnload(it.entity)
-        }
-        FORGE_BUS.addListener<RenderHighlightEvent.Block> {
-            Events.onBlockOutline(it.poseStack, it.multiBufferSource, it.camera)
         }
 
         LOG.info("WorldTools Forge initialized")

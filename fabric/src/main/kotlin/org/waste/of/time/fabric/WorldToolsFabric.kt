@@ -8,7 +8,6 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.minecraft.util.ActionResult
 import org.waste.of.time.CaptureManager
@@ -40,16 +39,6 @@ object WorldToolsFabric : ClientModInitializer {
         UseBlockCallback.EVENT.register(UseBlockCallback { _, world, _, hitResult ->
             Events.onInteractBlock(world, hitResult)
             ActionResult.PASS
-        })
-        WorldRenderEvents.BLOCK_OUTLINE.register(WorldRenderEvents.BlockOutline { context, _ ->
-            context.consumers()?.let { vertex ->
-                Events.onBlockOutline(
-                    context.matrixStack(),
-                    vertex,
-                    context.camera()
-                )
-            }
-            true
         })
 
         LOG.info("WorldTools Fabric initialized")

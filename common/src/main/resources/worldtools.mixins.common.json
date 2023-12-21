@@ -7,6 +7,7 @@
     "BossBarHudMixin",
     "ClientChunkManagerMixin",
     "ClientPlayNetworkHandlerMixin",
+    "DebugRendererMixin",
     "GameMenuScreenMixin",
     "MinecraftClientMixin",
     "accessor.AdvancementProgressesAccessor",

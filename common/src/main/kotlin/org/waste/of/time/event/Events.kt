@@ -4,7 +4,6 @@ import net.minecraft.block.entity.LockableContainerBlockEntity
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.GridWidget
-import net.minecraft.client.render.Camera
 import net.minecraft.client.render.RenderLayer
 import net.minecraft.client.render.VertexConsumerProvider
 import net.minecraft.client.render.WorldRenderer
@@ -86,7 +85,13 @@ object Events {
         HotCache.lastOpenedContainer = blockEntity
     }
 
-    fun onBlockOutline(matrices: MatrixStack, vertexConsumers: VertexConsumerProvider, camera: Camera) {
+    fun onDebugRenderStart(
+        matrices: MatrixStack,
+        vertexConsumers: VertexConsumerProvider.Immediate,
+        cameraX: Double,
+        cameraY: Double,
+        cameraZ: Double
+    ) {
         if (!capturing) return
 
         val world = mc.world ?: return
@@ -101,7 +106,7 @@ object Events {
                 val blockState = blockEntity.cachedState
                 val color = Color(222, 0, 0, 100)
 
-                val voxelShape = blockState.getOutlineShape(world, blockPos)
+                val voxelShape = blockState.getCollisionShape(world, blockPos)
                 val offsetShape = voxelShape.offset(
                     blockPos.x.toDouble(),
                     blockPos.y.toDouble(),
@@ -112,9 +117,9 @@ object Events {
                     matrices,
                     vertexConsumer,
                     offsetShape,
-                    -camera.pos.x,
-                    -camera.pos.y,
-                    -camera.pos.z,
+                    -cameraX,
+                    -cameraY,
+                    -cameraZ,
                     color.red / 255.0f,
                     color.green / 255.0f,
                     color.blue / 255.0f,
