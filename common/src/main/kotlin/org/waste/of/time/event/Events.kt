@@ -36,9 +36,10 @@ object Events {
     }
 
     fun onChunkUnload(chunk: WorldChunk) {
-        val chunkSerializable = RegionBasedChunk(chunk)
-        chunkSerializable.emit()
-        chunkSerializable.flush()
+        RegionBasedChunk(chunk).apply {
+            emit()
+            flush()
+        }
     }
 
     fun onEntityLoad(entity: Entity) {
@@ -50,10 +51,10 @@ object Events {
     }
 
     fun onEntityUnload(entity: Entity) {
-        if (entity is PlayerEntity) {
-            val playerStoreable = PlayerStoreable(entity)
-            playerStoreable.emit()
-            playerStoreable.flush()
+        if (entity !is PlayerEntity) return
+        PlayerStoreable(entity).apply {
+            emit()
+            flush()
         }
     }
 
@@ -99,10 +100,7 @@ object Events {
         val world = mc.world ?: return
         val vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getLines()) ?: return
 
-        HotCache.chunks.values
-            .flatMap { it.chunk.blockEntities.values }
-            .filterIsInstance<LockableContainerBlockEntity>()
-            .filter { it !in HotCache.blockEntities }
+        HotCache.cachedMissingContainers
             .forEach { blockEntity ->
                 val blockPos = blockEntity.pos
                 val blockState = blockEntity.cachedState

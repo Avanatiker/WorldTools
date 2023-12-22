@@ -2,12 +2,14 @@ package org.waste.of.time.event
 
 import net.minecraft.block.entity.LockableContainerBlockEntity
 import net.minecraft.util.math.ChunkPos
+import org.waste.of.time.LazyUpdatingDelegate
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.event.serializable.EntityCacheable
 import org.waste.of.time.event.serializable.PlayerStoreable
 import org.waste.of.time.event.serializable.RegionBasedChunk
 import org.waste.of.time.event.serializable.RegionBasedEntities
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.properties.Delegates
 
 /**
  * [HotCache] that caches all currently loaded objects in the world that are needed for the world download.
@@ -22,6 +24,12 @@ object HotCache {
     val blockEntities: ConcurrentHashMap.KeySetView<LockableContainerBlockEntity, Boolean> =
         ConcurrentHashMap.newKeySet()
     var lastOpenedContainer: LockableContainerBlockEntity? = null
+    val cachedMissingContainers by LazyUpdatingDelegate(100) {
+        chunks.values
+            .flatMap { it.chunk.blockEntities.values }
+            .filterIsInstance<LockableContainerBlockEntity>()
+            .filter { it !in blockEntities }
+    }
 
     fun getEntitySerializableForChunk(chunkPos: ChunkPos) =
         entities[chunkPos]?.let { entities ->
