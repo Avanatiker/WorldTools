@@ -129,23 +129,23 @@ Pull Request.
 
 ## ToDo
 
-- [ ] Capture Mode: Choose between two capture modes: Full and Incremental.
-  The Full mode captures all data from the server, while the Incremental mode only captures data that has changed
-  since the last capture.
-- [ ] Save ender chest contents
-- [ ] Save lectern contents
-- [ ] Fix save worlds on disconnect
-- [ ] Save server datapack
-- [ ] Fix chests being removed from the chunk and then the data is lost until the chunk is serialized
-- [ ] On capture switch config button functionality in capture gui
-- [ ] Save more entity data (NBT) like trades, inventory from boats and minecarts, etc.
-- [ ] Live statistics: Data usage, time elapsed, etc.
-- [ ] Support for different mc versions and ViaVersion
-- [ ] Different world generators and seed setting
-- [ ] Fix auto download on disconnect
-- [ ] Download Distance (locked to client's chunkloading distance by default) - decides the chunk radius around the
-  player in which world data is downloaded, has 3 options: Custom, Client View Distance, and Server View Distance.
-- [ ] Dimension, XP, selected item slot, player game type, is not saved to player nbt in level.dat
+### Fixes 
+- Fix chests being removed from the chunk and then the data is lost until the chunk is serialized
+- Fix save worlds / auto download on disconnect
+- Fix cloth config dependency for forge toml config
+- Fix statistics not saved properly
+- Fix on capture switch config button functionality in capture gui
+- Dimension, XP, selected item slot, player game type, is not saved to player nbt in level.dat
+
+### Features
+- Capture Mode: Choose between two capture modes: Full and Incremental. The Full mode captures all data from the server, while the Incremental mode only captures data that has changed since the last capture.
+- Save ender chest, lectern contents
+- Save server datapack to the downloaded world
+- Save more entity data (NBT) like trades, inventory from boats and minecarts, etc.
+- Live statistics: Data usage, time elapsed, etc.
+- Support for different mc versions and ViaVersion
+- Different world generators and seed setting
+- Download Distance (locked to client's chunkloading distance by default) - decides the chunk radius around the player in which world data is downloaded, has 3 options: Custom, Client View Distance, and Server View Distance.
 
 ## License
 
