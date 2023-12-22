@@ -134,6 +134,8 @@ Pull Request.
   since the last capture.
 - [ ] Save ender chest contents
 - [ ] Save lectern contents
+- [ ] Fix save worlds on disconnect
+- [ ] Save server datapack
 - [ ] Anonymous censored mode
 - [ ] Fix chests being removed from the chunk and then the data is lost until the chunk is serialized
 - [ ] On capture switch config button functionality

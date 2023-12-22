@@ -1,6 +1,12 @@
 {
   "text.autoconfig.worldtools.option.advanced": "Advanced",
-  "text.autoconfig.worldtools.option.advanced.bossBarTimeout": "Boss Bar Timeout",
+  "text.autoconfig.worldtools.option.advanced.accentColor": "Accent Color (RGB Hex)",
+  "text.autoconfig.worldtools.option.advanced.anonymousMode": "Anonymize Coordinates",
+  "text.autoconfig.worldtools.option.advanced.captureBarColor": "Capture Info Bar Color (RGB Hex)",
+  "text.autoconfig.worldtools.option.advanced.captureBarStyle": "Capture Info Bar Style",
+  "text.autoconfig.worldtools.option.advanced.progressBarColor": "Progress Bar Color (RGB Hex)",
+  "text.autoconfig.worldtools.option.advanced.progressBarStyle": "Progress Bar Style",
+  "text.autoconfig.worldtools.option.advanced.progressBarTimeout": "Progress Bar Timeout (ms)",
   "text.autoconfig.worldtools.option.advanced.renderNotYetCachedContainers": "Render Not Yet Cached Containers",
   "text.autoconfig.worldtools.option.advanced.showChatMessages": "Info Chat Messages",
   "text.autoconfig.worldtools.option.advanced.showToasts": "Display Toasts",

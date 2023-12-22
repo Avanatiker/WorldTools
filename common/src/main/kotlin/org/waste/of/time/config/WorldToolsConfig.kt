@@ -5,12 +5,12 @@ import me.shedaniel.autoconfig.annotation.Config
 import me.shedaniel.autoconfig.annotation.ConfigEntry
 import net.minecraft.entity.boss.BossBar
 
+/**
+ * See [Cloth Config Documentation](https://shedaniel.gitbook.io/cloth-config/auto-config/creating-a-config-class)
+ * for more information on how to create a config class
+ */
 @Config(name = "worldtools")
 class WorldToolsConfig : ConfigData {
-    /**
-     * See [Cloth Config Documentation](https://shedaniel.gitbook.io/cloth-config/auto-config/creating-a-config-class)
-     * for more information on how to create a config class
-     */
     // Categories
     @ConfigEntry.Gui.CollapsibleObject
     val capture = Capture()
@@ -66,7 +66,7 @@ class WorldToolsConfig : ConfigData {
         var captureBarStyle = BossBar.Style.NOTCHED_10
         var progressBarColor = BossBar.Color.GREEN
         var progressBarStyle = BossBar.Style.PROGRESS
+        var progressBarTimeout = 3000L
         var renderNotYetCachedContainers = true
-        var bossBarTimeout = 1500L
     }
 }

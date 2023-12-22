@@ -59,7 +59,7 @@ object BarManager {
         }
 
         val elapsed = System.currentTimeMillis() - StorageFlow.lastStoredTimestamp
-        val timeout = elapsed > config.advanced.bossBarTimeout
+        val timeout = elapsed > config.advanced.progressBarTimeout
 
         if (StorageFlow.lastStoredTimestamp != 0L && timeout) {
             StorageFlow.lastStored = null
