@@ -3,7 +3,6 @@ package org.waste.of.time.event.serializable
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityType
 import net.minecraft.nbt.NbtCompound
-import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.addAuthor
 import org.waste.of.time.WorldTools.config
 import org.waste.of.time.WorldTools.toByte

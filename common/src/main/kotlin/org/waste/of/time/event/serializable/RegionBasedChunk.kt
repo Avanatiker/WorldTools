@@ -12,7 +12,6 @@ import net.minecraft.nbt.NbtOps
 import net.minecraft.registry.Registries
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.text.MutableText
-import net.minecraft.text.Text
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.util.math.ChunkSectionPos
 import net.minecraft.world.ChunkSerializer
@@ -29,8 +28,8 @@ import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.addAuthor
 import org.waste.of.time.WorldTools.config
 import org.waste.of.time.event.Cacheable
-import org.waste.of.time.event.RegionBased
 import org.waste.of.time.event.HotCache
+import org.waste.of.time.event.RegionBased
 
 data class RegionBasedChunk(val chunk: WorldChunk) : RegionBased, Cacheable {
     override fun shouldStore() = config.capture.chunks

@@ -36,7 +36,11 @@ object LevelPropertySerializer {
             Util.backupAndReplace(current, newFile, backup)
             LOG.info("Saved level data.")
         } catch (exception: IOException) {
-            MessageManager.sendError("worldtools.log.error.failed_to_save_level", resultingFile.path, exception.localizedMessage)
+            MessageManager.sendError(
+                "worldtools.log.error.failed_to_save_level",
+                resultingFile.path,
+                exception.localizedMessage
+            )
         }
     }
 

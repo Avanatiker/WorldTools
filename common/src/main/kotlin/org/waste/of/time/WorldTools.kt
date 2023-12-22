@@ -8,7 +8,6 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.option.KeyBinding
 import net.minecraft.client.util.InputUtil
 import net.minecraft.nbt.NbtCompound
-import net.minecraft.text.Text
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.lwjgl.glfw.GLFW
@@ -53,6 +52,5 @@ object WorldTools {
 
     // Why cant I use the std lib?
     fun Boolean.toByte(): Byte = if (this) 1 else 0
-    fun String.sanitize() = replace("§", "")
     fun NbtCompound.addAuthor() = apply { putString("Author", CREDIT_MESSAGE) }
 }

@@ -5,7 +5,6 @@ import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtIntArray
 import net.minecraft.nbt.NbtList
 import net.minecraft.text.MutableText
-import net.minecraft.text.Text
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.world.World
 import org.waste.of.time.MessageManager.translateHighlight

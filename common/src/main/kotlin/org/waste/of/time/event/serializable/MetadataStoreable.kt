@@ -13,8 +13,8 @@ import net.minecraft.util.PathUtil
 import net.minecraft.util.WorldSavePath
 import net.minecraft.world.level.storage.LevelStorage.Session
 import org.waste.of.time.CaptureManager.currentLevelName
-import org.waste.of.time.CaptureManager.serverInfo
 import org.waste.of.time.CaptureManager.levelName
+import org.waste.of.time.CaptureManager.serverInfo
 import org.waste.of.time.MessageManager.infoToast
 import org.waste.of.time.MessageManager.sendInfo
 import org.waste.of.time.MessageManager.translateHighlight

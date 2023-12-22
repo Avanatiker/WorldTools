@@ -19,7 +19,12 @@ object ManagerScreen : Screen(Text.translatable("worldtools.gui.manager.title"))
         entryGridWidget.mainPositioner.margin(4, 4, 4, 0)
         val adder = entryGridWidget.createAdder(3)
         val worldNameTextEntryWidget = TextFieldWidget(textRenderer, 0, 0, 250, 20, Text.of(levelName))
-        worldNameTextEntryWidget.setPlaceholder(Text.translatable("worldtools.gui.manager.world_name_placeholder", levelName))
+        worldNameTextEntryWidget.setPlaceholder(
+            Text.translatable(
+                "worldtools.gui.manager.world_name_placeholder",
+                levelName
+            )
+        )
         worldNameTextEntryWidget.setMaxLength(MAX_LEVEL_NAME_LENGTH)
         adder.add(worldNameTextEntryWidget, 2)
         adder.add(ButtonWidget.Builder(Text.translatable("worldtools.gui.manager.button.start_download")) { _ ->

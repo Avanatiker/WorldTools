@@ -14,10 +14,13 @@ class WorldToolsConfig : ConfigData {
     // Categories
     @ConfigEntry.Gui.CollapsibleObject
     val capture = Capture()
+
     @ConfigEntry.Gui.CollapsibleObject
     val world = World()
+
     @ConfigEntry.Gui.CollapsibleObject
     val entity = Entity()
+
     @ConfigEntry.Gui.CollapsibleObject
     val advanced = Advanced()
 
@@ -53,7 +56,7 @@ class WorldToolsConfig : ConfigData {
         var invulnerable = true
         var silent = true
     }
-    
+
     class Advanced {
         var anonymousMode = false
         var showToasts = true

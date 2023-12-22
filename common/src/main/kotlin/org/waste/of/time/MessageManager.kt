@@ -64,7 +64,7 @@ object MessageManager {
         fullBrand.append(this).addMessage()
 
     private fun Text.sendError() {
-        LOG.error(this.string)
+        LOG.error(string)
         val errorText = copy().styled {
             it.withColor(ERROR_COLOR)
         }

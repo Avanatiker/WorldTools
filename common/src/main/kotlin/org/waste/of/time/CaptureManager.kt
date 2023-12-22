@@ -35,7 +35,11 @@ object CaptureManager {
 
         val potentialName = customName?.let { potentialName ->
             if (potentialName.length > MAX_WORLD_NAME_LENGTH) {
-                MessageManager.sendError("worldtools.log.error.world_name_too_long", potentialName, MAX_WORLD_NAME_LENGTH)
+                MessageManager.sendError(
+                    "worldtools.log.error.world_name_too_long",
+                    potentialName,
+                    MAX_WORLD_NAME_LENGTH
+                )
                 return
             }
 

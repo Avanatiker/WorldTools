@@ -1,13 +1,7 @@
 package org.waste.of.time
 
 import net.minecraft.block.ChestBlock
-import net.minecraft.block.entity.AbstractFurnaceBlockEntity
-import net.minecraft.block.entity.BarrelBlockEntity
-import net.minecraft.block.entity.BrewingStandBlockEntity
-import net.minecraft.block.entity.ChestBlockEntity
-import net.minecraft.block.entity.DispenserBlockEntity
-import net.minecraft.block.entity.HopperBlockEntity
-import net.minecraft.block.entity.ShulkerBoxBlockEntity
+import net.minecraft.block.entity.*
 import net.minecraft.block.enums.ChestType
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.ingame.*

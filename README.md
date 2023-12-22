@@ -34,7 +34,8 @@ sharing, or backup purposes on your local machine.
   WorldTools facilitates the capture of a wide range of crucial elements, ensuring no detail is missed.
     - Chunks: Terrain, biomes and structures
     - Entities: Positions and attributes of all entities
-    - Containers: Contents of all tile entities like chests, shulkers, hoppers, furnaces, brewing stands, droppers, dispensers etc...
+    - Containers: Contents of all tile entities like chests, shulkers, hoppers, furnaces, brewing stands, droppers,
+      dispensers etc...
     - Players: Player positions and inventories
     - Statistics: Full personal player statistics
     - Advancements: Player advancements and progress
@@ -43,7 +44,8 @@ sharing, or backup purposes on your local machine.
 - **Easy Access to Saved Worlds**: Your locally captured world save can be found in the single-player worlds list,
   allowing you to load and explore it conveniently.
 
-- **Advanced Configuration**: WorldTools provides a wide range of settings to customize the capture process to your needs.
+- **Advanced Configuration**: WorldTools provides a wide range of settings to customize the capture process to your
+  needs.
   Select elements to capture, modify game rules, alter entity NBT data, and configure the capture process in detail.
 
 ## Getting Started
@@ -83,8 +85,9 @@ sharing, or backup purposes on your local machine.
 ### Usage
 
 1. **Download**:
-    - Enable capture mode: Hit `F12` the GUI or `/worldtools capture` to start capturing data. 
-    - Play the game normally while WorldTools downloads the all data. You need to open containers like chests to capture their contents.
+    - Enable capture mode: Hit `F12` the GUI or `/worldtools capture` to start capturing data.
+    - Play the game normally while WorldTools downloads the all data. You need to open containers like chests to capture
+      their contents.
     - Save captured data: Hit `F12` the GUI or `/worldtools capture` again to stop capturing data and save the world.
 2. **Access Downloaded World**: Your downloaded world can be found in the single-player worlds list.
 
@@ -138,8 +141,10 @@ Pull Request.
 - [ ] Live statistics: Data usage, time elapsed, etc.
 - [ ] Support for different mc versions and ViaVersion
 - [ ] Different world generators and seed setting
-- [ ] Automatic World Downloading (Disabled by default) - decides whether or not the mod automatically starts downloading worlds upon join
-- [ ] Download Distance (locked to client's chunkloading distance by default) - decides the chunk radius around the player in which world data is downloaded, has 3 options: Custom, Client View Distance, and Server View Distance.
+- [ ] Automatic World Downloading (Disabled by default) - decides whether or not the mod automatically starts
+  downloading worlds upon join
+- [ ] Download Distance (locked to client's chunkloading distance by default) - decides the chunk radius around the
+  player in which world data is downloaded, has 3 options: Custom, Client View Distance, and Server View Distance.
 - [ ] Dimension, XP, selected item slot, player game type, is not saved to player nbt in level.dat
 
 ## License
