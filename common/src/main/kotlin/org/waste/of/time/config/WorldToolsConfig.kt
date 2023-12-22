@@ -3,6 +3,7 @@ package org.waste.of.time.config
 import me.shedaniel.autoconfig.ConfigData
 import me.shedaniel.autoconfig.annotation.Config
 import me.shedaniel.autoconfig.annotation.ConfigEntry
+import net.minecraft.entity.boss.BossBar
 
 @Config(name = "worldtools")
 class WorldToolsConfig : ConfigData {
@@ -54,9 +55,14 @@ class WorldToolsConfig : ConfigData {
     }
     
     class Advanced {
+        var anonymousMode = false
         var showToasts = true
         var showChatMessages = true
-//        var showActionBarMessages = true
+        var accentColor = 0xA2FF4C
+        var captureBarColor = BossBar.Color.PINK
+        var captureBarStyle = BossBar.Style.NOTCHED_10
+        var progressBarColor = BossBar.Color.GREEN
+        var progressBarStyle = BossBar.Style.PROGRESS
         var renderNotYetCachedContainers = true
         var bossBarTimeout = 1500L
     }

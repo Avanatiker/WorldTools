@@ -18,13 +18,12 @@ import org.waste.of.time.CaptureManager
 import org.waste.of.time.CaptureManager.capturing
 import org.waste.of.time.CaptureManager.currentLevelName
 import org.waste.of.time.MessageManager
+import org.waste.of.time.MessageManager.translateHighlight
 import org.waste.of.time.StatisticManager
-import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.CAPTURE_KEY
 import org.waste.of.time.WorldTools.CONFIG_KEY
 import org.waste.of.time.WorldTools.config
 import org.waste.of.time.WorldTools.mc
-import org.waste.of.time.WorldTools.mm
 import org.waste.of.time.event.serializable.EntityCacheable
 import org.waste.of.time.event.serializable.PlayerStoreable
 import org.waste.of.time.event.serializable.RegionBasedChunk
@@ -133,13 +132,13 @@ object Events {
 
     fun onGameMenuScreenInitWidgets(adder: GridWidget.Adder) {
         val widget = if (capturing) {
-            val label = "<lang:worldtools.gui.escape.button.finish_download:$currentLevelName>".mm()
+            val label = translateHighlight("worldtools.gui.escape.button.finish_download", currentLevelName)
             ButtonWidget.builder(label) {
                 CaptureManager.stop()
                 mc.setScreen(null)
             }.width(204).build()
         } else {
-            ButtonWidget.builder(MessageManager.BRAND.mm()) {
+            ButtonWidget.builder(MessageManager.brand) {
                 MinecraftClient.getInstance().setScreen(ManagerScreen)
             }.width(204).build()
         }

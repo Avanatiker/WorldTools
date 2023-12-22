@@ -34,14 +34,6 @@ dependencies {
     implementation("thedarkcolour:kotlinforforge:${project.properties["kotlin_forge_version"]!!}")
     common(project(":common", configuration = "namedElements")) { isTransitive = false }
     shadowCommon(project(path = ":common", configuration = "transformProductionForge")) { isTransitive = false }
-    forgeRuntimeLibrary(include("net.kyori:adventure-api:${project.properties["kyori_adventure_version"]}")!!)
-    forgeRuntimeLibrary(include("net.kyori:adventure-key:${project.properties["kyori_adventure_version"]}")!!)
-    forgeRuntimeLibrary(include("net.kyori:adventure-text-minimessage:${project.properties["kyori_adventure_version"]}")!!)
-    forgeRuntimeLibrary(include("net.kyori:adventure-text-serializer-json:${project.properties["kyori_adventure_version"]}")!!)
-    forgeRuntimeLibrary(include("net.kyori:adventure-text-serializer-gson:${project.properties["kyori_adventure_version"]}")!!)
-    forgeRuntimeLibrary(include("net.kyori:examination-api:1.3.0")!!)
-    forgeRuntimeLibrary(include("net.kyori:examination-string:1.3.0")!!)
-    forgeRuntimeLibrary(include("net.kyori:option:1.0.0")!!)
     implementation(annotationProcessor("io.github.llamalad7:mixinextras-common:${project.properties["mixinextras_version"]}")!!)
     implementation(include("io.github.llamalad7:mixinextras-forge:${project.properties["mixinextras_version"]}")!!)
     modApi("me.shedaniel.cloth:cloth-config-forge:${project.properties["cloth_config_version"]}")

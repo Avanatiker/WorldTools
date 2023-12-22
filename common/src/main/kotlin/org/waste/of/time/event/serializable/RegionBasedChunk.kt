@@ -11,6 +11,7 @@ import net.minecraft.nbt.NbtLongArray
 import net.minecraft.nbt.NbtOps
 import net.minecraft.registry.Registries
 import net.minecraft.registry.RegistryKeys
+import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.util.math.ChunkSectionPos
@@ -22,23 +23,30 @@ import net.minecraft.world.chunk.BelowZeroRetrogen
 import net.minecraft.world.chunk.PalettedContainer
 import net.minecraft.world.chunk.WorldChunk
 import net.minecraft.world.gen.chunk.BlendingData
+import org.waste.of.time.MessageManager.translateHighlight
 import org.waste.of.time.StatisticManager
 import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.addAuthor
 import org.waste.of.time.WorldTools.config
-import org.waste.of.time.WorldTools.highlight
-import org.waste.of.time.WorldTools.mm
 import org.waste.of.time.event.Cacheable
 import org.waste.of.time.event.RegionBased
 import org.waste.of.time.event.HotCache
 
 data class RegionBasedChunk(val chunk: WorldChunk) : RegionBased, Cacheable {
-    override fun toString() = "Chunk at $chunkPos"
-
     override fun shouldStore() = config.capture.chunks
 
-    override val message: String
-        get() = "<lang:worldtools.capture.saved.chunks:$chunkPos:$dimension>"
+    override val verboseInfo: MutableText
+        get() = translateHighlight(
+            "worldtools.capture.saved.chunks",
+            chunkPos,
+            dimension
+        )
+
+    override val anonymizedInfo: MutableText
+        get() = translateHighlight(
+            "worldtools.capture.saved.chunks.anonymized",
+            dimension
+        )
 
     override val chunkPos: ChunkPos
         get() = chunk.pos

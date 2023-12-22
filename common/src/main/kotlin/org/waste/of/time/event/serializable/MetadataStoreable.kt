@@ -5,6 +5,8 @@ import com.mojang.authlib.GameProfile
 import net.minecraft.SharedConstants
 import net.minecraft.advancement.AdvancementProgress
 import net.minecraft.client.network.PlayerListEntry
+import net.minecraft.text.ClickEvent
+import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import net.minecraft.util.PathUtil
@@ -15,6 +17,7 @@ import org.waste.of.time.CaptureManager.serverInfo
 import org.waste.of.time.CaptureManager.levelName
 import org.waste.of.time.MessageManager.infoToast
 import org.waste.of.time.MessageManager.sendInfo
+import org.waste.of.time.MessageManager.translateHighlight
 import org.waste.of.time.StatisticManager
 import org.waste.of.time.TimeUtils
 import org.waste.of.time.WorldTools.CREDIT_MESSAGE_MD
@@ -22,7 +25,6 @@ import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.MOD_NAME
 import org.waste.of.time.WorldTools.config
 import org.waste.of.time.WorldTools.mc
-import org.waste.of.time.WorldTools.mm
 import org.waste.of.time.event.Storeable
 import org.waste.of.time.mixin.accessor.AdvancementProgressesAccessor
 import org.waste.of.time.serializer.LevelPropertySerializer.writeLevelDataFile
@@ -34,12 +36,16 @@ import java.nio.file.Path
 import kotlin.io.path.writeBytes
 
 class MetadataStoreable : Storeable {
-    override fun toString() = "Metadata"
-
     override fun shouldStore() = config.capture.metadata
 
-    override val message: String
-        get() = "<lang:worldtools.capture.saved.metadata>"
+    override val verboseInfo: MutableText
+        get() = translateHighlight(
+            "worldtools.capture.saved.metadata",
+            currentLevelName
+        )
+
+    override val anonymizedInfo: MutableText
+        get() = verboseInfo
 
     private val gson = GsonBuilder().registerTypeAdapter(
         AdvancementProgress::class.java as Type,
@@ -227,9 +233,25 @@ class MetadataStoreable : Storeable {
 
     private fun Session.sendSuccess() {
         val savedPath = getDirectory(WorldSavePath.ROOT).toFile()
-        val message = StatisticManager.message
+        val info = StatisticManager.infoMessage
 
-        message.mm().infoToast()
-        "$message <lang:capture.in_directory> <click:open_file:${savedPath.path}>$currentLevelName (<lang:capture.click_to_open>)</click>".mm().sendInfo()
+        info.infoToast()
+
+        info.copy()
+            .append(
+                Text.translatable("worldtools.capture.to_directory")
+            ).append(
+                translateHighlight(
+                    "worldtools.capture.click_to_open",
+                    currentLevelName
+                ).copy().styled {
+                    it.withClickEvent(
+                        ClickEvent(
+                            ClickEvent.Action.OPEN_FILE,
+                            savedPath.path
+                        )
+                    )
+                }
+            ).sendInfo()
     }
 }

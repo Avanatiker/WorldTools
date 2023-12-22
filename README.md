@@ -140,7 +140,7 @@ Pull Request.
 - [ ] Different world generators and seed setting
 - [ ] Automatic World Downloading (Disabled by default) - decides whether or not the mod automatically starts downloading worlds upon join
 - [ ] Download Distance (locked to client's chunkloading distance by default) - decides the chunk radius around the player in which world data is downloaded, has 3 options: Custom, Client View Distance, and Server View Distance.
-- [ ] Dimension, XP, selected item slot, player game type, is not saved to player
+- [ ] Dimension, XP, selected item slot, player game type, is not saved to player nbt in level.dat
 
 ## License
 

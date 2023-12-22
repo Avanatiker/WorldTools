@@ -1,6 +1,10 @@
 package org.waste.of.time
 
-import org.waste.of.time.WorldTools.highlight
+import net.minecraft.text.Text
+import net.minecraft.text.TextColor
+import org.waste.of.time.CaptureManager.currentLevelName
+import org.waste.of.time.MessageManager.translateHighlight
+import org.waste.of.time.WorldTools.config
 
 object StatisticManager {
     var chunks = 0
@@ -17,45 +21,68 @@ object StatisticManager {
         dimensions.clear()
     }
 
-    val message: String
+    val infoMessage: Text
         get() {
-            val elements = mutableListOf<String>()
-
-            if (chunks != 0) {
-                elements.add("${highlight("%,d".format(chunks))} <lang:worldtools.capture.chunks>")
-            }
-
-            if (entities != 0) {
-                elements.add("${highlight("%,d".format(entities))} <lang:worldtools.capture.entities>")
-            }
-
-            if (players != 0) {
-                elements.add("${highlight("%,d".format(players))} <lang:worldtools.capture.players>")
-            }
-
-            if (containers != 0) {
-                elements.add("${highlight("%,d".format(containers))} <lang:worldtools.capture.containers>")
-            }
-
-            return if (elements.isEmpty()) {
-                "<lang:worldtools.capture.nothing_saved_yet>"
-            } else {
-                val dimensionsAppendix = if (dimensions.isNotEmpty()) {
-                    " <lang:worldtools.capture.in_dimensions> ${highlight(dimensions.toList().joinWithAnd())}"
-                } else {
-                    ""
+            val savedElements = mutableListOf<Text>().apply {
+                if (chunks == 1) {
+                    add(translateHighlight("worldtools.capture.chunk", chunks))
+                }
+                if (chunks > 1) {
+                    add(translateHighlight("worldtools.capture.chunks", "%,d".format(chunks)))
                 }
 
-                "<lang:worldtools.capture.saved> ${elements.joinWithAnd()}$dimensionsAppendix"
+                if (entities == 1) {
+                    add(translateHighlight("worldtools.capture.entity", entities))
+                }
+                if (entities > 1) {
+                    add(translateHighlight("worldtools.capture.entities", "%,d".format(entities)))
+                }
+
+                if (players == 1) {
+                    add(translateHighlight("worldtools.capture.player", players))
+                }
+                if (players > 1) {
+                    add(translateHighlight("worldtools.capture.players", "%,d".format(players)))
+                }
+
+                if (containers == 1) {
+                    add(translateHighlight("worldtools.capture.container", containers))
+                }
+                if (containers > 1) {
+                    add(translateHighlight("worldtools.capture.containers", "%,d".format(containers)))
+                }
+            }
+
+            return if (savedElements.isEmpty()) {
+                translateHighlight("worldtools.capture.nothing_saved_yet", currentLevelName)
+            } else {
+                val dimensionsFormatted = dimensions.map {
+                    Text.of(it).copy().styled { text ->
+                        text.withColor(TextColor.fromRgb(config.advanced.accentColor))
+                    }
+                }.joinWithAnd()
+                Text.translatable("worldtools.capture.saved").copy()
+                    .append(savedElements.joinWithAnd())
+                    .append(Text.translatable("worldtools.capture.in_dimension"))
+                    .append(dimensionsFormatted)
             }
         }
 
-    private fun List<String>.joinWithAnd() =
-        when (size) {
-            0 -> ""
+    fun List<Text>.joinWithAnd(): Text {
+        val and = Text.translatable("worldtools.capture.and")
+        return when (size) {
+            0 -> Text.of("")
             1 -> this[0]
-            else -> {
-                dropLast(1).joinToString() + " <lang:worldtools.capture.and> " + last()
-            }
+            2 -> this[0].copy().append(and).append(this[1])
+            else -> dropLast(1).join().copy().append(and).append(last())
         }
+    }
+
+    private fun List<Text>.join(): Text {
+        val comma = Text.of(", ")
+        return foldIndexed(Text.of("")) { index, acc, text ->
+            if (index == 0) return@foldIndexed text
+            acc.copy().append(comma).append(text)
+        }
+    }
 }

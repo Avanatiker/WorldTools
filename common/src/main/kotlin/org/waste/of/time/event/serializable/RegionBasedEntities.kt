@@ -4,28 +4,36 @@ import net.minecraft.SharedConstants
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtIntArray
 import net.minecraft.nbt.NbtList
+import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.world.World
+import org.waste.of.time.MessageManager.translateHighlight
 import org.waste.of.time.StatisticManager
+import org.waste.of.time.StatisticManager.joinWithAnd
 import org.waste.of.time.WorldTools.config
-import org.waste.of.time.WorldTools.highlight
-import org.waste.of.time.WorldTools.mm
-import org.waste.of.time.WorldTools.sanitize
 import org.waste.of.time.event.RegionBased
 
 data class RegionBasedEntities(
     override val chunkPos: ChunkPos,
     val entities: MutableList<EntityCacheable>
 ) : RegionBased {
-    override fun toString() = "${entities.size} entities in chunk $chunkPos"
-
     override fun shouldStore() = config.capture.entities
 
-    override val message: String
-        get() = "<lang:worldtools.capture.saved.entities:${
-            entities.joinToString { it.entity.name.string.sanitize() }
-        }:$chunkPos:$dimension>"
+    override val verboseInfo: MutableText
+        get() = translateHighlight(
+            "worldtools.capture.saved.entities",
+            stackEntities(),
+            chunkPos,
+            dimension
+        )
+
+    override val anonymizedInfo: MutableText
+        get() = translateHighlight(
+            "worldtools.capture.saved.entities.anonymized",
+            stackEntities(),
+            dimension
+        )
 
     override val world: World = entities.first().entity.world
 
@@ -47,4 +55,13 @@ data class RegionBasedEntities(
         StatisticManager.entities += entities.size
         StatisticManager.dimensions.add(dimension)
     }
+
+    private fun stackEntities() = entities.groupBy {
+        it.entity.name
+    }.map {
+        val count = if (it.value.size > 1) {
+            " (${it.value.size})"
+        } else ""
+        it.key.copy().append(count)
+    }.joinWithAnd()
 }

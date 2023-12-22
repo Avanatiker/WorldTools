@@ -4,8 +4,6 @@ import dev.architectury.injectables.targets.ArchitecturyTarget
 import me.shedaniel.autoconfig.AutoConfig
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer
 import net.fabricmc.loader.api.FabricLoader
-import net.kyori.adventure.text.minimessage.MiniMessage
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.option.KeyBinding
 import net.minecraft.client.util.InputUtil
@@ -44,7 +42,6 @@ object WorldTools {
     )
 
     val mc: MinecraftClient = MinecraftClient.getInstance()
-    var mm = MiniMessage.miniMessage()
 
     lateinit var config: WorldToolsConfig; private set
 
@@ -53,14 +50,6 @@ object WorldTools {
         AutoConfig.register(WorldToolsConfig::class.java, ::GsonConfigSerializer)
         config = AutoConfig.getConfigHolder(WorldToolsConfig::class.java).config
     }
-
-    fun String.mm(): Text {
-        val component = mm.deserialize(this)
-        val json = GsonComponentSerializer.gson().serialize(component)
-        return Text.Serializer.fromJson(json) as Text
-    }
-
-    fun highlight(string: String) = "<color:#${HIGHLIGHT_COLOR.toString(16)}>$string</color>"
 
     // Why cant I use the std lib?
     fun Boolean.toByte(): Byte = if (this) 1 else 0
