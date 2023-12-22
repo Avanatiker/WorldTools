@@ -69,5 +69,6 @@ class WorldToolsConfig : ConfigData {
         var progressBarStyle = BossBar.Style.PROGRESS
         var progressBarTimeout = 3000L
         var renderNotYetCachedContainers = true
+        var containerColor = 0xDE0000
     }
 }

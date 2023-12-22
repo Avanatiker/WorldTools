@@ -5,6 +5,7 @@
   "text.autoconfig.worldtools.option.advanced.autoDownload": "Download automatisch starten",
   "text.autoconfig.worldtools.option.advanced.captureBarColor": "Aufzeichnungsbalkenfarbe (RGB Hex)",
   "text.autoconfig.worldtools.option.advanced.captureBarStyle": "Aufzeichnungsbalkenstil",
+  "text.autoconfig.worldtools.option.advanced.containerColor": "Kontainerfarbe (RGB Hex)",
   "text.autoconfig.worldtools.option.advanced.progressBarColor": "Vortschrittsbalkenfarbe (RGB Hex)",
   "text.autoconfig.worldtools.option.advanced.progressBarStyle": "Vortschrittsbalkenstil",
   "text.autoconfig.worldtools.option.advanced.progressBarTimeout": "Vortschrittsbalken Anzeigedauer (ms)",

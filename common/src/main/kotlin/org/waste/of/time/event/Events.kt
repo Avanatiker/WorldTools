@@ -104,7 +104,7 @@ object Events {
             .forEach { blockEntity ->
                 val blockPos = blockEntity.pos
                 val blockState = blockEntity.cachedState
-                val color = Color(222, 0, 0, 100)
+                val color = Color(config.advanced.containerColor)
 
                 val voxelShape = blockState.getCollisionShape(world, blockPos)
                 val offsetShape = voxelShape.offset(
