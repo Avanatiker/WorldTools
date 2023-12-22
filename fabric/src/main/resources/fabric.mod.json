@@ -6,7 +6,8 @@
   "description": "A powerful Minecraft mod that captures high-detail snapshots of server worlds locally.",
   "authors": [
     "Constructor",
-    "P529"
+    "P529",
+    "rfresh"
   ],
   "contact": {
     "homepage": "https://github.com/Avanatiker/WorldTools/",
