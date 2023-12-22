@@ -1,5 +1,6 @@
 package org.waste.of.time
 
+import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.text.TextColor
 import org.waste.of.time.CaptureManager.currentLevelName
@@ -57,7 +58,7 @@ object StatisticManager {
                 translateHighlight("worldtools.capture.nothing_saved_yet", currentLevelName)
             } else {
                 val dimensionsFormatted = dimensions.map {
-                    Text.of(it).copy().styled { text ->
+                    Text.literal(it).styled { text ->
                         text.withColor(TextColor.fromRgb(config.advanced.accentColor))
                     }
                 }.joinWithAnd()
@@ -74,15 +75,15 @@ object StatisticManager {
             0 -> Text.of("")
             1 -> this[0]
             2 -> this[0].copy().append(and).append(this[1])
-            else -> dropLast(1).join().copy().append(and).append(last())
+            else -> dropLast(1).join().append(and).append(last())
         }
     }
 
-    private fun List<Text>.join(): Text {
+    private fun List<Text>.join(): MutableText {
         val comma = Text.of(", ")
-        return foldIndexed(Text.of("")) { index, acc, text ->
-            if (index == 0) return@foldIndexed text
-            acc.copy().append(comma).append(text)
+        return foldIndexed(Text.literal("")) { index, acc, text ->
+            if (index == 0) return@foldIndexed text.copy()
+            acc.append(comma).append(text)
         }
     }
 }

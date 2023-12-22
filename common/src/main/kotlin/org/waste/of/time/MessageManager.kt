@@ -14,23 +14,23 @@ import org.waste.of.time.WorldTools.mc
 object MessageManager {
     private const val ERROR_COLOR = 0xff3333
 
-    val brand: Text = Text.of("W").copy().styled {
+    val brand: Text = Text.literal("W").styled {
         it.withColor(TextColor.fromRgb(config.advanced.accentColor))
     }.append(
-        Text.of("orld").copy().styled {
+        Text.literal("orld").styled {
             it.withColor(Formatting.RESET)
         }
     ).append(
-        Text.of("T").copy().styled {
+        Text.literal("T").styled {
             it.withColor(TextColor.fromRgb(config.advanced.accentColor))
         }
     ).append(
-        Text.of("ools").copy().styled {
+        Text.literal("ools").styled {
             it.withColor(Formatting.RESET)
         }
     )
     private val converted by lazy {
-        Text.of("[").copy().append(brand).append(Text.of("] "))
+        Text.literal("[").append(brand).append(Text.of("] "))
     }
     private val fullBrand: MutableText
         get() = converted.copy()
@@ -101,7 +101,7 @@ object MessageManager {
                     }
                 }
             } else {
-                Text.of(element.toString()).copy().styled { style ->
+                Text.literal(element.toString()).styled { style ->
                     style.withColor(secondaryColor)
                 }
             }
