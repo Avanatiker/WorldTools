@@ -73,6 +73,7 @@ object Events {
         HotCache.clear()
         StorageFlow.lastStored = null
         StatisticManager.reset()
+        if (config.advanced.autoDownload) CaptureManager.start()
     }
 
     fun onClientDisconnect() {

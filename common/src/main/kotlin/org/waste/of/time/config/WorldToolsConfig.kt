@@ -58,6 +58,7 @@ class WorldToolsConfig : ConfigData {
     }
 
     class Advanced {
+        var autoDownload = true
         var anonymousMode = false
         var showToasts = true
         var showChatMessages = true

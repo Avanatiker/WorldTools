@@ -2,6 +2,7 @@
   "text.autoconfig.worldtools.option.advanced": "Advanced",
   "text.autoconfig.worldtools.option.advanced.accentColor": "Accent Color (RGB Hex)",
   "text.autoconfig.worldtools.option.advanced.anonymousMode": "Anonymize Coordinates",
+  "text.autoconfig.worldtools.option.advanced.autoDownload": "Automatically start download on join",
   "text.autoconfig.worldtools.option.advanced.captureBarColor": "Capture Info Bar Color (RGB Hex)",
   "text.autoconfig.worldtools.option.advanced.captureBarStyle": "Capture Info Bar Style",
   "text.autoconfig.worldtools.option.advanced.progressBarColor": "Progress Bar Color (RGB Hex)",
