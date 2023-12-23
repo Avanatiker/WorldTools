@@ -35,8 +35,6 @@ class MetadataStoreable : Storeable {
     override val anonymizedInfo: MutableText
         get() = verboseInfo
 
-
-
     override fun store(session: Session, cachedStorages: MutableMap<String, CustomRegionBasedStorage>) {
         session.writeIconFile()
 

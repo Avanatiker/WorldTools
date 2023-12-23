@@ -59,7 +59,7 @@ class CompressLevelStoreable : Storeable {
 
     @Throws(IOException::class)
     private fun zipFile(fileToZip: Path, rootPath: Path, zipOut: ZipOutputStream) {
-        val entryName = "$currentLevelName/" + rootPath.relativize(fileToZip).toString().replace('\\', '/')
+        val entryName = rootPath.relativize(fileToZip).toString().replace('\\', '/')
         when {
             Files.isHidden(fileToZip) -> return
             Files.isDirectory(fileToZip) -> {
