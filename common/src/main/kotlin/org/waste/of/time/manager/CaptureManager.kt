@@ -23,7 +23,7 @@ object CaptureManager {
 
     val levelName: String
         get() = if (mc.isInSingleplayer) {
-            mc.server?.name?.sanitizeWorldName() ?: "SinglePlayer"
+            mc.server?.serverMotd?.substringAfter(" - ")?.sanitizeWorldName() ?: "SinglePlayer"
         } else {
             serverInfo.address.sanitizeWorldName()
         }
