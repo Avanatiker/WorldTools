@@ -6,12 +6,11 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import net.minecraft.util.path.SymlinkValidationException
-import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.mc
 import org.waste.of.time.manager.MessageManager
+import org.waste.of.time.manager.MessageManager.sendInfo
 import org.waste.of.time.manager.StatisticManager
-import org.waste.of.time.serializer.WorldSaveZipper
 import org.waste.of.time.storage.serializable.EndFlow
 import java.io.IOException
 import java.util.concurrent.CancellationException
@@ -70,7 +69,6 @@ object StorageFlow {
 
         cachedStorages.values.forEach { it.close() }
         LOG.info("Finished caching")
-        if (WorldTools.config.capture.zipCapture) WorldSaveZipper.zipWorld(levelName)
     }
 
     class StopCollectingException : Exception()

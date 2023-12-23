@@ -76,7 +76,7 @@ object Events {
         HotCache.clear()
         StorageFlow.lastStored = null
         StatisticManager.reset()
-        if (config.advanced.autoDownload) CaptureManager.start()
+        if (config.capture.autoDownload) CaptureManager.start()
     }
 
     fun onClientDisconnect() {
@@ -97,7 +97,7 @@ object Events {
         cameraY: Double,
         cameraZ: Double
     ) {
-        if (!capturing || !config.advanced.renderNotYetCachedContainers) return
+        if (!capturing || !config.capture.renderNotYetCachedContainers) return
 
         val world = mc.world ?: return
         val vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getLines()) ?: return
@@ -106,7 +106,7 @@ object Events {
             .forEach { blockEntity ->
                 val blockPos = blockEntity.pos
                 val blockState = blockEntity.cachedState
-                val color = Color(config.advanced.containerColor)
+                val color = Color(config.capture.containerColor)
 
                 val voxelShape = blockState.getCollisionShape(world, blockPos)
                 val offsetShape = voxelShape.offset(

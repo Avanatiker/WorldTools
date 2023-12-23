@@ -8,10 +8,7 @@ import net.minecraft.text.Text
 import org.waste.of.time.WorldTools.mc
 import org.waste.of.time.storage.StorageFlow
 import org.waste.of.time.storage.cache.HotCache
-import org.waste.of.time.storage.serializable.AdvancementsStoreable
-import org.waste.of.time.storage.serializable.EndFlow
-import org.waste.of.time.storage.serializable.LevelDataStoreable
-import org.waste.of.time.storage.serializable.MetadataStoreable
+import org.waste.of.time.storage.serializable.*
 
 object CaptureManager {
     private const val MAX_WORLD_NAME_LENGTH = 64
@@ -68,6 +65,7 @@ object CaptureManager {
         currentLevelName = potentialName
         MessageManager.sendInfo("worldtools.log.info.started_capture", potentialName)
         storeJob = StorageFlow.launch(potentialName)
+        mc.networkHandler?.sendPacket(ClientStatusC2SPacket(ClientStatusC2SPacket.Mode.REQUEST_STATS))
         capturing = true
     }
 
@@ -97,6 +95,7 @@ object CaptureManager {
         LevelDataStoreable().emit()
         AdvancementsStoreable().emit()
         MetadataStoreable().emit()
+        CompressLevelStoreable().emit()
         EndFlow().emit()
 
         capturing = false

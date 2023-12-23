@@ -24,6 +24,10 @@ class WorldToolsConfig : ConfigData {
     val advanced = Advanced()
 
     class Capture {
+        var autoDownload = false
+        var compressLevel = true
+        var renderNotYetCachedContainers = true
+        var containerColor = 0xDE0000
         var chunks = true
         var entities = true
         var players = true
@@ -31,7 +35,6 @@ class WorldToolsConfig : ConfigData {
         var levelData = true
         var advancements = true
         var metadata = true
-        var zipCapture = true
     }
 
     class World {
@@ -60,7 +63,6 @@ class WorldToolsConfig : ConfigData {
     }
 
     class Advanced {
-        var autoDownload = false
         var anonymousMode = false
         var showToasts = true
         var showChatMessages = true
@@ -70,7 +72,5 @@ class WorldToolsConfig : ConfigData {
         var progressBarColor = BossBar.Color.GREEN
         var progressBarStyle = BossBar.Style.PROGRESS
         var progressBarTimeout = 3000L
-        var renderNotYetCachedContainers = true
-        var containerColor = 0xDE0000
     }
 }

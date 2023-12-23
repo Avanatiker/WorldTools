@@ -133,7 +133,7 @@ Pull Request.
 - Fix chests being removed from the chunk and then the data is lost until the chunk is serialized
 - Fix save worlds / auto download on disconnect
 - Fix cloth config dependency for forge toml config
-- Fix statistics not saved properly
+- Fix statistics not updated on stop because the packet answer is not received before the world is saved
 - Fix on capture switch config button functionality in capture gui
 - Dimension, XP, selected item slot, player game type, is not saved to player nbt in level.dat
 
