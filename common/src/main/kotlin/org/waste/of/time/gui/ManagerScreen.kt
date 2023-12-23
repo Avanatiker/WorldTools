@@ -4,10 +4,10 @@ import me.shedaniel.autoconfig.AutoConfig
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.*
 import net.minecraft.text.Text
-import org.waste.of.time.manager.CaptureManager
-import org.waste.of.time.manager.CaptureManager.levelName
 import org.waste.of.time.WorldTools.MAX_LEVEL_NAME_LENGTH
 import org.waste.of.time.config.WorldToolsConfig
+import org.waste.of.time.manager.CaptureManager
+import org.waste.of.time.manager.CaptureManager.levelName
 
 object ManagerScreen : Screen(Text.translatable("worldtools.gui.manager.title")) {
     override fun init() {
@@ -28,8 +28,8 @@ object ManagerScreen : Screen(Text.translatable("worldtools.gui.manager.title"))
         worldNameTextEntryWidget.setMaxLength(MAX_LEVEL_NAME_LENGTH)
         adder.add(worldNameTextEntryWidget, 2)
         adder.add(ButtonWidget.Builder(Text.translatable("worldtools.gui.manager.button.start_download")) { _ ->
-            CaptureManager.start(worldNameTextEntryWidget.text)
             client?.setScreen(null)
+            CaptureManager.start(worldNameTextEntryWidget.text)
         }.width(90).build(), 1)
         entryGridWidget.refreshPositions()
         SimplePositioningWidget.setPos(entryGridWidget, 0, title.y, width, height, 0.5f, 0.05f)
