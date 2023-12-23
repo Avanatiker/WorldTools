@@ -70,6 +70,8 @@ sharing, or backup purposes on your local machine.
 2. **Prerequisites**: Make sure you have the following mods installed:
     - [Fabric API](https://www.curseforge.com/minecraft/mc-mods/fabric-api)
     - [fabric-language-kotlin](https://www.curseforge.com/minecraft/mc-mods/fabric-language-kotlin)
+    - [Cloth Config API](https://www.curseforge.com/minecraft/mc-mods/cloth-config)
+    - [Mod Menu](https://modrinth.com/mod/modmenu)
 
 ### Forge
 
@@ -81,6 +83,7 @@ sharing, or backup purposes on your local machine.
 
 2. **Prerequisites**: Make sure you have the following mods installed:
     - [Kotlin For Forge](https://www.curseforge.com/minecraft/mc-mods/kotlin-for-forge)
+    - [Cloth Config API](https://www.curseforge.com/minecraft/mc-mods/cloth-config)
 
 ### Usage
 

@@ -7,7 +7,6 @@ on:
 
 env:
   MINECRAFT_VERSION: "1.20.1"
-  KOTLIN_FOR_FORGE_VERSION: "4.9.0"
 
 jobs:
   build:
@@ -62,4 +61,5 @@ jobs:
           game-versions: |
             ${{ env.MINECRAFT_VERSION }}
           dependencies: |
-            kotlinforforge@${{ env.KOTLIN_FOR_FORGE_VERSION }}(required){modrinth:ordsPcFz}{curseforge:351264}
+            kotlinforforge(required){modrinth:ordsPcFz}{curseforge:351264}
+            cloth-config(required){modrinth:9s6osm5g}{curseforge:348521}
