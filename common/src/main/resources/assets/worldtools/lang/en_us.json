@@ -73,6 +73,8 @@
   "worldtools.gui.manager.button.start_download": "Start download",
   "worldtools.gui.manager.title": "WorldTools Manager",
   "worldtools.gui.manager.world_name_placeholder": "Enter world name... (default: %s)",
+  "worldtools.gui.capture.existing_world_confirm.title": "Existing World Found",
+  "worldtools.gui.capture.existing_world_confirm.message": "A save named: \"%s\" already exists. Overwrite it?",
   "worldtools.key.categories": "WorldTools",
   "worldtools.key.open_config": "Open configuration",
   "worldtools.key.toggle_capture": "Quick download",

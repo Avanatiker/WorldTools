@@ -53,22 +53,20 @@ object CaptureManager {
             }
         } ?: levelName
 
-        val potentialSaveDir = mc.levelStorage.savesDirectory.resolve(potentialName).toFile()
-        if (potentialSaveDir.exists() && !confirmed) {
+        if (mc.levelStorage.savesDirectory.resolve(potentialName).toFile().exists() && !confirmed) {
             mc.setScreen(ConfirmScreen(
                 { yes ->
                     if (yes) start(potentialName, true)
                     mc.setScreen(null)
                 },
-                Text.of("Existing World Found"),
-                Text.of("A world with the name $potentialName already exists. Do you want to overwrite it?")
+                Text.translatable("worldtools.gui.capture.existing_world_confirm.title"),
+                Text.translatable("worldtools.gui.capture.existing_world_confirm.message", potentialName)
             ))
             return
         }
+
         currentLevelName = potentialName
-
         MessageManager.sendInfo("worldtools.log.info.started_capture", potentialName)
-
         storeJob = StorageFlow.launch(potentialName)
         capturing = true
     }
