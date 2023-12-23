@@ -8,14 +8,15 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.minecraft.util.ActionResult
 import org.waste.of.time.Events
-import org.waste.of.time.manager.CaptureManager
 import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.LOG
+import org.waste.of.time.manager.CaptureManager
 
 object WorldToolsFabric : ClientModInitializer {
     override fun onInitializeClient() {
@@ -42,6 +43,9 @@ object WorldToolsFabric : ClientModInitializer {
         UseBlockCallback.EVENT.register(UseBlockCallback { _, world, _, hitResult ->
             Events.onInteractBlock(world, hitResult)
             ActionResult.PASS
+        })
+        ClientTickEvents.START_CLIENT_TICK.register(ClientTickEvents.StartTick {
+            Events.onClientTickStart()
         })
 
         LOG.info("WorldTools Fabric initialized")
