@@ -30,6 +30,7 @@ class WorldToolsConfig : ConfigData {
         var players = true
         var statistics = true
         var metadata = true
+        var zipCapture = true
     }
 
     class World {

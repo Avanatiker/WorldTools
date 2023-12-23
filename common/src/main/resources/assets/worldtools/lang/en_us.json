@@ -18,6 +18,7 @@
   "text.autoconfig.worldtools.option.capture.metadata": "Metadata",
   "text.autoconfig.worldtools.option.capture.players": "Players",
   "text.autoconfig.worldtools.option.capture.statistics": "Statistics",
+  "text.autoconfig.worldtools.option.capture.zipCapture": "Zip Capture",
   "text.autoconfig.worldtools.option.entity": "Entity",
   "text.autoconfig.worldtools.option.entity.invulnerable": "Invulnerable",
   "text.autoconfig.worldtools.option.entity.modifyNBT": "Modify NBT",
