@@ -1,10 +1,10 @@
-package org.waste.of.time
+package org.waste.of.time.manager
 
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.text.TextColor
-import org.waste.of.time.CaptureManager.currentLevelName
-import org.waste.of.time.MessageManager.translateHighlight
+import org.waste.of.time.manager.CaptureManager.currentLevelName
+import org.waste.of.time.manager.MessageManager.translateHighlight
 import org.waste.of.time.WorldTools.config
 
 object StatisticManager {

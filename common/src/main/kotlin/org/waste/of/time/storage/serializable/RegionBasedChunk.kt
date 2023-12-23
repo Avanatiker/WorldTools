@@ -1,4 +1,4 @@
-package org.waste.of.time.event.serializable
+package org.waste.of.time.storage.serializable
 
 import net.minecraft.SharedConstants
 import net.minecraft.block.Block
@@ -22,14 +22,14 @@ import net.minecraft.world.chunk.BelowZeroRetrogen
 import net.minecraft.world.chunk.PalettedContainer
 import net.minecraft.world.chunk.WorldChunk
 import net.minecraft.world.gen.chunk.BlendingData
-import org.waste.of.time.MessageManager.translateHighlight
-import org.waste.of.time.StatisticManager
+import org.waste.of.time.Utils.addAuthor
+import org.waste.of.time.manager.MessageManager.translateHighlight
+import org.waste.of.time.manager.StatisticManager
 import org.waste.of.time.WorldTools
-import org.waste.of.time.WorldTools.addAuthor
 import org.waste.of.time.WorldTools.config
-import org.waste.of.time.event.Cacheable
-import org.waste.of.time.event.HotCache
-import org.waste.of.time.event.RegionBased
+import org.waste.of.time.storage.Cacheable
+import org.waste.of.time.storage.cache.HotCache
+import org.waste.of.time.storage.RegionBased
 
 data class RegionBasedChunk(val chunk: WorldChunk) : RegionBased, Cacheable {
     override fun shouldStore() = config.capture.chunks

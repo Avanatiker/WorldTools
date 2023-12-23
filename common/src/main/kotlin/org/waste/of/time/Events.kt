@@ -1,4 +1,4 @@
-package org.waste.of.time.event
+package org.waste.of.time
 
 import net.minecraft.block.entity.LockableContainerBlockEntity
 import net.minecraft.client.MinecraftClient
@@ -13,21 +13,23 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.world.World
 import net.minecraft.world.chunk.WorldChunk
-import org.waste.of.time.BarManager.updateCapture
-import org.waste.of.time.CaptureManager
-import org.waste.of.time.CaptureManager.capturing
-import org.waste.of.time.CaptureManager.currentLevelName
-import org.waste.of.time.MessageManager
-import org.waste.of.time.MessageManager.translateHighlight
-import org.waste.of.time.StatisticManager
+import org.waste.of.time.manager.CaptureManager
+import org.waste.of.time.manager.CaptureManager.capturing
+import org.waste.of.time.manager.CaptureManager.currentLevelName
+import org.waste.of.time.manager.MessageManager
+import org.waste.of.time.manager.MessageManager.translateHighlight
+import org.waste.of.time.manager.StatisticManager
 import org.waste.of.time.WorldTools.CAPTURE_KEY
 import org.waste.of.time.WorldTools.CONFIG_KEY
 import org.waste.of.time.WorldTools.config
 import org.waste.of.time.WorldTools.mc
-import org.waste.of.time.event.serializable.EntityCacheable
-import org.waste.of.time.event.serializable.PlayerStoreable
-import org.waste.of.time.event.serializable.RegionBasedChunk
+import org.waste.of.time.storage.cache.EntityCacheable
+import org.waste.of.time.storage.serializable.PlayerStoreable
+import org.waste.of.time.storage.serializable.RegionBasedChunk
 import org.waste.of.time.gui.ManagerScreen
+import org.waste.of.time.manager.BarManager.updateCapture
+import org.waste.of.time.storage.cache.HotCache
+import org.waste.of.time.storage.StorageFlow
 import java.awt.Color
 
 object Events {

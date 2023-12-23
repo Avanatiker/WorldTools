@@ -4,8 +4,8 @@ import me.shedaniel.autoconfig.AutoConfig
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.*
 import net.minecraft.text.Text
-import org.waste.of.time.CaptureManager
-import org.waste.of.time.CaptureManager.levelName
+import org.waste.of.time.manager.CaptureManager
+import org.waste.of.time.manager.CaptureManager.levelName
 import org.waste.of.time.WorldTools.MAX_LEVEL_NAME_LENGTH
 import org.waste.of.time.config.WorldToolsConfig
 

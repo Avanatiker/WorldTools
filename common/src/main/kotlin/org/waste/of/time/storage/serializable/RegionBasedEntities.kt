@@ -1,4 +1,4 @@
-package org.waste.of.time.event.serializable
+package org.waste.of.time.storage.serializable
 
 import net.minecraft.SharedConstants
 import net.minecraft.nbt.NbtCompound
@@ -7,11 +7,12 @@ import net.minecraft.nbt.NbtList
 import net.minecraft.text.MutableText
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.world.World
-import org.waste.of.time.MessageManager.translateHighlight
-import org.waste.of.time.StatisticManager
-import org.waste.of.time.StatisticManager.joinWithAnd
+import org.waste.of.time.manager.MessageManager.translateHighlight
+import org.waste.of.time.manager.StatisticManager
+import org.waste.of.time.manager.StatisticManager.joinWithAnd
 import org.waste.of.time.WorldTools.config
-import org.waste.of.time.event.RegionBased
+import org.waste.of.time.storage.RegionBased
+import org.waste.of.time.storage.cache.EntityCacheable
 
 data class RegionBasedEntities(
     override val chunkPos: ChunkPos,

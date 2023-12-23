@@ -1,12 +1,15 @@
-package org.waste.of.time
+package org.waste.of.time.manager
 
 import kotlinx.coroutines.Job
 import net.minecraft.client.network.ServerInfo
 import net.minecraft.network.packet.c2s.play.ClientStatusC2SPacket
 import org.waste.of.time.WorldTools.mc
-import org.waste.of.time.event.HotCache
-import org.waste.of.time.event.StorageFlow
-import org.waste.of.time.event.serializable.MetadataStoreable
+import org.waste.of.time.storage.cache.HotCache
+import org.waste.of.time.storage.StorageFlow
+import org.waste.of.time.storage.serializable.AdvancementsStoreable
+import org.waste.of.time.storage.serializable.EndFlow
+import org.waste.of.time.storage.serializable.LevelDataStoreable
+import org.waste.of.time.storage.serializable.MetadataStoreable
 
 object CaptureManager {
     private const val MAX_WORLD_NAME_LENGTH = 64
@@ -79,7 +82,10 @@ object CaptureManager {
             player.emit()
         }
 
+        LevelDataStoreable().emit()
+        AdvancementsStoreable().emit()
         MetadataStoreable().emit()
+        EndFlow().emit()
 
         capturing = false
     }

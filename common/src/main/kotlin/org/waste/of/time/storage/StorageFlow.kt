@@ -1,4 +1,4 @@
-package org.waste.of.time.event
+package org.waste.of.time.storage
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -6,19 +6,15 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import net.minecraft.util.path.SymlinkValidationException
-import org.waste.of.time.MessageManager
-import org.waste.of.time.StatisticManager
-import org.waste.of.time.WorldTools
+import org.waste.of.time.manager.MessageManager
+import org.waste.of.time.manager.StatisticManager
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.mc
-import org.waste.of.time.event.serializable.MetadataStoreable
-import org.waste.of.time.serializer.WorldSaveZipper
-import org.waste.of.time.storage.CustomRegionBasedStorage
+import org.waste.of.time.storage.serializable.EndFlow
 import java.io.IOException
 import java.util.concurrent.CancellationException
 import kotlin.time.Duration
 import kotlin.time.measureTime
-
 
 object StorageFlow {
     private const val MAX_BUFFER_SIZE = 1000
@@ -55,7 +51,7 @@ object StorageFlow {
                     lastStoredTimestamp = System.currentTimeMillis()
                     lastStoredTimeNeeded = time
 
-                    if (storeable is MetadataStoreable) {
+                    if (storeable is EndFlow) {
                         throw StopCollectingException()
                     }
                 }
@@ -72,9 +68,6 @@ object StorageFlow {
 
         cachedStorages.values.forEach { it.close() }
         LOG.info("Finished caching")
-        if (WorldTools.config.capture.zipCapture) {
-            WorldSaveZipper.zipWorld(levelName)
-        }
     }
 
     class StopCollectingException : Exception()

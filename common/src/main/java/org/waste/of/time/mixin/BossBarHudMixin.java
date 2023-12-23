@@ -6,7 +6,7 @@ import net.minecraft.entity.boss.BossBar;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import org.waste.of.time.BarManager;
+import org.waste.of.time.manager.BarManager;
 
 import java.util.*;
 

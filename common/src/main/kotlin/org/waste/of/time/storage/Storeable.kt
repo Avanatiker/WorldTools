@@ -1,11 +1,10 @@
-package org.waste.of.time.event
+package org.waste.of.time.storage
 
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.world.level.storage.LevelStorage.Session
-import org.waste.of.time.MessageManager.translateHighlight
+import org.waste.of.time.manager.MessageManager.translateHighlight
 import org.waste.of.time.WorldTools.config
-import org.waste.of.time.storage.CustomRegionBasedStorage
 
 interface Storeable {
     fun store(

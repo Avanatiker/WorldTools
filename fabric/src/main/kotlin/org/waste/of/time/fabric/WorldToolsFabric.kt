@@ -12,10 +12,10 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.minecraft.util.ActionResult
-import org.waste.of.time.CaptureManager
+import org.waste.of.time.Events
+import org.waste.of.time.manager.CaptureManager
 import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.LOG
-import org.waste.of.time.event.Events
 
 object WorldToolsFabric : ClientModInitializer {
     override fun onInitializeClient() {

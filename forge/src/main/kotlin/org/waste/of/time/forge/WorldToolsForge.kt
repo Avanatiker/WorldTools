@@ -12,10 +12,10 @@ import net.minecraftforge.event.entity.EntityJoinLevelEvent
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent
 import net.minecraftforge.event.entity.player.PlayerInteractEvent
 import net.minecraftforge.fml.common.Mod
-import org.waste.of.time.CaptureManager
+import org.waste.of.time.Events
+import org.waste.of.time.manager.CaptureManager
 import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.LOG
-import org.waste.of.time.event.Events
 import thedarkcolour.kotlinforforge.forge.FORGE_BUS
 
 @Mod(WorldTools.MOD_ID)

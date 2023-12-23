@@ -1,4 +1,4 @@
-package org.waste.of.time
+package org.waste.of.time.manager
 
 import net.minecraft.client.toast.SystemToast
 import net.minecraft.client.toast.Toast

@@ -8,8 +8,8 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.waste.of.time.LootableInjectionHandler;
-import org.waste.of.time.event.Events;
+import org.waste.of.time.storage.cache.LootableInjectionHandler;
+import org.waste.of.time.Events;
 
 @Mixin(MinecraftClient.class)
 public class MinecraftClientMixin {

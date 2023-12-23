@@ -11,7 +11,6 @@ import net.minecraft.entity.boss.BossBar
  */
 @Config(name = "worldtools")
 class WorldToolsConfig : ConfigData {
-    // Categories
     @ConfigEntry.Gui.CollapsibleObject
     val capture = Capture()
 
@@ -29,6 +28,8 @@ class WorldToolsConfig : ConfigData {
         var entities = true
         var players = true
         var statistics = true
+        var levelData = true
+        var advancements = true
         var metadata = true
         var zipCapture = true
     }

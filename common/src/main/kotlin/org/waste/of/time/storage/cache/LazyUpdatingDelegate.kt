@@ -1,4 +1,4 @@
-package org.waste.of.time
+package org.waste.of.time.storage.cache
 
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty

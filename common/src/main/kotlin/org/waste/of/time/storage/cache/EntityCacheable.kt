@@ -1,13 +1,12 @@
-package org.waste.of.time.event.serializable
+package org.waste.of.time.storage.cache
 
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityType
 import net.minecraft.nbt.NbtCompound
-import org.waste.of.time.WorldTools.addAuthor
+import org.waste.of.time.Utils.addAuthor
+import org.waste.of.time.Utils.toByte
 import org.waste.of.time.WorldTools.config
-import org.waste.of.time.WorldTools.toByte
-import org.waste.of.time.event.Cacheable
-import org.waste.of.time.event.HotCache
+import org.waste.of.time.storage.Cacheable
 
 data class EntityCacheable(
     val entity: Entity

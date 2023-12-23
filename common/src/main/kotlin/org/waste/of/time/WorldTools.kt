@@ -7,7 +7,6 @@ import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.option.KeyBinding
 import net.minecraft.client.util.InputUtil
-import net.minecraft.nbt.NbtCompound
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.lwjgl.glfw.GLFW
@@ -20,7 +19,6 @@ object WorldTools {
     const val MCA_EXTENSION = ".mca"
     const val DAT_EXTENSION = ".dat"
     const val MAX_LEVEL_NAME_LENGTH = 16
-    private const val HIGHLIGHT_COLOR = 0xFFA2C4
     private val VERSION: String by lazy {
         if (ArchitecturyTarget.getCurrentTarget() == "fabric") {
             FabricLoader.getInstance().getModContainer(MOD_ID).orElseThrow().metadata.version.friendlyString
@@ -41,7 +39,6 @@ object WorldTools {
     )
 
     val mc: MinecraftClient = MinecraftClient.getInstance()
-
     lateinit var config: WorldToolsConfig; private set
 
     fun initialize() {
@@ -49,8 +46,4 @@ object WorldTools {
         AutoConfig.register(WorldToolsConfig::class.java, ::GsonConfigSerializer)
         config = AutoConfig.getConfigHolder(WorldToolsConfig::class.java).config
     }
-
-    // Why cant I use the std lib?
-    fun Boolean.toByte(): Byte = if (this) 1 else 0
-    fun NbtCompound.addAuthor() = apply { putString("Author", CREDIT_MESSAGE) }
 }

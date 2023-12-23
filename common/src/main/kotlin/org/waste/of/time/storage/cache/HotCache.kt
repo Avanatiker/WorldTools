@@ -1,15 +1,12 @@
-package org.waste.of.time.event
+package org.waste.of.time.storage.cache
 
 import net.minecraft.block.entity.LockableContainerBlockEntity
 import net.minecraft.util.math.ChunkPos
-import org.waste.of.time.LazyUpdatingDelegate
 import org.waste.of.time.WorldTools.LOG
-import org.waste.of.time.event.serializable.EntityCacheable
-import org.waste.of.time.event.serializable.PlayerStoreable
-import org.waste.of.time.event.serializable.RegionBasedChunk
-import org.waste.of.time.event.serializable.RegionBasedEntities
+import org.waste.of.time.storage.serializable.PlayerStoreable
+import org.waste.of.time.storage.serializable.RegionBasedChunk
+import org.waste.of.time.storage.serializable.RegionBasedEntities
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.properties.Delegates
 
 /**
  * [HotCache] that caches all currently loaded objects in the world that are needed for the world download.

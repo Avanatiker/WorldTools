@@ -1,4 +1,4 @@
-package org.waste.of.time.serializer
+package org.waste.of.time.storage
 
 class PathTreeNode(private val name: String) {
     private val children = mutableListOf<PathTreeNode>()

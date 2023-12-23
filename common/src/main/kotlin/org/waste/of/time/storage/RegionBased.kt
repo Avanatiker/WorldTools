@@ -1,4 +1,4 @@
-package org.waste.of.time.event
+package org.waste.of.time.storage
 
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.util.WorldSavePath
@@ -6,8 +6,8 @@ import net.minecraft.util.math.ChunkPos
 import net.minecraft.world.World
 import net.minecraft.world.level.storage.LevelStorage
 import org.waste.of.time.WorldTools.LOG
-import org.waste.of.time.event.serializable.RegionBasedChunk
-import org.waste.of.time.storage.CustomRegionBasedStorage
+import org.waste.of.time.storage.cache.HotCache
+import org.waste.of.time.storage.serializable.RegionBasedChunk
 
 interface RegionBased : Storeable {
     val chunkPos: ChunkPos

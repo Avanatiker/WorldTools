@@ -1,27 +1,47 @@
-package org.waste.of.time.serializer
+package org.waste.of.time.storage.serializable
 
 import net.minecraft.SharedConstants
 import net.minecraft.nbt.*
+import net.minecraft.text.MutableText
 import net.minecraft.util.Util
 import net.minecraft.util.WorldSavePath
 import net.minecraft.world.GameRules
 import net.minecraft.world.level.storage.LevelStorage.Session
-import org.waste.of.time.CaptureManager.currentLevelName
-import org.waste.of.time.MessageManager
+import org.waste.of.time.Utils.addAuthor
+import org.waste.of.time.manager.CaptureManager.currentLevelName
+import org.waste.of.time.manager.MessageManager
+import org.waste.of.time.manager.MessageManager.translateHighlight
 import org.waste.of.time.WorldTools
+import org.waste.of.time.WorldTools.DAT_EXTENSION
 import org.waste.of.time.WorldTools.LOG
-import org.waste.of.time.WorldTools.addAuthor
 import org.waste.of.time.WorldTools.config
 import org.waste.of.time.WorldTools.mc
+import org.waste.of.time.storage.Storeable
+import org.waste.of.time.storage.CustomRegionBasedStorage
 import java.io.File
 import java.io.IOException
 
-object LevelPropertySerializer {
+class LevelDataStoreable : Storeable {
+    override fun shouldStore() = config.capture.levelData
+
+    override val verboseInfo: MutableText
+        get() = translateHighlight(
+            "worldtools.capture.saved.levelData",
+            currentLevelName,
+            "level${DAT_EXTENSION}"
+        )
+
+    override val anonymizedInfo: MutableText
+        get() = verboseInfo
+
     /**
-     * See [net.minecraft.world.level.storage.LevelStorage.Session.writeLevelDataFile]
+     * See [net.minecraft.world.level.storage.LevelStorage.Session.backupLevelDataFile]
      */
-    fun Session.writeLevelDataFile() {
-        val resultingFile = getDirectory(WorldSavePath.ROOT).toFile()
+    override fun store(
+        session: Session,
+        cachedStorages: MutableMap<String, CustomRegionBasedStorage>
+    ) {
+        val resultingFile = session.getDirectory(WorldSavePath.ROOT).toFile()
         val dataNbt = serializeLevelData()
         val levelNbt = NbtCompound().apply {
             addAuthor()
@@ -31,8 +51,8 @@ object LevelPropertySerializer {
         try {
             val newFile = File.createTempFile("level", WorldTools.DAT_EXTENSION, resultingFile)
             NbtIo.writeCompressed(levelNbt, newFile)
-            val backup = getDirectory(WorldSavePath.LEVEL_DAT_OLD).toFile()
-            val current = getDirectory(WorldSavePath.LEVEL_DAT).toFile()
+            val backup = session.getDirectory(WorldSavePath.LEVEL_DAT_OLD).toFile()
+            val current = session.getDirectory(WorldSavePath.LEVEL_DAT).toFile()
             Util.backupAndReplace(current, newFile, backup)
             LOG.info("Saved level data.")
         } catch (exception: IOException) {

@@ -1,36 +1,24 @@
-package org.waste.of.time.event.serializable
+package org.waste.of.time.storage.serializable
 
-import com.google.gson.GsonBuilder
 import com.mojang.authlib.GameProfile
-import net.minecraft.SharedConstants
-import net.minecraft.advancement.AdvancementProgress
 import net.minecraft.client.network.PlayerListEntry
-import net.minecraft.text.ClickEvent
 import net.minecraft.text.MutableText
-import net.minecraft.text.Text
-import net.minecraft.util.Identifier
 import net.minecraft.util.PathUtil
 import net.minecraft.util.WorldSavePath
 import net.minecraft.world.level.storage.LevelStorage.Session
-import org.waste.of.time.CaptureManager.currentLevelName
-import org.waste.of.time.CaptureManager.levelName
-import org.waste.of.time.CaptureManager.serverInfo
-import org.waste.of.time.MessageManager.infoToast
-import org.waste.of.time.MessageManager.sendInfo
-import org.waste.of.time.MessageManager.translateHighlight
-import org.waste.of.time.StatisticManager
-import org.waste.of.time.TimeUtils
+import org.waste.of.time.manager.CaptureManager.currentLevelName
+import org.waste.of.time.manager.CaptureManager.levelName
+import org.waste.of.time.manager.CaptureManager.serverInfo
+import org.waste.of.time.manager.MessageManager.translateHighlight
+import org.waste.of.time.Utils
 import org.waste.of.time.WorldTools.CREDIT_MESSAGE_MD
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.MOD_NAME
 import org.waste.of.time.WorldTools.config
 import org.waste.of.time.WorldTools.mc
-import org.waste.of.time.event.Storeable
-import org.waste.of.time.mixin.accessor.AdvancementProgressesAccessor
-import org.waste.of.time.serializer.LevelPropertySerializer.writeLevelDataFile
-import org.waste.of.time.serializer.PathTreeNode
+import org.waste.of.time.storage.Storeable
+import org.waste.of.time.storage.PathTreeNode
 import org.waste.of.time.storage.CustomRegionBasedStorage
-import java.lang.reflect.Type
 import java.net.InetSocketAddress
 import java.nio.file.Path
 import kotlin.io.path.writeBytes
@@ -47,28 +35,18 @@ class MetadataStoreable : Storeable {
     override val anonymizedInfo: MutableText
         get() = verboseInfo
 
-    private val gson = GsonBuilder().registerTypeAdapter(
-        AdvancementProgress::class.java as Type,
-        AdvancementProgress.Serializer()
-    ).registerTypeAdapter(
-        Identifier::class.java as Type,
-        Identifier.Serializer()
-    ).setPrettyPrinting().create()
+
 
     override fun store(session: Session, cachedStorages: MutableMap<String, CustomRegionBasedStorage>) {
+        session.writeIconFile()
+
         session.getDirectory(WorldSavePath.ROOT).resolve(MOD_NAME).apply {
             PathUtil.createDirectories(this)
 
-            writeMetadata()
             writePlayerEntryList()
             writeDimensionTree()
+            writeMetadata()
         }
-
-        session.writeIconFile()
-        session.writeLevelDataFile()
-        session.writeAdvancements()
-
-        session.sendSuccess()
     }
 
     private fun Path.writeMetadata() {
@@ -116,26 +94,6 @@ class MetadataStoreable : Storeable {
         LOG.info("Saved favicon.")
     }
 
-    private fun Session.writeAdvancements() {
-        val uuid = mc.player?.uuid ?: return
-        val advancements = getDirectory(WorldSavePath.ADVANCEMENTS)
-        PathUtil.createDirectories(advancements)
-
-        val progress = (mc.player?.networkHandler?.advancementHandler as? AdvancementProgressesAccessor)?.advancementProgresses ?: return
-
-        val progressMap = LinkedHashMap<Identifier, AdvancementProgress>()
-        progress.entries.forEach { (key, advancementProgress) ->
-            if (!advancementProgress.isAnyObtained) return@forEach
-            progressMap[key.id] = advancementProgress
-        }
-        val jsonElement = gson.toJsonTree(progressMap)
-        jsonElement.asJsonObject.addProperty("DataVersion", SharedConstants.getGameVersion().saveVersion.id)
-
-        advancements.resolve("$uuid.json").toFile().writeText(jsonElement.toString())
-
-        LOG.info("Saved ${progressMap.size} advancements.")
-    }
-
     private fun createMetadata() = StringBuilder().apply {
         if (currentLevelName != levelName) {
             appendLine("# $currentLevelName ($levelName) World Save - Snapshot Details")
@@ -150,7 +108,7 @@ class MetadataStoreable : Storeable {
         }
 
         appendLine()
-        appendLine("- **Time**: `${TimeUtils.getTime()}` (Timestamp: `${System.currentTimeMillis()}`)")
+        appendLine("- **Time**: `${Utils.getTime()}` (Timestamp: `${System.currentTimeMillis()}`)")
         appendLine("- **Captured By**: `${mc.player?.name?.string}`")
 
         appendLine()
@@ -229,29 +187,5 @@ class MetadataStoreable : Storeable {
             append("[key: $t | name: ${u.name} | value: ${u.value} | signature: ${u.signature}] ")
         }
         append(", ")
-    }
-
-    private fun Session.sendSuccess() {
-        val savedPath = getDirectory(WorldSavePath.ROOT).toFile()
-        val info = StatisticManager.infoMessage
-
-        info.infoToast()
-
-        info.copy()
-            .append(
-                Text.translatable("worldtools.capture.to_directory")
-            ).append(
-                translateHighlight(
-                    "worldtools.capture.click_to_open",
-                    currentLevelName
-                ).copy().styled {
-                    it.withClickEvent(
-                        ClickEvent(
-                            ClickEvent.Action.OPEN_FILE,
-                            savedPath.path
-                        )
-                    )
-                }
-            ).sendInfo()
     }
 }

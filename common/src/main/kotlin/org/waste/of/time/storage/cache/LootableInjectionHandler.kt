@@ -1,4 +1,4 @@
-package org.waste.of.time
+package org.waste.of.time.storage.cache
 
 import net.minecraft.block.ChestBlock
 import net.minecraft.block.entity.*
@@ -6,7 +6,7 @@ import net.minecraft.block.enums.ChestType
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.ingame.*
 import net.minecraft.inventory.SimpleInventory
-import org.waste.of.time.event.HotCache
+import org.waste.of.time.manager.StatisticManager
 
 object LootableInjectionHandler {
     fun onScreenRemoved(screen: Screen) {
