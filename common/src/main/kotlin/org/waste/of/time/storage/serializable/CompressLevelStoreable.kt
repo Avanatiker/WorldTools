@@ -45,7 +45,7 @@ class CompressLevelStoreable : Storeable {
                         }
 
                         override fun visitFileFailed(file: Path, exc: IOException): FileVisitResult {
-                            MessageManager.sendError("worldtools.error.failed_to_zip", file, exc.localizedMessage)
+                            MessageManager.sendError("worldtools.log.error.failed_to_visit_file", file, exc.localizedMessage)
                             return FileVisitResult.CONTINUE
                         }
                     })
@@ -53,7 +53,7 @@ class CompressLevelStoreable : Storeable {
             }
             LOG.info("Finished zipping $rootPath")
         } catch (e: IOException) {
-            MessageManager.sendError("worldtools.error.failed_to_zip", rootPath, e.localizedMessage)
+            MessageManager.sendError("worldtools.log.error.failed_to_zip", rootPath, e.localizedMessage)
         }
     }
 
