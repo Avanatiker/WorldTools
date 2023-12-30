@@ -1,5 +1,6 @@
 package org.waste.of.time.storage.cache
 
+import it.unimi.dsi.fastutil.longs.LongArraySet
 import net.minecraft.block.entity.LockableContainerBlockEntity
 import net.minecraft.util.math.ChunkPos
 import org.waste.of.time.WorldTools.LOG
@@ -16,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 object HotCache {
     val chunks = ConcurrentHashMap<ChunkPos, RegionBasedChunk>()
+    internal val savedChunks = LongArraySet()
     val entities = ConcurrentHashMap<ChunkPos, MutableList<EntityCacheable>>()
     val players: ConcurrentHashMap.KeySetView<PlayerStoreable, Boolean> = ConcurrentHashMap.newKeySet()
     val blockEntities: ConcurrentHashMap.KeySetView<LockableContainerBlockEntity, Boolean> =
@@ -38,8 +40,12 @@ object HotCache {
             RegionBasedEntities(entry.key, entry.value)
         }
 
+    // used as public API for external mods like XaeroPlus, change carefully
+    fun isChunkSaved(chunkX: Int, chunkZ: Int) = savedChunks.contains(ChunkPos.toLong(chunkX, chunkZ))
+
     fun clear() {
         chunks.clear()
+        savedChunks.clear()
         entities.clear()
         players.clear()
         blockEntities.clear()

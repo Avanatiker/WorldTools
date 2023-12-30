@@ -23,13 +23,13 @@ import net.minecraft.world.chunk.PalettedContainer
 import net.minecraft.world.chunk.WorldChunk
 import net.minecraft.world.gen.chunk.BlendingData
 import org.waste.of.time.Utils.addAuthor
-import org.waste.of.time.manager.MessageManager.translateHighlight
-import org.waste.of.time.manager.StatisticManager
 import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.config
+import org.waste.of.time.manager.MessageManager.translateHighlight
+import org.waste.of.time.manager.StatisticManager
 import org.waste.of.time.storage.Cacheable
-import org.waste.of.time.storage.cache.HotCache
 import org.waste.of.time.storage.RegionBased
+import org.waste.of.time.storage.cache.HotCache
 
 data class RegionBasedChunk(val chunk: WorldChunk) : RegionBased, Cacheable {
     override fun shouldStore() = config.capture.chunks
@@ -65,6 +65,7 @@ data class RegionBasedChunk(val chunk: WorldChunk) : RegionBased, Cacheable {
 
     override fun cache() {
         HotCache.chunks[chunkPos] = this
+        HotCache.savedChunks.add(chunkPos.toLong())
     }
 
     override fun flush() {
