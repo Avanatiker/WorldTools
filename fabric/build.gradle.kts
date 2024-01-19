@@ -6,7 +6,8 @@ architectury {
 base.archivesName.set("${base.archivesName.get()}-fabric")
 
 loom {
-    accessWidenerPath.set(project(":common").file("src/main/resources/worldtools.accesswidener"))
+    accessWidenerPath.set(project(":common").loom.accessWidenerPath)
+    enableTransitiveAccessWideners.set(true)
 }
 
 val common: Configuration by configurations.creating {
@@ -32,5 +33,9 @@ tasks {
             expand(getProperties())
             expand(mutableMapOf("version" to project.version))
         }
+    }
+
+    remapJar {
+        injectAccessWidener.set(true)
     }
 }
