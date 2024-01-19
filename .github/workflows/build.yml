@@ -1,10 +1,10 @@
-name: WorldTools Build
+name: WorldTools 1.20.4 Build
 
 on:
   pull_request:
   push:
     branches:
-      - "master"
+      - "1.20.4"
 
 jobs:
   build:

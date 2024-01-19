@@ -6,19 +6,19 @@ import net.minecraft.text.MutableText
 import net.minecraft.util.PathUtil
 import net.minecraft.util.WorldSavePath
 import net.minecraft.world.level.storage.LevelStorage.Session
-import org.waste.of.time.manager.CaptureManager.currentLevelName
-import org.waste.of.time.manager.CaptureManager.levelName
-import org.waste.of.time.manager.CaptureManager.serverInfo
-import org.waste.of.time.manager.MessageManager.translateHighlight
 import org.waste.of.time.Utils
 import org.waste.of.time.WorldTools.CREDIT_MESSAGE_MD
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.MOD_NAME
 import org.waste.of.time.WorldTools.config
 import org.waste.of.time.WorldTools.mc
-import org.waste.of.time.storage.Storeable
-import org.waste.of.time.storage.PathTreeNode
+import org.waste.of.time.manager.CaptureManager.currentLevelName
+import org.waste.of.time.manager.CaptureManager.levelName
+import org.waste.of.time.manager.CaptureManager.serverInfo
+import org.waste.of.time.manager.MessageManager.translateHighlight
 import org.waste.of.time.storage.CustomRegionBasedStorage
+import org.waste.of.time.storage.PathTreeNode
+import org.waste.of.time.storage.Storeable
 import java.net.InetSocketAddress
 import java.nio.file.Path
 import kotlin.io.path.writeBytes
@@ -120,7 +120,7 @@ class MetadataStoreable : Storeable {
             if (serverInfo.playerCountLabel.string.isNotBlank()) {
                 appendLine("- **Capacity**: `${serverInfo.playerCountLabel.string}`")
             }
-            appendLine("- **Brand**: `${mc.player?.serverBrand}`")
+            appendLine("- **Brand**: `${mc.networkHandler?.brand}`")
             appendLine("- **MOTD**: `${serverInfo.label.string.split("\n").joinToString(" ")}`")
             appendLine("- **Version**: `${serverInfo.version.string}`")
 
@@ -169,17 +169,13 @@ class MetadataStoreable : Storeable {
             append("Public Key Data: ${it.data} ")
         }
         append("${entry.scoreboardTeam?.name}, ")
-        appendLine(entry.model)
+        appendLine(entry.skinTextures.model)
     }
 
     private fun StringBuilder.serializeGameProfile(gameProfile: GameProfile) {
         append(gameProfile.name)
         append(", ")
         append(gameProfile.id)
-        append(", ")
-        append(gameProfile.isLegacy)
-        append(", ")
-        append(gameProfile.isComplete)
         append(", ")
         gameProfile.properties.forEach { t, u ->
             append("[key: $t | name: ${u.name} | value: ${u.value} | signature: ${u.signature}] ")

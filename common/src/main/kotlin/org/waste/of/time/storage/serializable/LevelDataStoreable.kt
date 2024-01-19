@@ -8,16 +8,16 @@ import net.minecraft.util.WorldSavePath
 import net.minecraft.world.GameRules
 import net.minecraft.world.level.storage.LevelStorage.Session
 import org.waste.of.time.Utils.addAuthor
-import org.waste.of.time.manager.CaptureManager.currentLevelName
-import org.waste.of.time.manager.MessageManager
-import org.waste.of.time.manager.MessageManager.translateHighlight
 import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.DAT_EXTENSION
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.config
 import org.waste.of.time.WorldTools.mc
-import org.waste.of.time.storage.Storeable
+import org.waste.of.time.manager.CaptureManager.currentLevelName
+import org.waste.of.time.manager.MessageManager
+import org.waste.of.time.manager.MessageManager.translateHighlight
 import org.waste.of.time.storage.CustomRegionBasedStorage
+import org.waste.of.time.storage.Storeable
 import java.io.File
 import java.io.IOException
 
@@ -50,10 +50,10 @@ class LevelDataStoreable : Storeable {
 
         try {
             val newFile = File.createTempFile("level", WorldTools.DAT_EXTENSION, resultingFile)
-            NbtIo.writeCompressed(levelNbt, newFile)
+            NbtIo.writeCompressed(levelNbt, newFile.toPath())
             val backup = session.getDirectory(WorldSavePath.LEVEL_DAT_OLD).toFile()
             val current = session.getDirectory(WorldSavePath.LEVEL_DAT).toFile()
-            Util.backupAndReplace(current, newFile, backup)
+            Util.backupAndReplace(current.toPath(), newFile.toPath(), backup.toPath())
             LOG.info("Saved level data.")
         } catch (exception: IOException) {
             MessageManager.sendError(
@@ -69,8 +69,8 @@ class LevelDataStoreable : Storeable {
      */
     private fun serializeLevelData() = NbtCompound().apply {
         val player = mc.player ?: return@apply
-
-        player.serverBrand?.let {
+        val network = mc.networkHandler ?: return@apply
+        network.brand?.let {
             put("ServerBrands", NbtList().apply {
                 add(NbtString.of(it))
             })

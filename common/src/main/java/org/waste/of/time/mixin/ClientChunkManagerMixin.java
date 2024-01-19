@@ -1,5 +1,6 @@
 package org.waste.of.time.mixin;
 
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.world.ClientChunkManager;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
@@ -28,10 +29,10 @@ public class ClientChunkManagerMixin {
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/world/ClientChunkManager$ClientChunkMap;compareAndSet(ILnet/minecraft/world/chunk/WorldChunk;Lnet/minecraft/world/chunk/WorldChunk;)Lnet/minecraft/world/chunk/WorldChunk;"
-            ),
-            locals = LocalCapture.CAPTURE_FAILEXCEPTION
+            )
     )
-    private void onChunkUnload(int chunkX, int chunkZ, CallbackInfo ci, int i, WorldChunk chunk) {
+    private void onChunkUnload(final ChunkPos pos, final CallbackInfo ci,
+                               @Local final WorldChunk chunk) {
         Events.INSTANCE.onChunkUnload(chunk);
     }
 

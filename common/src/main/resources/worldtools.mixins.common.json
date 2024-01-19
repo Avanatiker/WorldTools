@@ -10,7 +10,6 @@
     "DebugRendererMixin",
     "GameMenuScreenMixin",
     "MinecraftClientMixin",
-    "accessor.AdvancementProgressesAccessor",
     "accessor.StatHandlerAccessor"
   ],
   "injectors": {

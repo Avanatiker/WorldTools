@@ -1,12 +1,12 @@
-name: Forge Modrinth and CurseForge Release
+name: Forge 1.20.4 Modrinth and CurseForge Release
 
 on:
   push:
     tags:
-      - '[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+\+1.20.4'
 
 env:
-  MINECRAFT_VERSION: "1.20.1"
+  MINECRAFT_VERSION: "1.20.4"
 
 jobs:
   build:
