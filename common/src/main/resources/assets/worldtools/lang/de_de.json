@@ -89,5 +89,5 @@
   "worldtools.log.error.world_name_too_long": "Weltname \"%s\" darf nicht länger als %d Zeichen sein!",
   "worldtools.log.info.started_capture": "Aufnahme von %s gestartet...",
   "worldtools.log.info.stopping_capture": "Aufnahme von %s wird gestoppt...",
-  "worldtools.log.info.singleplayer_capture": "EXPERIMENTAL: Die Aufnahme von Einzelspieler Welten ist noch nicht vollständig getestet und kann zu Fehlern führen!"
+  "worldtools.log.info.singleplayer_capture": "EXPERIMENTELL: Die Aufnahme von Einzelspieler Welten ist noch nicht vollständig getestet und kann zu Fehlern führen!"
 }
