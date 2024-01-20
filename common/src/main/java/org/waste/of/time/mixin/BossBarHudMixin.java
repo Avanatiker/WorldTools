@@ -27,7 +27,7 @@ public class BossBarHudMixin {
     public Collection<BossBar> modifyValues(Map<UUID, ClientBossBar> bossBars) {
         List<BossBar> newBossBars = new ArrayList<>(bossBars.size() + 2);
         BarManager.INSTANCE.getCaptureBar().ifPresent(newBossBars::add);
-        BarManager.INSTANCE.getProgressBar().ifPresent(newBossBars::add);
+        BarManager.INSTANCE.progressBar().ifPresent(newBossBars::add);
         newBossBars.addAll(bossBars.values());
         return newBossBars;
     }
@@ -36,6 +36,6 @@ public class BossBarHudMixin {
     public boolean modifyIsEmpty(Map<UUID, ClientBossBar> bossBars) {
         return bossBars.isEmpty()
                 && BarManager.INSTANCE.getCaptureBar().isEmpty()
-                && BarManager.INSTANCE.getProgressBar().isEmpty();
+                && BarManager.INSTANCE.progressBar().isEmpty();
     }
 }

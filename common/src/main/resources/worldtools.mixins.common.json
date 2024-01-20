@@ -9,9 +9,7 @@
     "ClientPlayNetworkHandlerMixin",
     "DebugRendererMixin",
     "GameMenuScreenMixin",
-    "MinecraftClientMixin",
-    "accessor.AdvancementProgressesAccessor",
-    "accessor.StatHandlerAccessor"
+    "MinecraftClientMixin"
   ],
   "injectors": {
     "defaultRequire": 1

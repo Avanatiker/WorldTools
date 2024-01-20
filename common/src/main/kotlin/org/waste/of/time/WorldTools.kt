@@ -1,9 +1,12 @@
 package org.waste.of.time
 
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import dev.architectury.injectables.targets.ArchitecturyTarget
 import me.shedaniel.autoconfig.AutoConfig
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer
 import net.fabricmc.loader.api.FabricLoader
+import net.minecraft.SharedConstants
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.option.KeyBinding
 import net.minecraft.client.util.InputUtil
@@ -19,6 +22,8 @@ object WorldTools {
     const val MCA_EXTENSION = ".mca"
     const val DAT_EXTENSION = ".dat"
     const val MAX_LEVEL_NAME_LENGTH = 16
+    val GSON: Gson = GsonBuilder().setPrettyPrinting().create()
+    val CURRENT_VERSION = SharedConstants.getGameVersion().saveVersion.id
     private val VERSION: String by lazy {
         if (ArchitecturyTarget.getCurrentTarget() == "fabric") {
             FabricLoader.getInstance().getModContainer(MOD_ID).orElseThrow().metadata.version.friendlyString

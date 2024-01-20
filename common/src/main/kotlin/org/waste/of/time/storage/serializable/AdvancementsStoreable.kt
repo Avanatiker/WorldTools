@@ -8,13 +8,12 @@ import net.minecraft.util.Identifier
 import net.minecraft.util.PathUtil
 import net.minecraft.util.WorldSavePath
 import net.minecraft.world.level.storage.LevelStorage
-import org.waste.of.time.manager.MessageManager.translateHighlight
 import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.config
 import org.waste.of.time.WorldTools.mc
-import org.waste.of.time.storage.Storeable
-import org.waste.of.time.mixin.accessor.AdvancementProgressesAccessor
+import org.waste.of.time.manager.MessageManager.translateHighlight
 import org.waste.of.time.storage.CustomRegionBasedStorage
+import org.waste.of.time.storage.Storeable
 import java.lang.reflect.Type
 
 class AdvancementsStoreable : Storeable {
@@ -45,7 +44,7 @@ class AdvancementsStoreable : Storeable {
         val advancements = session.getDirectory(WorldSavePath.ADVANCEMENTS)
         PathUtil.createDirectories(advancements)
 
-        val progress = (mc.player?.networkHandler?.advancementHandler as? AdvancementProgressesAccessor)?.advancementProgresses ?: return
+        val progress = mc.player?.networkHandler?.advancementHandler?.advancementProgresses ?: return
 
         val progressMap = LinkedHashMap<Identifier, AdvancementProgress>()
         progress.entries.forEach { (key, advancementProgress) ->

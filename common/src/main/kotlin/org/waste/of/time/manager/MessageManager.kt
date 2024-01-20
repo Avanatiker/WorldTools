@@ -6,7 +6,6 @@ import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.text.TextColor
 import net.minecraft.util.Formatting
-import net.minecraft.util.math.Vec3d
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.config
 import org.waste.of.time.WorldTools.mc
@@ -109,6 +108,4 @@ object MessageManager {
             return Text.translatable(key, *it)
         }
     }
-
-    fun Vec3d.asString() = "(%.2f, %.2f, %.2f)".format(x, y, z)
 }

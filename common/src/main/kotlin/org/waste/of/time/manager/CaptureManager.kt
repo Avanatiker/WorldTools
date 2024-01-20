@@ -20,9 +20,9 @@ object CaptureManager {
 
     val levelName: String
         get() = if (mc.isInSingleplayer) {
-            mc.server?.serverMotd?.substringAfter(" - ")?.sanitizeWorldName() ?: "SinglePlayer"
+            mc.server?.serverMotd?.substringAfter(" - ")?.sanitizeWorldName() ?: "Singleplayer"
         } else {
-            serverInfo.address.sanitizeWorldName()
+            mc.networkHandler?.serverInfo?.address?.sanitizeWorldName() ?: "Multiplayer"
         }
 
     fun toggleCapture() {
@@ -33,6 +33,10 @@ object CaptureManager {
         if (capturing) {
             MessageManager.sendError("worldtools.log.error.already_capturing", currentLevelName)
             return
+        }
+
+        if (mc.isInSingleplayer) {
+            MessageManager.sendInfo("worldtools.log.info.singleplayer_capture")
         }
 
         val potentialName = customName?.let { potentialName ->

@@ -64,8 +64,10 @@ object StorageFlow {
         } catch (e: StopCollectingException) {
             LOG.info("Canceled caching flow")
         } catch (e: IOException) {
+            LOG.error("IOException: Failed to create session for $levelName", e)
             MessageManager.sendError("worldtools.log.error.failed_to_create_session", levelName, e.localizedMessage)
         } catch (e: SymlinkValidationException) {
+            LOG.error("SymlinkValidationException: Failed to create session for $levelName", e)
             MessageManager.sendError("worldtools.log.error.failed_to_create_session", levelName, e.localizedMessage)
         } catch (e: CancellationException) {
             LOG.info("Canceled caching thread")

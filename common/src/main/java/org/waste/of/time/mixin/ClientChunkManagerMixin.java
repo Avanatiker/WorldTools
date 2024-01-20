@@ -1,5 +1,6 @@
 package org.waste.of.time.mixin;
 
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.world.ClientChunkManager;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
@@ -11,7 +12,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import org.waste.of.time.Events;
 
 import java.util.function.Consumer;
@@ -28,10 +28,9 @@ public class ClientChunkManagerMixin {
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/world/ClientChunkManager$ClientChunkMap;compareAndSet(ILnet/minecraft/world/chunk/WorldChunk;Lnet/minecraft/world/chunk/WorldChunk;)Lnet/minecraft/world/chunk/WorldChunk;"
-            ),
-            locals = LocalCapture.CAPTURE_FAILEXCEPTION
+            )
     )
-    private void onChunkUnload(int chunkX, int chunkZ, CallbackInfo ci, int i, WorldChunk chunk) {
+    private void onChunkUnload(int chunkX, int chunkZ, CallbackInfo ci, @Local WorldChunk chunk) {
         Events.INSTANCE.onChunkUnload(chunk);
     }
 
@@ -40,10 +39,12 @@ public class ClientChunkManagerMixin {
             at = @At(
                     value = "INVOKE",
                     target = "net/minecraft/client/world/ClientChunkManager$ClientChunkMap.isInRadius(II)Z"
-            ),
-            locals = LocalCapture.CAPTURE_FAILHARD
+            )
     )
-    private void onUpdateLoadDistance(int loadDistance, CallbackInfo ci, int oldRadius, int newRadius, ClientChunkManager.ClientChunkMap clientChunkMap, int k, WorldChunk oldChunk, ChunkPos chunkPos) {
+    private void onUpdateLoadDistance(int loadDistance, CallbackInfo ci,
+                                      @Local ClientChunkManager.ClientChunkMap clientChunkMap,
+                                      @Local WorldChunk oldChunk,
+                                      @Local ChunkPos chunkPos) {
         if (!clientChunkMap.isInRadius(chunkPos.x, chunkPos.z)) {
             Events.INSTANCE.onChunkUnload(oldChunk);
         }
