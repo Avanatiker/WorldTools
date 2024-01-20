@@ -88,5 +88,6 @@
   "worldtools.log.error.not_capturing": "No capture is running yet!",
   "worldtools.log.error.world_name_too_long": "World name \"%s\" is too long! (max %d characters)",
   "worldtools.log.info.started_capture": "Started capturing %s...",
-  "worldtools.log.info.stopping_capture": "Stopping capture %s..."
+  "worldtools.log.info.stopping_capture": "Stopping capture %s...",
+  "worldtools.log.info.singleplayer_capture": "EXPERIMENTAL: Capturing in singleplayer is experimental and may not work as expected!"
 }

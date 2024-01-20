@@ -35,6 +35,10 @@ object CaptureManager {
             return
         }
 
+        if (mc.isInSingleplayer) {
+            MessageManager.sendInfo("worldtools.log.info.singleplayer_capture")
+        }
+
         val potentialName = customName?.let { potentialName ->
             if (potentialName.length > MAX_WORLD_NAME_LENGTH) {
                 MessageManager.sendError(
