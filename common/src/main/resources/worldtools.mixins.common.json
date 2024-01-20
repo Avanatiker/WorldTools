@@ -9,8 +9,7 @@
     "ClientPlayNetworkHandlerMixin",
     "DebugRendererMixin",
     "GameMenuScreenMixin",
-    "MinecraftClientMixin",
-    "accessor.StatHandlerAccessor"
+    "MinecraftClientMixin"
   ],
   "injectors": {
     "defaultRequire": 1

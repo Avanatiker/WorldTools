@@ -1,6 +1,5 @@
 package org.waste.of.time.storage.serializable
 
-import com.mojang.authlib.GameProfile
 import net.minecraft.client.network.PlayerListEntry
 import net.minecraft.text.MutableText
 import net.minecraft.util.PathUtil
@@ -12,12 +11,13 @@ import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.MOD_NAME
 import org.waste.of.time.WorldTools.config
 import org.waste.of.time.WorldTools.mc
+import org.waste.of.time.manager.BarManager
 import org.waste.of.time.manager.CaptureManager.currentLevelName
 import org.waste.of.time.manager.CaptureManager.levelName
-import org.waste.of.time.manager.CaptureManager.serverInfo
 import org.waste.of.time.manager.MessageManager.translateHighlight
 import org.waste.of.time.storage.CustomRegionBasedStorage
 import org.waste.of.time.storage.PathTreeNode
+import org.waste.of.time.storage.StorageFlow
 import org.waste.of.time.storage.Storeable
 import java.net.InetSocketAddress
 import java.nio.file.Path
@@ -76,17 +76,13 @@ class MetadataStoreable : Storeable {
     }
 
     private fun Session.writeIconFile() {
-        if (mc.isInSingleplayer) {
-            mc.server?.iconFile?.ifPresent { spIconPath ->
-                iconFile.ifPresent {
-                    it.writeBytes(spIconPath.toFile().readBytes())
-                }
+        mc.networkHandler?.serverInfo?.favicon?.let { favicon ->
+            iconFile.ifPresent {
+                it.writeBytes(favicon)
             }
-        } else {
-            serverInfo.favicon?.let { favicon ->
-                iconFile.ifPresent {
-                    it.writeBytes(favicon)
-                }
+        } ?: mc.server?.iconFile?.ifPresent { spIconPath ->
+            iconFile.ifPresent {
+                it.writeBytes(spIconPath.toFile().readBytes())
             }
         }
         LOG.info("Saved favicon.")
@@ -111,25 +107,29 @@ class MetadataStoreable : Storeable {
 
         appendLine()
 
-        if (!mc.isInSingleplayer) {
+        mc.networkHandler?.serverInfo?.let { info ->
             appendLine("## Server")
-            if (serverInfo.name != "Minecraft Server") {
-                appendLine("- **List Entry Name**: `${serverInfo.name}`")
+            if (info.name != "Minecraft Server") {
+                appendLine("- **List Entry Name**: `${info.name}`")
             }
-            appendLine("- **IP**: `${serverInfo.address}`")
-            if (serverInfo.playerCountLabel.string.isNotBlank()) {
-                appendLine("- **Capacity**: `${serverInfo.playerCountLabel.string}`")
+            appendLine("- **IP**: `${info.address}`")
+            if (info.playerCountLabel.string.isNotBlank()) {
+                appendLine("- **Capacity**: `${info.playerCountLabel.string}`")
             }
-            appendLine("- **Brand**: `${mc.networkHandler?.brand}`")
-            appendLine("- **MOTD**: `${serverInfo.label.string.split("\n").joinToString(" ")}`")
-            appendLine("- **Version**: `${serverInfo.version.string}`")
+            mc.networkHandler?.let {
+                appendLine("- **Brand**: `${it.brand}`")
+            }
+            appendLine("- **MOTD**: `${info.label.string.split("\n").joinToString(" ")}`")
+            appendLine("- **Version**: `${info.version.string}`")
+            appendLine("- **Protocol Version**: `${info.protocolVersion}`")
+            appendLine("- **Server Type**: `${info.serverType}`")
 
-            serverInfo.players?.sample?.let { sample ->
-                if (sample.isEmpty()) return@let
+            info.players?.sample?.let l@ { sample ->
+                if (sample.isEmpty()) return@l
                 appendLine("- **Short Label**: `${sample.joinToString { it.name }}`")
             }
-            serverInfo.playerListSummary?.let {
-                if (it.isEmpty()) return@let
+            info.playerListSummary?.let l@ {
+                if (it.isEmpty()) return@l
                 appendLine("- **Full Label**: `${it.joinToString(" ") { str -> str.string }}`")
             }
 
@@ -139,7 +139,7 @@ class MetadataStoreable : Storeable {
                 appendLine("- **Host Name**: `${it.address.canonicalHostName}`")
                 appendLine("- **Port**: `${it.port}`")
             }
-        } else {
+        } ?: run {
             appendLine("## Singleplayer Capture")
             appendLine("- **Source World Name**: `${mc.server?.name}`")
             appendLine("- **Version**: `${mc.server?.version}`")
@@ -154,32 +154,25 @@ class MetadataStoreable : Storeable {
     }.toString()
 
     private fun createPlayerEntryList(listEntries: List<PlayerListEntry>) = StringBuilder().apply {
-        appendLine("Name, ID, Legacy, Complete, Properties, Game Mode, Latency, Session ID, Scoreboard Team, Model")
-        listEntries.forEach {
-            serializePlayerListEntry(it)
+        appendLine("Name, ID, Game Mode, Latency, Scoreboard Team, Model Type, Session ID, Public Key")
+
+        listEntries.forEachIndexed { i, entry ->
+            StorageFlow.lastStoredTimestamp = System.currentTimeMillis()
+            BarManager.progressBar.percent = i.toFloat() / listEntries.size
+            serializePlayerListEntry(entry)
         }
     }.toString()
 
     private fun StringBuilder.serializePlayerListEntry(entry: PlayerListEntry) {
-        serializeGameProfile(entry.profile)
+        append("${entry.profile.name}, ")
+        append("${entry.profile.id}, ")
         append("${entry.gameMode.name}, ")
         append("${entry.latency}, ")
-        append("${entry.session?.sessionId}, ")
-        entry.session?.publicKeyData?.let {
-            append("Public Key Data: ${it.data} ")
-        }
         append("${entry.scoreboardTeam?.name}, ")
         appendLine(entry.skinTextures.model)
-    }
-
-    private fun StringBuilder.serializeGameProfile(gameProfile: GameProfile) {
-        append(gameProfile.name)
-        append(", ")
-        append(gameProfile.id)
-        append(", ")
-        gameProfile.properties.forEach { t, u ->
-            append("[key: $t | name: ${u.name} | value: ${u.value} | signature: ${u.signature}] ")
+        entry.session?.let {
+            append("${it.sessionId}, ")
+            append("${it.publicKeyData?.data}, ")
         }
-        append(", ")
     }
 }

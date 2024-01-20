@@ -109,6 +109,4 @@ object MessageManager {
             return Text.translatable(key, *it)
         }
     }
-
-    fun Vec3d.asString() = "(%.2f, %.2f, %.2f)".format(x, y, z)
 }

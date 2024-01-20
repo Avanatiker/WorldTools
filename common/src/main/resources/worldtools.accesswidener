@@ -5,3 +5,5 @@ accessible method net/minecraft/client/world/ClientChunkManager$ClientChunkMap i
 accessible class net/minecraft/advancement/PlayerAdvancementTracker$ProgressMap
 accessible method net/minecraft/advancement/PlayerAdvancementTracker$ProgressMap <init> (Ljava/util/Map;)V
 accessible field net/minecraft/client/network/ClientAdvancementManager advancementProgresses Ljava/util/Map;
+accessible class net/minecraft/stat/StatHandler
+accessible  field net/minecraft/stat/StatHandler statMap Lit/unimi/dsi/fastutil/objects/Object2IntMap;

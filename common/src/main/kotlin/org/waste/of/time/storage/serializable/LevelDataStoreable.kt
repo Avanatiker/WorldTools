@@ -49,11 +49,11 @@ class LevelDataStoreable : Storeable {
         }
 
         try {
-            val newFile = File.createTempFile("level", WorldTools.DAT_EXTENSION, resultingFile)
-            NbtIo.writeCompressed(levelNbt, newFile.toPath())
-            val backup = session.getDirectory(WorldSavePath.LEVEL_DAT_OLD).toFile()
-            val current = session.getDirectory(WorldSavePath.LEVEL_DAT).toFile()
-            Util.backupAndReplace(current.toPath(), newFile.toPath(), backup.toPath())
+            val newFile = File.createTempFile("level", DAT_EXTENSION, resultingFile).toPath()
+            NbtIo.writeCompressed(levelNbt, newFile)
+            val backup = session.getDirectory(WorldSavePath.LEVEL_DAT_OLD)
+            val current = session.getDirectory(WorldSavePath.LEVEL_DAT)
+            Util.backupAndReplace(current, newFile, backup)
             LOG.info("Saved level data.")
         } catch (exception: IOException) {
             MessageManager.sendError(
@@ -69,8 +69,7 @@ class LevelDataStoreable : Storeable {
      */
     private fun serializeLevelData() = NbtCompound().apply {
         val player = mc.player ?: return@apply
-        val network = mc.networkHandler ?: return@apply
-        network.brand?.let {
+        mc.networkHandler?.brand?.let {
             put("ServerBrands", NbtList().apply {
                 add(NbtString.of(it))
             })

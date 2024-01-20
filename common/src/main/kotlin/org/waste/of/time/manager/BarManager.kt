@@ -5,13 +5,12 @@ import net.minecraft.client.gui.hud.ClientBossBar
 import net.minecraft.text.Text
 import org.waste.of.time.manager.CaptureManager.capturing
 import org.waste.of.time.WorldTools.config
-import org.waste.of.time.manager.MessageManager.sendInfo
 import org.waste.of.time.storage.StorageFlow
 import java.util.*
 
 object BarManager {
 
-    private val progressBar =
+    val progressBar =
         ClientBossBar(
             UUID.randomUUID(),
             Text.of(""),
@@ -35,7 +34,7 @@ object BarManager {
             false
         )
 
-    fun getProgressBar() = if (StorageFlow.lastStored != null) {
+    fun progressBar() = if (StorageFlow.lastStored != null) {
         Optional.of(progressBar)
     } else {
         Optional.empty()
