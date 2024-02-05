@@ -2,9 +2,9 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import net.fabricmc.loom.task.RemapJarTask
 
 plugins {
-    kotlin("jvm") version ("1.9.10")
+    kotlin("jvm") version ("1.9.22")
     id("architectury-plugin") version "3.4-SNAPSHOT"
-    id("dev.architectury.loom") version "1.4-SNAPSHOT" apply false
+    id("dev.architectury.loom") version "1.5-SNAPSHOT" apply false
     id("com.github.johnrengelman.shadow") version "8.1.1" apply false
 }
 
