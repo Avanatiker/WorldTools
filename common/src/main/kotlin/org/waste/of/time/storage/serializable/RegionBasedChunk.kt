@@ -4,6 +4,7 @@ import net.minecraft.SharedConstants
 import net.minecraft.block.Block
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
+import net.minecraft.block.entity.BlockEntity
 import net.minecraft.fluid.Fluid
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtList
@@ -12,6 +13,7 @@ import net.minecraft.nbt.NbtOps
 import net.minecraft.registry.Registries
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.text.MutableText
+import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.util.math.ChunkSectionPos
 import net.minecraft.world.ChunkSerializer
@@ -32,6 +34,18 @@ import org.waste.of.time.storage.RegionBased
 import org.waste.of.time.storage.cache.HotCache
 
 data class RegionBasedChunk(val chunk: WorldChunk) : RegionBased, Cacheable {
+    // storing a reference to the block entities in the chunk
+    // so it doesn't get removed out from under us while the chunk is unloaded
+    private var cachedBlockEntities: Map<BlockPos, BlockEntity>? = null
+
+    fun cacheBlockEntities() {
+        cachedBlockEntities = HashMap(chunk.blockEntities)
+    }
+
+    private fun getBlockEntities() : Map<BlockPos, BlockEntity> {
+        return cachedBlockEntities ?: chunk.blockEntities
+    }
+
     override fun shouldStore() = config.capture.chunks
 
     override val verboseInfo: MutableText
@@ -104,8 +118,8 @@ data class RegionBasedChunk(val chunk: WorldChunk) : RegionBased, Cacheable {
         }
 
         put("block_entities", NbtList().apply {
-            chunk.blockEntityPositions.mapNotNull {
-                chunk.getPackedBlockEntityNbt(it)
+            getBlockEntities().entries.mapNotNull {
+                getPackedBlockEntityNbt(it)
             }.forEach { add(it) }
         })
 
@@ -113,6 +127,13 @@ data class RegionBasedChunk(val chunk: WorldChunk) : RegionBased, Cacheable {
         genPostProcessing(chunk)
 
         // skip structures
+    }
+
+    private fun getPackedBlockEntityNbt(entry: Map.Entry<BlockPos, BlockEntity>): NbtCompound? {
+        val blockEntity: BlockEntity = entry.value
+        var nbtCompound: NbtCompound = blockEntity.createNbtWithIdentifyingData()
+        nbtCompound.putBoolean("keepPacked", false)
+        return nbtCompound
     }
 
     private fun generateSections(chunk: WorldChunk) = NbtList().apply {
