@@ -34,10 +34,12 @@ import java.awt.Color
 
 object Events {
     fun onChunkLoad(chunk: WorldChunk) {
+        if (!CaptureManager.capturing) return
         RegionBasedChunk(chunk).cache()
     }
 
     fun onChunkUnload(chunk: WorldChunk) {
+        if (!CaptureManager.capturing) return
         val regionBasedChunk = HotCache.chunks[chunk.pos] ?: RegionBasedChunk(chunk)
         regionBasedChunk.apply {
             cacheBlockEntities()
@@ -47,6 +49,7 @@ object Events {
     }
 
     fun onEntityLoad(entity: Entity) {
+        if (!CaptureManager.capturing) return
         if (entity is PlayerEntity) {
             PlayerStoreable(entity).cache()
         } else {
@@ -55,6 +58,7 @@ object Events {
     }
 
     fun onEntityUnload(entity: Entity) {
+        if (!CaptureManager.capturing) return
         if (entity !is PlayerEntity) return
         PlayerStoreable(entity).apply {
             emit()
