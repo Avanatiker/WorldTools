@@ -92,6 +92,7 @@ object CaptureManager {
             player.emit()
         }
 
+        MapDataStoreable().emit()
         LevelDataStoreable().emit()
         AdvancementsStoreable().emit()
         MetadataStoreable().emit()

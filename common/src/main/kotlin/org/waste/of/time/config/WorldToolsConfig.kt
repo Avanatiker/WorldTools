@@ -35,6 +35,7 @@ class WorldToolsConfig : ConfigData {
         var levelData = true
         var advancements = true
         var metadata = true
+        var maps = true
     }
 
     class World {
