@@ -12,7 +12,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import org.waste.of.time.Events;
 
 import java.util.function.Consumer;
@@ -40,10 +39,12 @@ public class ClientChunkManagerMixin {
             at = @At(
                     value = "INVOKE",
                     target = "net/minecraft/client/world/ClientChunkManager$ClientChunkMap.isInRadius(II)Z"
-            ),
-            locals = LocalCapture.CAPTURE_FAILHARD
+            )
     )
-    private void onUpdateLoadDistance(int loadDistance, CallbackInfo ci, int oldRadius, int newRadius, ClientChunkManager.ClientChunkMap clientChunkMap, int k, WorldChunk oldChunk, ChunkPos chunkPos) {
+    private void onUpdateLoadDistance(int loadDistance, CallbackInfo ci,
+                                      @Local ClientChunkManager.ClientChunkMap clientChunkMap,
+                                      @Local WorldChunk oldChunk,
+                                      @Local ChunkPos chunkPos) {
         if (!clientChunkMap.isInRadius(chunkPos.x, chunkPos.z)) {
             Events.INSTANCE.onChunkUnload(oldChunk);
         }
