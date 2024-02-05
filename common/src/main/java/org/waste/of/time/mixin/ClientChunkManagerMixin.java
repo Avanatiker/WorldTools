@@ -30,7 +30,7 @@ public class ClientChunkManagerMixin {
                     target = "Lnet/minecraft/client/world/ClientChunkManager$ClientChunkMap;compareAndSet(ILnet/minecraft/world/chunk/WorldChunk;Lnet/minecraft/world/chunk/WorldChunk;)Lnet/minecraft/world/chunk/WorldChunk;"
             )
     )
-    private void onChunkUnload(int chunkX, int chunkZ, CallbackInfo ci, @Local WorldChunk chunk) {
+    private void onChunkUnload(ChunkPos pos, CallbackInfo ci, @Local final WorldChunk chunk) {
         Events.INSTANCE.onChunkUnload(chunk);
     }
 
