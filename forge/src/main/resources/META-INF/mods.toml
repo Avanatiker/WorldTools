@@ -16,14 +16,14 @@ displayTest = "IGNORE_ALL_VERSION"
 [[dependencies.worldtools]]
 modId = "forge"
 mandatory = true
-versionRange = "[47,)"
+versionRange = "[48,)"
 ordering = "NONE"
 side = "CLIENT"
 
 [[dependencies.worldtools]]
 modId = "minecraft"
 mandatory = true
-versionRange = "[1.20,)"
+versionRange = "[1.20.2,)"
 ordering = "NONE"
 side = "CLIENT"
 
@@ -37,6 +37,6 @@ side = "CLIENT"
 [[dependencies.worldtools]]
 modId = "cloth_config"
 mandatory = true
-versionRange = "[11,)"
+versionRange = "[12,)"
 ordering = "AFTER"
 side = "CLIENT"
