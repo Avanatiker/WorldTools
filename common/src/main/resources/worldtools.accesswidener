@@ -10,3 +10,4 @@ accessible field net/minecraft/stat/StatHandler statMap Lit/unimi/dsi/fastutil/o
 accessible field net/minecraft/client/world/ClientChunkManager chunks Lnet/minecraft/client/world/ClientChunkManager$ClientChunkMap;
 accessible method net/minecraft/client/world/ClientChunkManager$ClientChunkMap getChunk (I)Lnet/minecraft/world/chunk/WorldChunk;
 accessible field net/minecraft/client/world/ClientChunkManager$ClientChunkMap diameter I
+accessible method net/minecraft/client/world/ClientWorld getMapStates ()Ljava/util/Map;
