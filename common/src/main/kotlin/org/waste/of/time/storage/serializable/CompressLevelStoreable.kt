@@ -18,7 +18,7 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
 class CompressLevelStoreable : Storeable {
-    private val zipName: String get() = "${System.currentTimeMillis()}-$currentLevelName.zip"
+    private val zipName: String get() = "$currentLevelName-${System.currentTimeMillis()}.zip"
 
     override fun shouldStore() = config.capture.compressLevel
 
@@ -59,6 +59,7 @@ class CompressLevelStoreable : Storeable {
 
     @Throws(IOException::class)
     private fun zipFile(fileToZip: Path, rootPath: Path, zipOut: ZipOutputStream) {
+        if (fileToZip.fileName.toString().contains("session.lock")) return
         val entryName = rootPath.relativize(fileToZip).toString().replace('\\', '/')
         when {
             Files.isHidden(fileToZip) -> return

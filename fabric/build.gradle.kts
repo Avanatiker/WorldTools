@@ -8,6 +8,11 @@ base.archivesName.set("${base.archivesName.get()}-fabric")
 loom {
     accessWidenerPath.set(project(":common").loom.accessWidenerPath)
     enableTransitiveAccessWideners.set(true)
+    runs {
+        this.named("client") {
+            programArgs("--username", "rfresh2")
+        }
+    }
 }
 
 val common: Configuration by configurations.creating {
