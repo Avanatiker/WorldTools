@@ -25,6 +25,7 @@ subprojects {
             isCanBeConsumed = false
             isCanBeResolved = true
         }
+        val versionWithMCVersion = "${project.properties["mod_version"]!!}+${project.properties["minecraft_version"]!!}"
 
         tasks.withType<JavaCompile> {
             options.encoding = "UTF-8"
@@ -32,21 +33,21 @@ subprojects {
         }
 
         tasks {
-            "shadowJar"(ShadowJar::class) {
-                archiveClassifier.set("dev-shadow")
+            val shadowJarTask = named("shadowJar", ShadowJar::class)
+            shadowJarTask {
+                archiveVersion = versionWithMCVersion
+                archiveClassifier.set("shadow")
                 configurations = listOf(shadowCommon)
-                exclude(
-                    "org/intellij/**", "org/objectweb/**", "org/jetbrains/**", "com/google/**",
-                    "net/fabricmc/**", "client-fabric-**", "CREDITS.txt",
-                    "fabric-installer**", "fabric-lifecycle-events**", "fabric-networking**", "fabric-rendering**",
-                    "LICENSE-**", "LICENSE_**", "assets/fabric-api-base/**", "assets/fabricloader/**",
-                    "META-INF/jars/**", "META-INF/maven/**", "META-INF/services/net.f"
-                )
             }
 
             "remapJar"(RemapJarTask::class) {
-                dependsOn("shadowJar")
-                inputFile.set(named<ShadowJar>("shadowJar").flatMap { it.archiveFile })
+                dependsOn(shadowJarTask)
+                inputFile = shadowJarTask.flatMap { it.archiveFile }
+                archiveVersion = versionWithMCVersion
+                archiveClassifier = ""
+            }
+            jar {
+                enabled = false
             }
         }
     }
@@ -80,9 +81,5 @@ allprojects {
     tasks.withType(JavaCompile::class.java) {
         options.encoding = "UTF-8"
         options.release = 17
-    }
-
-    java {
-        withSourcesJar()
     }
 }
