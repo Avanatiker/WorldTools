@@ -3,7 +3,7 @@ name: Fabric Modrinth and CurseForge Release
 on:
   push:
     tags:
-      - '[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+\+1.20.1'
 
 env:
   MINECRAFT_VERSION: "1.20.1"
