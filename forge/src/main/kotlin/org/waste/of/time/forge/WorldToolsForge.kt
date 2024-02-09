@@ -15,6 +15,7 @@ import net.minecraftforge.event.entity.EntityLeaveLevelEvent
 import net.minecraftforge.event.entity.player.PlayerInteractEvent
 import net.minecraftforge.fml.common.Mod
 import org.waste.of.time.Events
+import org.waste.of.time.LoaderData
 import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.manager.CaptureManager
@@ -23,6 +24,7 @@ import thedarkcolour.kotlinforforge.forge.FORGE_BUS
 @Mod(WorldTools.MOD_ID)
 object WorldToolsForge {
     init {
+        LoaderData.loader = WTForgeLoader()
         WorldTools.initialize()
         FORGE_BUS.addListener<RegisterKeyMappingsEvent> {
             it.register(WorldTools.CAPTURE_KEY)
