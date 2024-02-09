@@ -2,10 +2,8 @@ package org.waste.of.time
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import dev.architectury.injectables.targets.ArchitecturyTarget
 import me.shedaniel.autoconfig.AutoConfig
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer
-import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.SharedConstants
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.option.KeyBinding
@@ -24,13 +22,7 @@ object WorldTools {
     const val MAX_LEVEL_NAME_LENGTH = 16
     val GSON: Gson = GsonBuilder().setPrettyPrinting().create()
     val CURRENT_VERSION = SharedConstants.getGameVersion().saveVersion.id
-    private val VERSION: String by lazy {
-        if (ArchitecturyTarget.getCurrentTarget() == "fabric") {
-            FabricLoader.getInstance().getModContainer(MOD_ID).orElseThrow().metadata.version.friendlyString
-        } else {
-            "1.1.1" // ToDo: Get version from forge loader
-        }
-    }
+    private val VERSION: String = LoaderData.loader?.getVersion() ?: "DEV"
     val CREDIT_MESSAGE = "This file was created by $MOD_NAME $VERSION ($URL)"
     val CREDIT_MESSAGE_MD = "This file was created by [$MOD_NAME $VERSION]($URL)"
     val LOG: Logger = LogManager.getLogger()
