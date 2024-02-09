@@ -23,6 +23,9 @@ class WorldToolsConfig : ConfigData {
     @ConfigEntry.Gui.CollapsibleObject
     val advanced = Advanced()
 
+    @ConfigEntry.Gui.CollapsibleObject
+    val debug = Debug()
+
     class Capture {
         var autoDownload = false
         var compressLevel = true
@@ -73,5 +76,13 @@ class WorldToolsConfig : ConfigData {
         var progressBarColor = BossBar.Color.GREEN
         var progressBarStyle = BossBar.Style.PROGRESS
         var progressBarTimeout = 3000L
+    }
+
+    class Debug {
+        var logSettings = false
+        var logSavedChunks = false
+        var logSavedEntities = false
+        var logSavedContainers = false
+        var logSavedMaps = false
     }
 }

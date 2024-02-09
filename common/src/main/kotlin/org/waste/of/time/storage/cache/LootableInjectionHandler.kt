@@ -6,6 +6,7 @@ import net.minecraft.block.enums.ChestType
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.ingame.*
 import net.minecraft.inventory.SimpleInventory
+import org.waste.of.time.WorldTools
 import org.waste.of.time.manager.StatisticManager
 
 object LootableInjectionHandler {
@@ -17,24 +18,38 @@ object LootableInjectionHandler {
         when (container) {
             is AbstractFurnaceBlockEntity -> {
                 container.injectDataToFurnace(screen)
+                if (WorldTools.config.debug.logSavedContainers)
+                    WorldTools.LOG.info("Saving furnace contents: ${container.pos}")
             }
             is BarrelBlockEntity -> {
                 container.injectDataToBarrelBlock(screen)
+                if (WorldTools.config.debug.logSavedContainers)
+                    WorldTools.LOG.info("Saving barrel contents: ${container.pos}")
             }
             is BrewingStandBlockEntity -> {
                 container.injectDataToBrewingStand(screen)
+                if (WorldTools.config.debug.logSavedContainers)
+                    WorldTools.LOG.info("Saving brewing stand contents: ${container.pos}")
             }
             is ChestBlockEntity -> {
                 container.injectDataToChest(screen)
+                if (WorldTools.config.debug.logSavedContainers)
+                    WorldTools.LOG.info("Saving chest contents: ${container.pos}")
             }
             is DispenserBlockEntity -> {
                 container.injectDataToDispenserOrDropper(screen)
+                if (WorldTools.config.debug.logSavedContainers)
+                    WorldTools.LOG.info("Saving dispenser/dropper: ${container.pos}")
             }
             is HopperBlockEntity -> {
                 container.injectDataToHopper(screen)
+                if (WorldTools.config.debug.logSavedContainers)
+                    WorldTools.LOG.info("Saving hopper: ${container.pos}")
             }
             is ShulkerBoxBlockEntity -> {
                 container.injectDataToShulkerBox(screen)
+                if (WorldTools.config.debug.logSavedContainers)
+                    WorldTools.LOG.info("Saving shulker: ${container.pos}")
             }
         }
 

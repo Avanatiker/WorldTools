@@ -5,7 +5,11 @@ import net.minecraft.client.gui.screen.ConfirmScreen
 import net.minecraft.client.network.ServerInfo
 import net.minecraft.network.packet.c2s.play.ClientStatusC2SPacket
 import net.minecraft.text.Text
+import org.waste.of.time.WorldTools
+import org.waste.of.time.WorldTools.LOG
+import org.waste.of.time.WorldTools.config
 import org.waste.of.time.WorldTools.mc
+import org.waste.of.time.config.WorldToolsConfig
 import org.waste.of.time.storage.StorageFlow
 import org.waste.of.time.storage.cache.HotCache
 import org.waste.of.time.storage.serializable.*
@@ -68,9 +72,17 @@ object CaptureManager {
 
         currentLevelName = potentialName
         MessageManager.sendInfo("worldtools.log.info.started_capture", potentialName)
+        if (config.debug.logSettings) logCaptureSettingsState()
         storeJob = StorageFlow.launch(potentialName)
         mc.networkHandler?.sendPacket(ClientStatusC2SPacket(ClientStatusC2SPacket.Mode.REQUEST_STATS))
         capturing = true
+    }
+
+    private fun logCaptureSettingsState() {
+        WorldTools.GSON.toJson(config, WorldToolsConfig::class.java).let { configJson ->
+            LOG.info("Launching Capture With Settings:")
+            LOG.info(configJson)
+        }
     }
 
     fun stop() {

@@ -40,6 +40,10 @@ class MapDataStoreable() : Storeable {
                 mapFile.createNewFile()
             }
             NbtIo.writeCompressed(nbtCompound, mapFile)
+            if (config.debug.logSavedMaps) {
+                // todo: check if the frames map data is still saved here on MP servers
+                WorldTools.LOG.info("Map data saved: $mapName")
+            }
         }
     }
 }
