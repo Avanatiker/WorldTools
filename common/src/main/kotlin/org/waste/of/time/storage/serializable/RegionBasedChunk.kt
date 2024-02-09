@@ -127,6 +127,8 @@ data class RegionBasedChunk(val chunk: WorldChunk) : RegionBased, Cacheable {
         genPostProcessing(chunk)
 
         // skip structures
+        if (config.debug.logSavedChunks)
+            WorldTools.LOG.info("Chunk saved: $chunkPos ($dimension)")
     }
 
     private fun getPackedBlockEntityNbt(entry: Map.Entry<BlockPos, BlockEntity>): NbtCompound? {

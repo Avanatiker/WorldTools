@@ -7,10 +7,11 @@ import net.minecraft.nbt.NbtList
 import net.minecraft.text.MutableText
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.world.World
+import org.waste.of.time.WorldTools
+import org.waste.of.time.WorldTools.config
 import org.waste.of.time.manager.MessageManager.translateHighlight
 import org.waste.of.time.manager.StatisticManager
 import org.waste.of.time.manager.StatisticManager.joinWithAnd
-import org.waste.of.time.WorldTools.config
 import org.waste.of.time.storage.RegionBased
 import org.waste.of.time.storage.cache.EntityCacheable
 
@@ -49,6 +50,8 @@ data class RegionBasedEntities(
 
         putInt("DataVersion", SharedConstants.getGameVersion().saveVersion.id)
         put("Position", NbtIntArray(intArrayOf(chunkPos.x, chunkPos.z)))
+        if (config.debug.logSavedEntities)
+            entities.forEach { entity -> WorldTools.LOG.info("Entity saved: $entity (Chunk: $chunkPos)") }
     }
 
     override fun incrementStats() {
