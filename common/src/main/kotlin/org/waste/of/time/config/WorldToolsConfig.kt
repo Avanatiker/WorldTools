@@ -58,7 +58,7 @@ class WorldToolsConfig : ConfigData {
     }
 
     class Entity {
-        var modifyNBT = false
+        var modifyEntityNbt = false
 
         var noAI = true
         var noGravity = true

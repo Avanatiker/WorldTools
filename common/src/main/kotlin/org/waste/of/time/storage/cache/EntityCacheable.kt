@@ -17,7 +17,7 @@ data class EntityCacheable(
         EntityType.getId(entity.type)?.let { putString(Entity.ID_KEY, it.toString()) }
         entity.writeNbt(this)
 
-        if (config.entity.modifyNBT) {
+        if (config.entity.modifyEntityNbt) {
             addAuthor()
             putByte("NoAI", config.entity.noAI.toByte())
             putByte("NoGravity", config.entity.noGravity.toByte())

@@ -24,7 +24,7 @@
   "text.autoconfig.worldtools.option.capture.statistics": "Statistics",
   "text.autoconfig.worldtools.option.entity": "Entity",
   "text.autoconfig.worldtools.option.entity.invulnerable": "Invulnerable",
-  "text.autoconfig.worldtools.option.entity.modifyNBT": "Modify NBT",
+  "text.autoconfig.worldtools.option.entity.modifyEntityNbt": "Modify NBT",
   "text.autoconfig.worldtools.option.entity.noAI": "No AI",
   "text.autoconfig.worldtools.option.entity.noGravity": "No Gravity",
   "text.autoconfig.worldtools.option.entity.silent": "Silent",
