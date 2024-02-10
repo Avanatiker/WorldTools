@@ -28,7 +28,8 @@
     ]
   },
   "mixins": [
-    "worldtools.mixins.common.json"
+    "worldtools.mixins.common.json",
+    "worldtools.mixins.fabric.json"
   ],
   "depends": {
     "fabricloader": ">=${fabric_loader_version}",
