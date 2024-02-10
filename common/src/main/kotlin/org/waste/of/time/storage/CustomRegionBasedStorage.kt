@@ -1,12 +1,18 @@
 package org.waste.of.time.storage
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap
+import net.minecraft.block.entity.BlockEntity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtIo
+import net.minecraft.nbt.NbtList
+import net.minecraft.registry.Registries
+import net.minecraft.util.Identifier
 import net.minecraft.util.PathUtil
 import net.minecraft.util.ThrowableDeliverer
+import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.world.storage.RegionFile
+import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.MCA_EXTENSION
 import java.io.DataOutput
 import java.io.IOException
@@ -45,6 +51,39 @@ open class CustomRegionBasedStorage internal constructor(
                 NbtIo.write(nbt, dataOutputStream as DataOutput)
             }
         }
+    }
+
+    fun getTagAt(chunkPos: ChunkPos): NbtCompound? {
+        val regionFile = getRegionFile(chunkPos)
+        var nbt: NbtCompound? = null
+        regionFile.getChunkInputStream(chunkPos)?.use { dataInputStream ->
+            nbt = NbtIo.readCompound(dataInputStream)
+        }
+        return nbt
+    }
+
+    fun getBlockEntities(chunkPos: ChunkPos): List<BlockEntity> {
+        val blockEntities = mutableListOf<BlockEntity>()
+        getTagAt(chunkPos)?.let { chunkNbt ->
+            val compoundTagsList: NbtList = chunkNbt.getList("block_entities", 10)
+            compoundTagsList.filterIsInstance<NbtCompound>().forEach { compoundTag ->
+                try {
+                    val blockPos = BlockPos(compoundTag.getInt("x"), compoundTag.getInt("y"), compoundTag.getInt("z"))
+                    val blockStateIdentifier = Identifier(compoundTag.getString("id"))
+                    Registries.BLOCK.get(blockStateIdentifier).let { block ->
+                        // todo: read block state from section data NBT?
+                        //  doesn't seem necessary rn because we're just using this to get the pos and container contents
+                        //  might be needed for certain container types with multiple block states, like chest vs double chest?
+                        BlockEntity.createFromNbt(blockPos, block.defaultState, compoundTag)?.let { blockEntity ->
+                            blockEntities.add(blockEntity)
+                        }
+                    }
+                } catch (e: Exception) {
+                    LOG.error("Error reading existing block entities from region files at chunk: {}", chunkPos, e)
+                }
+            }
+        }
+        return blockEntities
     }
 
     @Throws(IOException::class)

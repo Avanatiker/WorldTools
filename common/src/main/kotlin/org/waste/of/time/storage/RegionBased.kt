@@ -25,7 +25,7 @@ interface RegionBased : Storeable {
             else -> "dimensions/minecraft/$dimension/"
         }
 
-    fun compound(): NbtCompound
+    fun compound(storage: CustomRegionBasedStorage): NbtCompound
 
     fun incrementStats()
 
@@ -47,7 +47,7 @@ interface RegionBased : Storeable {
         try {
             storage.write(
                 chunkPos,
-                compound()
+                compound(storage)
             )
             incrementStats()
         } catch (e: Exception) {

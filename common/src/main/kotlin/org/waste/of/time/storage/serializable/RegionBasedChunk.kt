@@ -5,7 +5,9 @@ import net.minecraft.block.Block
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
 import net.minecraft.block.entity.BlockEntity
+import net.minecraft.block.entity.LockableContainerBlockEntity
 import net.minecraft.fluid.Fluid
+import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtList
 import net.minecraft.nbt.NbtLongArray
@@ -30,6 +32,7 @@ import org.waste.of.time.WorldTools.config
 import org.waste.of.time.manager.MessageManager.translateHighlight
 import org.waste.of.time.manager.StatisticManager
 import org.waste.of.time.storage.Cacheable
+import org.waste.of.time.storage.CustomRegionBasedStorage
 import org.waste.of.time.storage.RegionBased
 import org.waste.of.time.storage.cache.HotCache
 
@@ -94,7 +97,7 @@ data class RegionBasedChunk(val chunk: WorldChunk) : RegionBased, Cacheable {
     /**
      * See [net.minecraft.world.ChunkSerializer.serialize]
      */
-    override fun compound() = NbtCompound().apply {
+    override fun compound(storage: CustomRegionBasedStorage) = NbtCompound().apply {
         addAuthor()
 
         putInt("DataVersion", SharedConstants.getGameVersion().saveVersion.id)
@@ -118,9 +121,7 @@ data class RegionBasedChunk(val chunk: WorldChunk) : RegionBased, Cacheable {
         }
 
         put("block_entities", NbtList().apply {
-            getBlockEntities().entries.mapNotNull {
-                getPackedBlockEntityNbt(it)
-            }.forEach { add(it) }
+            upsertBlockEntities(this, storage)
         })
 
         getTickSchedulers(chunk)
@@ -131,7 +132,61 @@ data class RegionBasedChunk(val chunk: WorldChunk) : RegionBased, Cacheable {
             WorldTools.LOG.info("Chunk saved: $chunkPos ($dimension)")
     }
 
-    private fun getPackedBlockEntityNbt(entry: Map.Entry<BlockPos, BlockEntity>): NbtCompound? {
+    private fun upsertBlockEntities(
+        outputNbt: NbtList,
+        storage: CustomRegionBasedStorage
+    ) {
+        val existingContainers = getExistingContainerBlockEntities(storage, chunkPos)
+        getBlockEntities().entries.map {
+            if (it.value is LockableContainerBlockEntity) {
+                existingContainers.find { existing -> existing.pos == it.key }?.let { existing ->
+                    mergeInventoryContainerContents(existing, it.value as LockableContainerBlockEntity)
+                }
+            }
+            getPackedBlockEntityNbt(it)
+        }.forEach { outputNbt.add(it) }
+    }
+
+    private fun getExistingContainerBlockEntities(
+        storage: CustomRegionBasedStorage,
+        chunkPos: ChunkPos
+    ): List<LockableContainerBlockEntity> {
+        return storage.getBlockEntities(chunkPos)
+            .filterIsInstance<LockableContainerBlockEntity>()
+            .toList()
+    }
+
+    // in-place merge onto the new block entity container contents
+    private fun mergeInventoryContainerContents(
+        existing: LockableContainerBlockEntity,
+        new: LockableContainerBlockEntity
+    ) {
+        if (existing.pos != new.pos) {
+            WorldTools.LOG.warn("[Container Merge] BlockEntity at ${new.pos} is not at the expected pos ${existing.pos}")
+            return
+        }
+        if (existing.javaClass != new.javaClass) {
+            WorldTools.LOG.warn("[Container Merge] BlockEntity type ${new.javaClass} is not the expected type ${existing.javaClass}")
+            return
+        }
+        // todo: we need extra context to know if the newStacks have been captured during the WDL
+        //  or if we just loaded the block entity without viewing its content
+        //  e.g. the player reloads a block entity and removes all items from its inventory during WDL
+        var shouldOverwrite = true
+        for (i in 0 until new.size()) {
+            if (new.getStack(i) != ItemStack.EMPTY) {
+                shouldOverwrite = false
+                break
+            }
+        }
+        if (shouldOverwrite) {
+            for (i in 0 until existing.size()) {
+                new.setStack(i, existing.getStack(i))
+            }
+        }
+    }
+
+    private fun getPackedBlockEntityNbt(entry: Map.Entry<BlockPos, BlockEntity>): NbtCompound {
         val blockEntity: BlockEntity = entry.value
         var nbtCompound: NbtCompound = blockEntity.createNbtWithIdentifyingData()
         nbtCompound.putBoolean("keepPacked", false)
