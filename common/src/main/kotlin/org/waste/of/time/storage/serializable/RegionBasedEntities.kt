@@ -12,6 +12,7 @@ import org.waste.of.time.WorldTools.config
 import org.waste.of.time.manager.MessageManager.translateHighlight
 import org.waste.of.time.manager.StatisticManager
 import org.waste.of.time.manager.StatisticManager.joinWithAnd
+import org.waste.of.time.storage.CustomRegionBasedStorage
 import org.waste.of.time.storage.RegionBased
 import org.waste.of.time.storage.cache.EntityCacheable
 
@@ -41,7 +42,7 @@ data class RegionBasedEntities(
     override val suffix: String
         get() = "entities"
 
-    override fun compound() = NbtCompound().apply {
+    override fun compound(storage: CustomRegionBasedStorage) = NbtCompound().apply {
         put("Entities", NbtList().apply {
             entities.toList().forEach { entity ->
                 add(entity.compound())

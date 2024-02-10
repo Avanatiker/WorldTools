@@ -23,6 +23,10 @@ object HotCache {
     val blockEntities: ConcurrentHashMap.KeySetView<LockableContainerBlockEntity, Boolean> =
         ConcurrentHashMap.newKeySet()
     var lastOpenedContainer: LockableContainerBlockEntity? = null
+    // TODO: load existing cached containers from already written chunks
+    //  e.g. the player reloads a chunk that contains block entities that we already saved in the storage session
+    //  The loading should be done async as it requires IO, so we should add some delay onto the debug rendering here
+    //  so it doesn't confuse players as the box would pop in and then later disappear
     val cachedMissingContainers by LazyUpdatingDelegate(100) {
         chunks.values
             .flatMap { it.chunk.blockEntities.values }
