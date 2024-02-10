@@ -5,7 +5,6 @@
   "compatibilityLevel": "JAVA_17",
   "client": [
     "BossBarHudMixin",
-    "ClientChunkManagerMixin",
     "ClientPlayNetworkHandlerMixin",
     "DebugRendererMixin",
     "GameMenuScreenMixin",
