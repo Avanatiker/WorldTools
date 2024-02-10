@@ -12,13 +12,13 @@ data class EntityCacheable(
     val entity: Entity
 ) : Cacheable {
     fun compound() = NbtCompound().apply {
-        addAuthor()
 
         // saveSelfNbt has a check for DISCARDED
         EntityType.getId(entity.type)?.let { putString(Entity.ID_KEY, it.toString()) }
         entity.writeNbt(this)
 
         if (config.entity.modifyNBT) {
+            addAuthor()
             putByte("NoAI", config.entity.noAI.toByte())
             putByte("NoGravity", config.entity.noGravity.toByte())
             putByte("Invulnerable", config.entity.invulnerable.toByte())
