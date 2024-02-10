@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "org.waste.of.time.fabric.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "client": [
+    "ClientChunkManagerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

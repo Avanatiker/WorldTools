@@ -1,4 +1,4 @@
-package org.waste.of.time.mixin;
+package org.waste.of.time.fabric.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.world.ClientChunkManager;
