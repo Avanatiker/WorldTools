@@ -18,7 +18,7 @@ import org.waste.of.time.storage.cache.EntityCacheable
 
 data class RegionBasedEntities(
     override val chunkPos: ChunkPos,
-    val entities: MutableList<EntityCacheable>
+    val entities: MutableSet<EntityCacheable>
 ) : RegionBased {
     override fun shouldStore() = config.capture.entities
 
