@@ -8,8 +8,7 @@
     "ClientPlayNetworkHandlerMixin",
     "ContainerBlockEntityExtension",
     "DebugRendererMixin",
-    "GameMenuScreenMixin",
-    "MinecraftClientMixin"
+    "GameMenuScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1
