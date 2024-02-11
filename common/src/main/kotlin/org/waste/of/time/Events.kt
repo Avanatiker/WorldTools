@@ -10,6 +10,7 @@ import net.minecraft.client.render.VertexConsumerProvider
 import net.minecraft.client.render.WorldRenderer
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.entity.Entity
+import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.world.World
@@ -157,5 +158,22 @@ object Events {
 
     fun onScreenRemoved(screen: Screen) {
         LootableInjectionHandler.onScreenRemoved(screen)
+    }
+
+    fun onEntityRemoved(entity: Entity, reason: Entity.RemovalReason) {
+        if (reason == Entity.RemovalReason.KILLED || reason == Entity.RemovalReason.DISCARDED) {
+            if (entity is LivingEntity) {
+                if (entity.isDead) {
+                    val cacheable = EntityCacheable(entity)
+                    // not particularly efficient, but fine
+                    HotCache.entities.values.forEach { it.remove(cacheable) }
+                }
+            } else {
+                // todo: its actually a bit tricky to differentiate the entity being removed from our world or the server world
+                //  need to find a reliable way to determine it
+                //  check if the entity is within a set distance from us?
+                //  if chunk is loaded, remove the entity? -> doesn't seem to work because server will remove entity before chunk is unloaded
+            }
+        }
     }
 }
