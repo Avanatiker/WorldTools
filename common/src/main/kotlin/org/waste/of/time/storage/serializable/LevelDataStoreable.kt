@@ -8,7 +8,6 @@ import net.minecraft.util.WorldSavePath
 import net.minecraft.world.GameRules
 import net.minecraft.world.level.storage.LevelStorage.Session
 import org.waste.of.time.Utils.addAuthor
-import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.DAT_EXTENSION
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.config
@@ -43,6 +42,8 @@ class LevelDataStoreable : Storeable {
     ) {
         val resultingFile = session.getDirectory(WorldSavePath.ROOT).toFile()
         val dataNbt = serializeLevelData()
+        // if we save an empty level.dat, clients will crash when opening the SP worlds screen
+        if (dataNbt.isEmpty) throw RuntimeException("Failed to serialize level data")
         val levelNbt = NbtCompound().apply {
             addAuthor()
             put("Data", dataNbt)
