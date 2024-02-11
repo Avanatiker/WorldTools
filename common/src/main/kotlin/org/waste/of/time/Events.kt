@@ -161,6 +161,7 @@ object Events {
     }
 
     fun onEntityRemoved(entity: Entity, reason: Entity.RemovalReason) {
+        if (!capturing) return
         if (reason == Entity.RemovalReason.KILLED || reason == Entity.RemovalReason.DISCARDED) {
             if (entity is LivingEntity) {
                 if (entity.isDead) {
