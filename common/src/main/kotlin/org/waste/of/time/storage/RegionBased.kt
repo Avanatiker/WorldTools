@@ -42,6 +42,7 @@ interface RegionBased : Storeable {
                 it.emit()
                 it.incrementStats()
             }
+            if (this.chunk.isEmpty) return
         }
 
         try {
