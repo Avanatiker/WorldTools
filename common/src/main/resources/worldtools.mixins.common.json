@@ -6,6 +6,7 @@
   "client": [
     "BossBarHudMixin",
     "ClientPlayNetworkHandlerMixin",
+    "ContainerBlockEntityExtension",
     "DebugRendererMixin",
     "GameMenuScreenMixin",
     "MinecraftClientMixin"

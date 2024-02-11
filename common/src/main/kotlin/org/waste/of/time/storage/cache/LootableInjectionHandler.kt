@@ -7,6 +7,7 @@ import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.ingame.*
 import net.minecraft.inventory.SimpleInventory
 import org.waste.of.time.WorldTools
+import org.waste.of.time.extension.IBlockEntityContainerExtension
 import org.waste.of.time.manager.StatisticManager
 
 object LootableInjectionHandler {
@@ -66,6 +67,7 @@ object LootableInjectionHandler {
         screen.getContainerSlots().forEach {
             setStack(it.index, it.stack)
         }
+        (this as IBlockEntityContainerExtension).wtContentsRead = true;
     }
 
     private fun BarrelBlockEntity.injectDataToBarrelBlock(screen: HandledScreen<*>) {
@@ -73,6 +75,7 @@ object LootableInjectionHandler {
         screen.getContainerSlots().forEach {
             setStack(it.index, it.stack)
         }
+        (this as IBlockEntityContainerExtension).wtContentsRead = true;
     }
 
     private fun BrewingStandBlockEntity.injectDataToBrewingStand(screen: HandledScreen<*>) {
@@ -80,6 +83,7 @@ object LootableInjectionHandler {
         screen.getContainerSlots().forEach {
             setStack(it.index, it.stack)
         }
+        (this as IBlockEntityContainerExtension).wtContentsRead = true;
     }
 
     private fun ChestBlockEntity.injectDataToChest(screen: HandledScreen<*>) {
@@ -127,6 +131,7 @@ object LootableInjectionHandler {
                 HotCache.blockEntities.add(otherChest)
             }
         }
+        (this as IBlockEntityContainerExtension).wtContentsRead = true;
     }
 
     private fun DispenserBlockEntity.injectDataToDispenserOrDropper(screen: HandledScreen<*>) {
@@ -134,6 +139,7 @@ object LootableInjectionHandler {
         screen.getContainerSlots().forEach {
             setStack(it.index, it.stack)
         }
+        (this as IBlockEntityContainerExtension).wtContentsRead = true;
     }
 
     private fun HopperBlockEntity.injectDataToHopper(screen: HandledScreen<*>) {
@@ -141,6 +147,7 @@ object LootableInjectionHandler {
         screen.getContainerSlots().forEach {
             setStack(it.index, it.stack)
         }
+        (this as IBlockEntityContainerExtension).wtContentsRead = true;
     }
 
     private fun ShulkerBoxBlockEntity.injectDataToShulkerBox(screen: HandledScreen<*>) {
@@ -148,6 +155,7 @@ object LootableInjectionHandler {
         screen.getContainerSlots().forEach {
             setStack(it.index, it.stack)
         }
+        (this as IBlockEntityContainerExtension).wtContentsRead = true;
     }
 
     private fun HandledScreen<*>.getContainerSlots() = screenHandler.slots.filter { it.inventory is SimpleInventory }

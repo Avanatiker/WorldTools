@@ -29,6 +29,7 @@ import net.minecraft.world.gen.chunk.BlendingData
 import org.waste.of.time.Utils.addAuthor
 import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.config
+import org.waste.of.time.extension.IBlockEntityContainerExtension
 import org.waste.of.time.manager.MessageManager.translateHighlight
 import org.waste.of.time.manager.StatisticManager
 import org.waste.of.time.storage.Cacheable
@@ -161,6 +162,7 @@ data class RegionBasedChunk(val chunk: WorldChunk) : RegionBased, Cacheable {
         existing: LockableContainerBlockEntity,
         new: LockableContainerBlockEntity
     ) {
+        if ((new as IBlockEntityContainerExtension).wtContentsRead) return
         if (existing.pos != new.pos) {
             WorldTools.LOG.warn("[Container Merge] BlockEntity at ${new.pos} is not at the expected pos ${existing.pos}")
             return
