@@ -9,11 +9,11 @@ import net.minecraft.world.chunk.WorldChunk
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent
 import net.minecraftforge.client.event.RegisterClientCommandsEvent
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent
+import net.minecraftforge.client.event.ScreenEvent
 import net.minecraftforge.event.TickEvent
 import net.minecraftforge.event.TickEvent.ClientTickEvent
 import net.minecraftforge.event.entity.EntityJoinLevelEvent
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent
-import net.minecraftforge.event.entity.player.PlayerInteractEvent
 import net.minecraftforge.event.level.ChunkEvent
 import net.minecraftforge.fml.common.Mod
 import org.waste.of.time.Events
@@ -41,9 +41,6 @@ object WorldToolsForge {
         FORGE_BUS.addListener<ClientPlayerNetworkEvent.LoggingOut> {
             Events.onClientDisconnect()
         }
-        FORGE_BUS.addListener<PlayerInteractEvent.RightClickBlock> {
-            Events.onInteractBlock(it.level, it.hitVec)
-        }
         FORGE_BUS.addListener<EntityJoinLevelEvent> {
             Events.onEntityLoad(it.entity)
         }
@@ -58,6 +55,9 @@ object WorldToolsForge {
         }
         FORGE_BUS.addListener<ChunkEvent.Unload> {
             if (it.chunk is WorldChunk) Events.onChunkUnload(it.chunk as WorldChunk)
+        }
+        FORGE_BUS.addListener<ScreenEvent.Closing> {
+            Events.onScreenRemoved(it.screen)
         }
 
         LOG.info("WorldTools Forge initialized")

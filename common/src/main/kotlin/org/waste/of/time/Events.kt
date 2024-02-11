@@ -2,6 +2,7 @@ package org.waste.of.time
 
 import net.minecraft.block.entity.LockableContainerBlockEntity
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.GridWidget
 import net.minecraft.client.render.RenderLayer
@@ -28,6 +29,7 @@ import org.waste.of.time.manager.StatisticManager
 import org.waste.of.time.storage.StorageFlow
 import org.waste.of.time.storage.cache.EntityCacheable
 import org.waste.of.time.storage.cache.HotCache
+import org.waste.of.time.storage.cache.LootableInjectionHandler
 import org.waste.of.time.storage.serializable.PlayerStoreable
 import org.waste.of.time.storage.serializable.RegionBasedChunk
 import java.awt.Color
@@ -151,5 +153,9 @@ object Events {
         }
 
         adder.add(widget, 2)
+    }
+
+    fun onScreenRemoved(screen: Screen) {
+        LootableInjectionHandler.onScreenRemoved(screen)
     }
 }
