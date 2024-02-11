@@ -54,7 +54,7 @@ jobs:
 
           files: |
             forge/build/libs/WorldTools-forge-${{ github.ref_name }}.jar
-          name: WorldTools-forge-${{ github.ref_name }}
+          name: WorldTools ${{ github.ref_name }} (Forge)
           version: ${{ github.ref_name }}
           loaders: |
             forge
