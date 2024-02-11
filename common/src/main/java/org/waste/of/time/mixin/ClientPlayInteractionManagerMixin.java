@@ -1,4 +1,4 @@
-package org.waste.of.time.fabric.mixin;
+package org.waste.of.time.mixin;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
