@@ -74,12 +74,19 @@ open class CustomRegionBasedStorage internal constructor(
                         // todo: read block state from section data NBT?
                         //  doesn't seem necessary rn because we're just using this to get the pos and container contents
                         //  might be needed for certain container types with multiple block states, like chest vs double chest?
-                        BlockEntity.createFromNbt(blockPos, block.defaultState, compoundTag)?.let { blockEntity ->
-                            blockEntities.add(blockEntity)
+                        try {
+                            Registries.BLOCK_ENTITY_TYPE.getOrEmpty(blockStateIdentifier).ifPresent {
+                                it.instantiate(blockPos, block.defaultState)?.let { blockEntity ->
+                                    blockEntity.readNbt(compoundTag)
+                                    blockEntities.add(blockEntity)
+                                }
+                            }
+                        } catch (e: Exception) {
+                            LOG.debug("Error creating block entity: {} from NBT at chunk: {}", blockStateIdentifier, chunkPos)
                         }
                     }
                 } catch (e: Exception) {
-                    LOG.error("Error reading existing block entities from region files at chunk: {}", chunkPos, e)
+                    LOG.debug("Error reading existing block entity from chunk: {}", chunkPos)
                 }
             }
         }
