@@ -28,10 +28,12 @@ data class EntityCacheable(
 
     override fun cache() {
         val chunkPos = entity.chunkPos
-        val list = HotCache.entities[chunkPos] ?: mutableListOf()
-
-        list.add(this)
-        HotCache.entities[chunkPos] = list
+        val set = HotCache.entities[chunkPos] ?: mutableSetOf()
+        // can occur when we reload the same entity
+        // equality is based off entity uuid, prefer caching the newest (this) entity
+        if (set.contains(this)) set.remove(this)
+        set.add(this)
+        HotCache.entities[chunkPos] = set
     }
 
     override fun flush() {
@@ -44,5 +46,15 @@ data class EntityCacheable(
                 HotCache.entities[chunkPos] = list
             }
         }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (other !is EntityCacheable) return super.equals(other)
+        return entity.uuid == other.entity.uuid
+    }
+
+    override fun hashCode(): Int {
+        // consistent based off entity uuid
+        return entity.uuid.hashCode()
     }
 }
