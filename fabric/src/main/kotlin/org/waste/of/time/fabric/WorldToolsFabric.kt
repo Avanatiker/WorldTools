@@ -11,8 +11,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
-import net.fabricmc.fabric.api.event.player.UseBlockCallback
-import net.minecraft.util.ActionResult
+import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import org.waste.of.time.Events
 import org.waste.of.time.LoaderData
 import org.waste.of.time.WorldTools
@@ -42,12 +41,13 @@ object WorldToolsFabric : ClientModInitializer {
         ClientPlayConnectionEvents.DISCONNECT.register(ClientPlayConnectionEvents.Disconnect { _, _ ->
             Events.onClientDisconnect()
         })
-        UseBlockCallback.EVENT.register(UseBlockCallback { _, world, _, hitResult ->
-            Events.onInteractBlock(world, hitResult)
-            ActionResult.PASS
-        })
         ClientTickEvents.START_CLIENT_TICK.register(ClientTickEvents.StartTick {
             Events.onClientTickStart()
+        })
+        ScreenEvents.AFTER_INIT.register(ScreenEvents.AfterInit { _, screen, _, _ ->
+            ScreenEvents.remove(screen).register(ScreenEvents.Remove { screen ->
+                Events.onScreenRemoved(screen)
+            })
         })
 
         LOG.info("WorldTools Fabric initialized")
