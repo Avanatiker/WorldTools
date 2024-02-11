@@ -43,6 +43,8 @@ class LevelDataStoreable : Storeable {
     ) {
         val resultingFile = session.getDirectory(WorldSavePath.ROOT).toFile()
         val dataNbt = serializeLevelData()
+        // if we save an empty level.dat, clients will crash when opening the SP worlds screen
+        if (dataNbt.isEmpty) throw RuntimeException("Failed to serialize level data")
         val levelNbt = NbtCompound().apply {
             addAuthor()
             put("Data", dataNbt)
