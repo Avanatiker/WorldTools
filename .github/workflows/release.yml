@@ -1,4 +1,4 @@
-name: Fabric Modrinth and CurseForge Release
+name: Modrinth and CurseForge Release
 
 on:
   push:
@@ -27,8 +27,10 @@ jobs:
       - name: Elevate wrapper permissions
         run: chmod +x ./gradlew
 
-      - name: Build Mod
-        run: ./gradlew fabric:build
+      - name: Build WorldTools
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          arguments: build
 
       - name: Upload Fabric Artifact
         uses: actions/upload-artifact@v4
@@ -36,13 +38,21 @@ jobs:
           name: WorldTools-fabric-${{ github.ref_name }}
           path: fabric/build/libs/WorldTools-fabric-${{ github.ref_name }}.jar
 
+      - name: Upload Forge Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: WorldTools-fabric-${{ github.ref_name }}
+          path: forge/build/libs/WorldTools-forge-${{ github.ref_name }}.jar
+
       - name: Generate Changelog
         id: changelog
         uses: mikepenz/release-changelog-builder-action@v4.1.1
+        with:
+          commitMode: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Release
+      - name: Release Fabric
         uses: Kir-Antipov/mc-publish@v3.3
         with:
           changelog: ${{steps.changelog.outputs.changelog}}
@@ -64,3 +74,37 @@ jobs:
             fabric-api(required){modrinth:P7dR8mSH}{curseforge:306612}
             fabric-language-kotlin(required){modrinth:Ha28R6CL}{curseforge:351264}
             cloth-config(required){modrinth:9s6osm5g}{curseforge:348521}
+
+      - name: Release Forge
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          changelog: ${{steps.changelog.outputs.changelog}}
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          curseforge-id: 909868
+
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          modrinth-id: FlFKBOIX
+
+          files: |
+            forge/build/libs/WorldTools-forge-${{ github.ref_name }}.jar
+          name: WorldTools ${{ github.ref_name }} (Forge)
+          version: ${{ github.ref_name }}
+          loaders: |
+            forge
+          game-versions: |
+            ${{ env.MINECRAFT_VERSION }}
+          dependencies: |
+            kotlinforforge(required){modrinth:ordsPcFz}{curseforge:351264}
+            cloth-config(required){modrinth:9s6osm5g}{curseforge:348521}
+
+      # TODO: FIX ACTION PERMS ON REPO SETTINGS
+#      - name: Release Github
+#        uses: Kir-Antipov/mc-publish@v3.3
+#        with:
+#          changelog: ${{steps.changelog.outputs.changelog}}
+#          name: WorldTools-${{ github.ref_name }}
+#          version: ${{ github.ref_name }}
+#          github-token: ${{ secrets.GITHUB_TOKEN }}
+#          github-files: |
+#            fabric/build/libs/WorldTools-fabric-${{ github.ref_name }}.jar
+#            forge/build/libs/WorldTools-forge-${{ github.ref_name }}.jar
