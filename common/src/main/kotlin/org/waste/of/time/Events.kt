@@ -7,7 +7,6 @@ import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.GridWidget
 import net.minecraft.client.render.RenderLayer
 import net.minecraft.client.render.VertexConsumerProvider
-import net.minecraft.client.render.WorldRenderer
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.entity.Entity
 import net.minecraft.entity.LivingEntity
@@ -114,29 +113,26 @@ object Events {
         HotCache.cachedMissingContainers
             .forEach { blockEntity ->
                 val blockPos = blockEntity.pos
-                val blockState = blockEntity.cachedState
                 val color = Color(config.capture.containerColor)
-
-                val voxelShape = blockState.getCollisionShape(world, blockPos)
-                val offsetShape = voxelShape.offset(
-                    blockPos.x.toDouble(),
-                    blockPos.y.toDouble(),
-                    blockPos.z.toDouble()
-                )
-
-                WorldRenderer.drawShapeOutline(
-                    matrices,
-                    vertexConsumer,
-                    offsetShape,
-                    -cameraX,
-                    -cameraY,
-                    -cameraZ,
-                    color.red / 255.0f,
-                    color.green / 255.0f,
-                    color.blue / 255.0f,
-                    1.0f,
-                    false,
-                )
+                val x1 = (blockPos.x - cameraX).toFloat()
+                val y1 = (blockPos.y - cameraY).toFloat()
+                val z1 = (blockPos.z - cameraZ).toFloat()
+                val x2 = x1 + 1
+                val z2 = z1 + 1
+                val r = color.red / 255.0f
+                val g = color.green / 255.0f
+                val b = color.blue / 255.0f
+                val a = 1.0f
+                val positionMat = matrices.peek().positionMatrix
+                val normMat = matrices.peek().normalMatrix
+                vertexConsumer.vertex(positionMat, x1, y1, z1).color(r, g, b, a).normal(normMat, 1.0f, 0.0f, 0.0f).next()
+                vertexConsumer.vertex(positionMat, x2, y1, z1).color(r, g, b, a).normal(normMat, 1.0f, 0.0f, 0.0f).next()
+                vertexConsumer.vertex(positionMat, x1, y1, z1).color(r, g, b, a).normal(normMat, 0.0f, 0.0f, 1.0f).next()
+                vertexConsumer.vertex(positionMat, x1, y1, z2).color(r, g, b, a).normal(normMat, 0.0f, 0.0f, 1.0f).next()
+                vertexConsumer.vertex(positionMat, x1, y1, z2).color(r, g, b, a).normal(normMat, 1.0f, 0.0f, 0.0f).next()
+                vertexConsumer.vertex(positionMat, x2, y1, z2).color(r, g, b, a).normal(normMat, 1.0f, 0.0f, 0.0f).next()
+                vertexConsumer.vertex(positionMat, x2, y1, z2).color(r, g, b, a).normal(normMat, 0.0f, 0.0f, -1.0f).next()
+                vertexConsumer.vertex(positionMat, x2, y1, z1).color(r, g, b, a).normal(normMat, 0.0f, 0.0f, -1.0f).next()
             }
     }
 
