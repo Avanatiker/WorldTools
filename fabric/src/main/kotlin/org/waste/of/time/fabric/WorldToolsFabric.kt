@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.argument
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
@@ -48,6 +49,13 @@ object WorldToolsFabric : ClientModInitializer {
             ScreenEvents.remove(screen).register(ScreenEvents.Remove { screen ->
                 Events.onScreenRemoved(screen)
             })
+        })
+        ClientChunkEvents.CHUNK_LOAD.register(ClientChunkEvents.Load { world, chunk ->
+            Events.onChunkLoad(chunk)
+        })
+        ClientChunkEvents.CHUNK_UNLOAD.register(ClientChunkEvents.Unload { world, chunk ->
+            if (chunk == null) return@Unload
+            Events.onChunkUnload(chunk)
         })
 
         LOG.info("WorldTools Fabric initialized")
