@@ -54,7 +54,7 @@ jobs:
 
           files: |
             fabric/build/libs/WorldTools-fabric-${{ github.ref_name }}.jar
-          name: WorldTools-fabric-${{ github.ref_name }}
+          name: WorldTools ${{ github.ref_name }} (Fabric)
           version: ${{ github.ref_name }}
           loaders: |
             fabric
