@@ -25,8 +25,10 @@ jobs:
       - name: Elevate wrapper permissions
         run: chmod +x ./gradlew
 
-      - name: Build Mod
-        run: ./gradlew build
+      - name: Build WorldTools
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          arguments: build
 
       - name: Upload Fabric Artifacts
         uses: actions/upload-artifact@v4
