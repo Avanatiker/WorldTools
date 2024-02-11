@@ -20,7 +20,9 @@ import java.util.function.Consumer;
 public class ClientChunkManagerMixin {
     @Inject(method = "loadChunkFromPacket", at = @At("TAIL"))
     private void onChunkLoad(final int x, final int z, final PacketByteBuf buf, final NbtCompound nbt, final Consumer<ChunkData.BlockEntityVisitor> consumer, final CallbackInfoReturnable<WorldChunk> cir) {
-        Events.INSTANCE.onChunkLoad(cir.getReturnValue());
+        var chunk = cir.getReturnValue();
+        if (chunk == null) return;
+        Events.INSTANCE.onChunkLoad(chunk);
     }
 
     @Inject(
