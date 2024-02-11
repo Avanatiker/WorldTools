@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap
 object HotCache {
     val chunks = ConcurrentHashMap<ChunkPos, RegionBasedChunk>()
     internal val savedChunks = LongArraySet()
-    val entities = ConcurrentHashMap<ChunkPos, MutableList<EntityCacheable>>()
+    val entities = ConcurrentHashMap<ChunkPos, MutableSet<EntityCacheable>>()
     val players: ConcurrentHashMap.KeySetView<PlayerStoreable, Boolean> = ConcurrentHashMap.newKeySet()
     val blockEntities: ConcurrentHashMap.KeySetView<LockableContainerBlockEntity, Boolean> =
         ConcurrentHashMap.newKeySet()
