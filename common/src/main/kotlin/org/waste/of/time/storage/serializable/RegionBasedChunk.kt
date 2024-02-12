@@ -26,6 +26,7 @@ import net.minecraft.world.chunk.BelowZeroRetrogen
 import net.minecraft.world.chunk.PalettedContainer
 import net.minecraft.world.chunk.WorldChunk
 import net.minecraft.world.gen.chunk.BlendingData
+import net.minecraft.world.level.storage.LevelStorage
 import org.waste.of.time.Utils.addAuthor
 import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.config
@@ -93,6 +94,18 @@ data class RegionBasedChunk(val chunk: WorldChunk) : RegionBased, Cacheable {
     override fun incrementStats() {
         StatisticManager.chunks++
         StatisticManager.dimensions.add(dimension)
+    }
+
+    override fun writeToStorage(session: LevelStorage.Session, storage: CustomRegionBasedStorage, cachedStorages: MutableMap<String, CustomRegionBasedStorage>) {
+        // avoiding `emit` here due to flow order issues when capture is stopped
+        // i.e. if EndFlow is emitted before this, these are not written because they're behind it in the flow
+        HotCache.getEntitySerializableForChunk(chunkPos)?.store(session, cachedStorages)
+            ?: run {
+                // remove any previously stored entities in this chunk
+                RegionBasedEntities(chunkPos, emptySet()).store(session, cachedStorages)
+        }
+        if (this.chunk.isEmpty) return
+        super.writeToStorage(session, storage, cachedStorages)
     }
 
     /**
