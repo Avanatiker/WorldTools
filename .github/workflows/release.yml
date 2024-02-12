@@ -41,7 +41,7 @@ jobs:
       - name: Upload Forge Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: WorldTools-fabric-${{ github.ref_name }}
+          name: WorldTools-forge-${{ github.ref_name }}
           path: forge/build/libs/WorldTools-forge-${{ github.ref_name }}.jar
 
       - name: Generate Changelog
