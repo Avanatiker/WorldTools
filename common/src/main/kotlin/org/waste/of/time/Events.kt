@@ -15,6 +15,7 @@ import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.world.World
 import net.minecraft.world.chunk.WorldChunk
+import org.waste.of.time.Utils.manhattanDistance2d
 import org.waste.of.time.WorldTools.CAPTURE_KEY
 import org.waste.of.time.WorldTools.CONFIG_KEY
 import org.waste.of.time.WorldTools.config
@@ -176,8 +177,13 @@ object Events {
             } else {
                 // todo: its actually a bit tricky to differentiate the entity being removed from our world or the server world
                 //  need to find a reliable way to determine it
-                //  check if the entity is within a set distance from us?
                 //  if chunk is loaded, remove the entity? -> doesn't seem to work because server will remove entity before chunk is unloaded
+                mc.player?.let { player ->
+                    if (entity.pos.manhattanDistance2d(player.pos) < 32) { // todo: configurable distance, this should be small enough to be safe for most cases
+                        val cacheable = EntityCacheable(entity)
+                        HotCache.entities[entity.chunkPos]?.remove(cacheable)
+                    }
+                }
             }
         }
     }

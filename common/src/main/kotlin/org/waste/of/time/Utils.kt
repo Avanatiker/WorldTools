@@ -6,6 +6,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.math.abs
 
 object Utils {
     // Why cant I use the std lib?
@@ -21,5 +22,13 @@ object Utils {
         val formatter = DateTimeFormatter.RFC_1123_DATE_TIME
 
         return zonedDateTime.format(formatter)
+    }
+
+    fun Vec3d.manhattanDistance(other: Vec3d): Double {
+        return abs(this.x - other.x) + abs(this.y - other.y) + abs(this.z - other.z)
+    }
+
+    fun Vec3d.manhattanDistance2d(other: Vec3d): Double {
+        return abs(this.x - other.x) + abs(this.z - other.z)
     }
 }
