@@ -12,6 +12,7 @@ import net.minecraft.entity.Entity
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.hit.BlockHitResult
+import net.minecraft.util.math.ChunkPos
 import net.minecraft.world.World
 import net.minecraft.world.chunk.WorldChunk
 import org.waste.of.time.WorldTools.CAPTURE_KEY
@@ -163,7 +164,14 @@ object Events {
                 if (entity.isDead) {
                     val cacheable = EntityCacheable(entity)
                     // not particularly efficient, but fine
-                    HotCache.entities.values.forEach { it.remove(cacheable) }
+                    var foundEntry: MutableMap.MutableEntry<ChunkPos, MutableSet<EntityCacheable>>? = null
+                    for (entry in HotCache.entities) {
+                        if (entry.value.contains(cacheable)) {
+                            foundEntry = entry
+                            break
+                        }
+                    }
+                    foundEntry?.value?.remove(cacheable)
                 }
             } else {
                 // todo: its actually a bit tricky to differentiate the entity being removed from our world or the server world

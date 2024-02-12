@@ -94,14 +94,11 @@ object CaptureManager {
         MessageManager.sendInfo("worldtools.log.info.stopping_capture", currentLevelName)
 
         // update the stats and trigger writeStats() in StatisticSerializer
-        mc.networkHandler?.sendPacket(ClientStatusC2SPacket(ClientStatusC2SPacket.Mode.REQUEST_STATS))
+        // todo: useless because this is async and response will probably be received after the flow ends
+//        mc.networkHandler?.sendPacket(ClientStatusC2SPacket(ClientStatusC2SPacket.Mode.REQUEST_STATS))
 
         HotCache.chunks.values.forEach { chunk ->
-            chunk.emit()
-        }
-
-        HotCache.convertEntities().forEach { entity ->
-            entity.emit()
+            chunk.emit() // will also write entities in the chunks
         }
 
         HotCache.players.forEach { player ->

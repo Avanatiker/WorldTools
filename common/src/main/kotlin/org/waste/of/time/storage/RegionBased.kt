@@ -6,8 +6,6 @@ import net.minecraft.util.math.ChunkPos
 import net.minecraft.world.World
 import net.minecraft.world.level.storage.LevelStorage
 import org.waste.of.time.WorldTools.LOG
-import org.waste.of.time.storage.cache.HotCache
-import org.waste.of.time.storage.serializable.RegionBasedChunk
 
 interface RegionBased : Storeable {
     val chunkPos: ChunkPos
@@ -29,22 +27,8 @@ interface RegionBased : Storeable {
 
     fun incrementStats()
 
-    override fun store(session: LevelStorage.Session, cachedStorages: MutableMap<String, CustomRegionBasedStorage>) {
-        val path = session.getDirectory(WorldSavePath.ROOT)
-            .resolve(dimensionPath)
-            .resolve(suffix)
-        val storage = cachedStorages.getOrPut(path.toString()) {
-            CustomRegionBasedStorage(path, false)
-        }
-
-        if (this is RegionBasedChunk) {
-            HotCache.getEntitySerializableForChunk(chunkPos)?.let {
-                it.emit()
-                it.incrementStats()
-            }
-            if (this.chunk.isEmpty) return
-        }
-
+    // can be overridden but super should be called after
+    fun writeToStorage(session: LevelStorage.Session, storage: CustomRegionBasedStorage, cachedStorages: MutableMap<String, CustomRegionBasedStorage>) {
         try {
             storage.write(
                 chunkPos,
@@ -54,5 +38,16 @@ interface RegionBased : Storeable {
         } catch (e: Exception) {
             LOG.error("Failed to store $this", e)
         }
+    }
+
+    override fun store(session: LevelStorage.Session, cachedStorages: MutableMap<String, CustomRegionBasedStorage>) {
+        val path = session.getDirectory(WorldSavePath.ROOT)
+            .resolve(dimensionPath)
+            .resolve(suffix)
+        val storage = cachedStorages.getOrPut(path.toString()) {
+            CustomRegionBasedStorage(path, false)
+        }
+
+        writeToStorage(session, storage, cachedStorages)
     }
 }
