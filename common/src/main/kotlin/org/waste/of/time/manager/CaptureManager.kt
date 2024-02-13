@@ -70,6 +70,7 @@ object CaptureManager {
             return
         }
 
+        HotCache.clear()
         currentLevelName = potentialName
         MessageManager.sendInfo("worldtools.log.info.started_capture", potentialName)
         if (config.debug.logSettings) logCaptureSettingsState()
@@ -111,8 +112,6 @@ object CaptureManager {
         MetadataStoreable().emit()
         CompressLevelStoreable().emit()
         EndFlow().emit()
-
-        capturing = false
     }
 
     private fun String.sanitizeWorldName() = replace(":", "_")

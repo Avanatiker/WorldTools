@@ -9,9 +9,11 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.path.SymlinkValidationException
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.mc
+import org.waste.of.time.manager.CaptureManager
 import org.waste.of.time.manager.MessageManager
 import org.waste.of.time.manager.StatisticManager
 import org.waste.of.time.storage.cache.EntityCacheable
+import org.waste.of.time.storage.cache.HotCache
 import org.waste.of.time.storage.serializable.EndFlow
 import org.waste.of.time.storage.serializable.PlayerStoreable
 import org.waste.of.time.storage.serializable.RegionBasedChunk
@@ -71,9 +73,13 @@ object StorageFlow {
             MessageManager.sendError("worldtools.log.error.failed_to_create_session", levelName, e.localizedMessage)
         } catch (e: CancellationException) {
             LOG.info("Canceled caching thread")
+        } catch (e: Throwable) {
+            LOG.error("Unhandled storage flow error", e)
         }
 
         cachedStorages.values.forEach { it.close() }
+        HotCache.clear()
+        CaptureManager.capturing = false
         LOG.info("Finished caching")
     }
 
