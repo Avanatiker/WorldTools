@@ -38,12 +38,12 @@ import java.awt.Color
 
 object Events {
     fun onChunkLoad(chunk: WorldChunk) {
-        if (!CaptureManager.capturing) return
+        if (!capturing) return
         RegionBasedChunk(chunk).cache()
     }
 
     fun onChunkUnload(chunk: WorldChunk) {
-        if (!CaptureManager.capturing) return
+        if (!capturing) return
         val regionBasedChunk = HotCache.chunks[chunk.pos] ?: RegionBasedChunk(chunk)
         regionBasedChunk.apply {
             cacheBlockEntities()
@@ -53,7 +53,7 @@ object Events {
     }
 
     fun onEntityLoad(entity: Entity) {
-        if (!CaptureManager.capturing) return
+        if (!capturing) return
         if (entity is PlayerEntity) {
             PlayerStoreable(entity).cache()
         } else {
@@ -62,7 +62,7 @@ object Events {
     }
 
     fun onEntityUnload(entity: Entity) {
-        if (!CaptureManager.capturing) return
+        if (!capturing) return
         if (entity !is PlayerEntity) return
         PlayerStoreable(entity).apply {
             emit()
@@ -79,6 +79,7 @@ object Events {
             mc.setScreen(ManagerScreen)
         }
 
+        if (!capturing) return
         updateCapture()
     }
 
@@ -90,7 +91,8 @@ object Events {
     }
 
     fun onClientDisconnect() {
-        if (capturing) CaptureManager.stop()
+        if (!capturing) return
+        CaptureManager.stop()
     }
 
     fun onInteractBlock(world: World, hitResult: BlockHitResult) {
@@ -155,6 +157,7 @@ object Events {
     }
 
     fun onScreenRemoved(screen: Screen) {
+        if (!capturing) return
         LootableInjectionHandler.onScreenRemoved(screen)
     }
 
