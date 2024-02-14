@@ -126,6 +126,7 @@ class LevelDataStoreable : Storeable {
 
         put("Player", NbtCompound().apply {
             player.writeNbt(this)
+            remove("LastDeathLocation") // can contain sensitive information
             putString("Dimension", "minecraft:${player.world.registryKey.value.path}")
         })
 
