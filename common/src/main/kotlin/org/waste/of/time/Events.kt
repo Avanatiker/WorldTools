@@ -190,4 +190,10 @@ object Events {
             }
         }
     }
+
+    fun onMapStateGet(id: String) {
+        if (!capturing) return
+        // todo: check if this also populates maps when we open a container that contains a map but don't hold it
+        HotCache.maps.add(id)
+    }
 }

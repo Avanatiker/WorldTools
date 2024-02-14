@@ -13,6 +13,7 @@ import org.waste.of.time.manager.CaptureManager
 import org.waste.of.time.manager.MessageManager
 import org.waste.of.time.storage.CustomRegionBasedStorage
 import org.waste.of.time.storage.Storeable
+import org.waste.of.time.storage.cache.HotCache
 
 class MapDataStoreable() : Storeable {
     override fun shouldStore() = config.capture.maps
@@ -30,16 +31,17 @@ class MapDataStoreable() : Storeable {
         if (!dataDirectory.toFile().exists()) {
             dataDirectory.toFile().mkdirs()
         }
-        mc.world?.mapStates?.forEach { (mapName, mapState) ->
+        mc.world?.mapStates?.forEach { (id, mapState) ->
+            if (!HotCache.maps.contains(id)) return@forEach
             val nbtCompound = NbtCompound()
             nbtCompound.put("data", mapState.writeNbt(NbtCompound()))
             NbtHelper.putDataVersion(nbtCompound)
 
-            val mapFile = dataDirectory.resolve("$mapName${WorldTools.DAT_EXTENSION}")
+            val mapFile = dataDirectory.resolve("$id${WorldTools.DAT_EXTENSION}")
             NbtIo.writeCompressed(nbtCompound, mapFile)
             if (config.debug.logSavedMaps) {
                 // todo: check if the frames map data is still saved here on MP servers
-                WorldTools.LOG.info("Map data saved: $mapName")
+                WorldTools.LOG.info("Map data saved: $id")
             }
         }
     }
