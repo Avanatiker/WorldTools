@@ -33,6 +33,8 @@ object HotCache {
             .filterIsInstance<LockableContainerBlockEntity>()
             .filter { it !in blockEntities }
     }
+    // map id's of maps that we've seen during the capture
+    val maps = HashSet<String>()
 
     fun getEntitySerializableForChunk(chunkPos: ChunkPos) =
         entities[chunkPos]?.let { entities ->
@@ -54,6 +56,7 @@ object HotCache {
         players.clear()
         blockEntities.clear()
         lastOpenedContainer = null
+        maps.clear()
         LOG.info("Cleared hot cache")
     }
 }
