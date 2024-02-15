@@ -46,7 +46,9 @@
   "text.autoconfig.worldtools.option.debug.logSavedEntities": "Log des entités sauvegardées",
   "text.autoconfig.worldtools.option.debug.logSavedContainers": "Log des conteneurs sauvegardés",
   "text.autoconfig.worldtools.option.debug.logSavedMaps": "Log des cartes sauvegardées",
-  "text.autoconfig.worldtools.title": "Configuration de WorldTools",
+  "worldtools.gui.manager.title": "Gestionnaire WorldTools",
+  "worldtools.gui.manager.world_name_placeholder": "Entrez le nom du monde... (par défaut : %s)",
+  "worldtools.key.categories": "WorldTools"
   "worldtools.capture.and": " et ",
   "worldtools.capture.chunk": "%s chunk",
   "worldtools.capture.chunks": "%s chunks",
