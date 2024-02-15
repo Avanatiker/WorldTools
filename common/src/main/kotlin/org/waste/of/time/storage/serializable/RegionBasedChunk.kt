@@ -20,7 +20,6 @@ import net.minecraft.util.math.ChunkPos
 import net.minecraft.util.math.ChunkSectionPos
 import net.minecraft.world.ChunkSerializer
 import net.minecraft.world.LightType
-import net.minecraft.world.World
 import net.minecraft.world.biome.BiomeKeys
 import net.minecraft.world.chunk.BelowZeroRetrogen
 import net.minecraft.world.chunk.PalettedContainer
@@ -38,7 +37,7 @@ import org.waste.of.time.storage.CustomRegionBasedStorage
 import org.waste.of.time.storage.RegionBased
 import org.waste.of.time.storage.cache.HotCache
 
-data class RegionBasedChunk(val chunk: WorldChunk) : RegionBased, Cacheable {
+class RegionBasedChunk(val chunk: WorldChunk) : RegionBased(chunk.pos, chunk.world, "region"), Cacheable {
     // storing a reference to the block entities in the chunk
     // so it doesn't get removed out from under us while the chunk is unloaded
     private var cachedBlockEntities: Map<BlockPos, BlockEntity>? = null
@@ -66,15 +65,6 @@ data class RegionBasedChunk(val chunk: WorldChunk) : RegionBased, Cacheable {
             dimension
         )
 
-    override val chunkPos: ChunkPos
-        get() = chunk.pos
-
-    override val world: World
-        get() = chunk.world
-
-    override val suffix: String
-        get() = "region"
-
     private val stateIdContainer = PalettedContainer.createPalettedContainerCodec(
         Block.STATE_IDS,
         BlockState.CODEC,
@@ -99,10 +89,10 @@ data class RegionBasedChunk(val chunk: WorldChunk) : RegionBased, Cacheable {
     override fun writeToStorage(session: LevelStorage.Session, storage: CustomRegionBasedStorage, cachedStorages: MutableMap<String, CustomRegionBasedStorage>) {
         // avoiding `emit` here due to flow order issues when capture is stopped
         // i.e. if EndFlow is emitted before this, these are not written because they're behind it in the flow
-        HotCache.getEntitySerializableForChunk(chunkPos)?.store(session, cachedStorages)
+        HotCache.getEntitySerializableForChunk(chunkPos, world)?.store(session, cachedStorages)
             ?: run {
                 // remove any previously stored entities in this chunk
-                RegionBasedEntities(chunkPos, emptySet()).store(session, cachedStorages)
+                RegionBasedEntities(chunkPos, emptySet(), world).store(session, cachedStorages)
         }
         if (this.chunk.isEmpty) return
         super.writeToStorage(session, storage, cachedStorages)
