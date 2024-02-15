@@ -3,6 +3,7 @@ package org.waste.of.time.storage.cache
 import it.unimi.dsi.fastutil.longs.LongArraySet
 import net.minecraft.block.entity.LockableContainerBlockEntity
 import net.minecraft.util.math.ChunkPos
+import net.minecraft.world.World
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.storage.serializable.PlayerStoreable
 import org.waste.of.time.storage.serializable.RegionBasedChunk
@@ -36,14 +37,14 @@ object HotCache {
     // map id's of maps that we've seen during the capture
     val maps = HashSet<String>()
 
-    fun getEntitySerializableForChunk(chunkPos: ChunkPos) =
+    fun getEntitySerializableForChunk(chunkPos: ChunkPos, world: World) =
         entities[chunkPos]?.let { entities ->
-            RegionBasedEntities(chunkPos, entities)
+            RegionBasedEntities(chunkPos, entities, world)
         }
 
-    fun convertEntities() =
+    fun convertEntities(world: World) =
         entities.map { entry ->
-            RegionBasedEntities(entry.key, entry.value)
+            RegionBasedEntities(entry.key, entry.value, world)
         }
 
     // used as public API for external mods like XaeroPlus, change carefully

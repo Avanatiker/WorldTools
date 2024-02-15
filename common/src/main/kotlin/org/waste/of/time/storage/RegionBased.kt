@@ -7,13 +7,12 @@ import net.minecraft.world.World
 import net.minecraft.world.level.storage.LevelStorage
 import org.waste.of.time.WorldTools.LOG
 
-interface RegionBased : Storeable {
-    val chunkPos: ChunkPos
-    val world: World
+abstract class RegionBased(
+    val chunkPos: ChunkPos,
+    val world: World,
     val suffix: String
-
-    val dimension: String
-        get() = world.registryKey.value.path
+) : Storeable {
+    val dimension: String = world.registryKey.value.path
 
     val dimensionPath
         get() = when (dimension) {
@@ -23,12 +22,12 @@ interface RegionBased : Storeable {
             else -> "dimensions/minecraft/$dimension/"
         }
 
-    fun compound(storage: CustomRegionBasedStorage): NbtCompound
+    abstract fun compound(storage: CustomRegionBasedStorage): NbtCompound
 
-    fun incrementStats()
+    abstract fun incrementStats()
 
     // can be overridden but super should be called after
-    fun writeToStorage(session: LevelStorage.Session, storage: CustomRegionBasedStorage, cachedStorages: MutableMap<String, CustomRegionBasedStorage>) {
+    open fun writeToStorage(session: LevelStorage.Session, storage: CustomRegionBasedStorage, cachedStorages: MutableMap<String, CustomRegionBasedStorage>) {
         try {
             storage.write(
                 chunkPos,

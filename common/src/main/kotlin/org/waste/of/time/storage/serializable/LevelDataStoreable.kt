@@ -70,7 +70,14 @@ class LevelDataStoreable : Storeable {
      * See [net.minecraft.world.level.LevelProperties.updateProperties]
      */
     private fun serializeLevelData() = NbtCompound().apply {
-        val player = mc.player ?: return@apply
+        val player = mc.player
+        if (player == null) {
+            // TODO: store a reference to the player when we start the capture so this isn't an issue
+            //  can occur when the user disconnects while a capture is ongoing
+            LOG.error("Player is null when trying to serialize level data")
+            LOG.error("Level data will be incomplete")
+        }
+
         mc.networkHandler?.brand?.let {
             put("ServerBrands", NbtList().apply {
                 add(NbtString.of(it))
@@ -91,46 +98,49 @@ class LevelDataStoreable : Storeable {
         NbtHelper.putDataVersion(this)
 
         put("WorldGenSettings", generatorMockNbt())
+        player?.let { player ->
+            mc.networkHandler?.listedPlayerListEntries?.find {
+                it.profile.id == player.uuid
+            }?.let {
+                putInt("GameType", it.gameMode.id)
+            } ?: putInt("GameType", player.server?.defaultGameMode?.id ?: 0)
 
-        mc.networkHandler?.listedPlayerListEntries?.find {
-            it.profile.id == player.uuid
-        }?.let {
-            putInt("GameType", it.gameMode.id)
-        } ?: putInt("GameType", player.server?.defaultGameMode?.id ?: 0)
-
-        putInt("SpawnX", player.world.levelProperties.spawnX)
-        putInt("SpawnY", player.world.levelProperties.spawnY)
-        putInt("SpawnZ", player.world.levelProperties.spawnZ)
-        putFloat("SpawnAngle", player.world.levelProperties.spawnAngle)
-        putLong("Time", player.world.time)
-        putLong("DayTime", player.world.timeOfDay)
+            putInt("SpawnX", player.world.levelProperties.spawnX)
+            putInt("SpawnY", player.world.levelProperties.spawnY)
+            putInt("SpawnZ", player.world.levelProperties.spawnZ)
+            putFloat("SpawnAngle", player.world.levelProperties.spawnAngle)
+            putLong("Time", player.world.time)
+            putLong("DayTime", player.world.timeOfDay)
+        }
         putLong("LastPlayed", System.currentTimeMillis())
         putString("LevelName", currentLevelName)
         putInt("version", 19133)
         putInt("clearWeatherTime", 0) // not sure
         putInt("rainTime", 0) // not sure
-        putBoolean("raining", player.world.isRaining)
+        player?.let { player ->
+            putBoolean("raining", player.world.isRaining)
+            putBoolean("thundering", player.world.isThundering)
+            putBoolean("hardcore", player.server?.isHardcore ?: false)
+        }
         putInt("thunderTime", 0) // not sure
-        putBoolean("thundering", player.world.isThundering)
-        putBoolean("hardcore", player.server?.isHardcore ?: false)
         putBoolean("allowCommands", true) // not sure
         putBoolean("initialized", true) // not sure
 
-        player.world.worldBorder.write().writeNbt(this)
+        player?.let { player ->
+            player.world.worldBorder.write().writeNbt(this)
 
-        putByte("Difficulty", player.world.levelProperties.difficulty.id.toByte())
-        putBoolean("DifficultyLocked", false) // not sure
+            putByte("Difficulty", player.world.levelProperties.difficulty.id.toByte())
+            putBoolean("DifficultyLocked", false) // not sure
 
-        put("GameRules", genGameRules(player.world.gameRules))
+            put("GameRules", genGameRules(player.world.gameRules))
+            put("Player", NbtCompound().apply {
+                player.writeNbt(this)
+                remove("LastDeathLocation") // can contain sensitive information
+                putString("Dimension", "minecraft:${player.world.registryKey.value.path}")
+            })
+        }
 
         put("DragonFight", NbtCompound()) // not sure
-
-        put("Player", NbtCompound().apply {
-            player.writeNbt(this)
-            remove("LastDeathLocation") // can contain sensitive information
-            putString("Dimension", "minecraft:${player.world.registryKey.value.path}")
-        })
-
         put("CustomBossEvents", NbtCompound()) // not sure
         put("ScheduledEvents", NbtList()) // not sure
         putInt("WanderingTraderSpawnDelay", 0) // not sure
