@@ -1,7 +1,6 @@
 package org.waste.of.time.storage.serializable
 
 import net.minecraft.SharedConstants
-import net.minecraft.client.MinecraftClient
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtIntArray
 import net.minecraft.nbt.NbtList
@@ -18,10 +17,11 @@ import org.waste.of.time.storage.CustomRegionBasedStorage
 import org.waste.of.time.storage.RegionBased
 import org.waste.of.time.storage.cache.EntityCacheable
 
-data class RegionBasedEntities(
-    override val chunkPos: ChunkPos,
-    val entities: Set<EntityCacheable> // can be empty, signifies we should clear any previously saved entities
-) : RegionBased {
+class RegionBasedEntities(
+    chunkPos: ChunkPos,
+    val entities: Set<EntityCacheable>, // can be empty, signifies we should clear any previously saved entities
+    world: World
+) : RegionBased(chunkPos, world, "entities") {
     override fun shouldStore() = config.capture.entities
 
     override val verboseInfo: MutableText
@@ -38,11 +38,6 @@ data class RegionBasedEntities(
             stackEntities(),
             dimension
         )
-
-    override val world: World = entities.firstOrNull()?.entity?.world ?: MinecraftClient.getInstance().world!!
-
-    override val suffix: String
-        get() = "entities"
 
     override fun compound(storage: CustomRegionBasedStorage) = NbtCompound().apply {
         put("Entities", NbtList().apply {
