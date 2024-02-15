@@ -19,7 +19,7 @@ object WorldTools {
     private const val URL = "https://github.com/Avanatiker/WorldTools/"
     const val MCA_EXTENSION = ".mca"
     const val DAT_EXTENSION = ".dat"
-    const val MAX_LEVEL_NAME_LENGTH = 16
+    const val MAX_LEVEL_NAME_LENGTH = 64
     val GSON: Gson = GsonBuilder().setPrettyPrinting().create()
     val CURRENT_VERSION = SharedConstants.getGameVersion().saveVersion.id
     private val VERSION: String = LoaderData.loader?.getVersion() ?: "DEV"
