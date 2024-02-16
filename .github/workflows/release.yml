@@ -49,6 +49,11 @@ jobs:
         uses: mikepenz/release-changelog-builder-action@v4.1.1
         with:
           commitMode: true
+          configurationJson: |
+            {
+              "pr_template": "- #{{TITLE}} [#{{AUTHOR}}](#{{URL}})"
+            }
+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
