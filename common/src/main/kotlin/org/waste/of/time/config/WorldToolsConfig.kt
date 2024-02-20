@@ -68,6 +68,7 @@ class WorldToolsConfig : ConfigData {
 
     class Advanced {
         var anonymousMode = false
+        var hideExperimentalWorldGui = true // See IntegratedServerLoaderMixin
         var showToasts = true
         var showChatMessages = true
         var accentColor = 0xA2FF4C

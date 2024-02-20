@@ -2,6 +2,7 @@
   "text.autoconfig.worldtools.option.advanced": "Avancé",
   "text.autoconfig.worldtools.option.advanced.accentColor": "Couleur d'accentuation (Hex RGB)",
   "text.autoconfig.worldtools.option.advanced.anonymousMode": "Anonymiser les coordonnées",
+  "text.autoconfig.worldtools.option.advanced.hideExperimentalWorldGui": "Masquer l'interface graphique du monde expérimental",
   "text.autoconfig.worldtools.option.advanced.captureBarColor": "Couleur de la barre d'information de capture (Hex RGB)",
   "text.autoconfig.worldtools.option.advanced.captureBarStyle": "Style de la barre d'information de capture",
   "text.autoconfig.worldtools.option.advanced.progressBarColor": "Couleur de la barre de progression (Hex RGB)",
