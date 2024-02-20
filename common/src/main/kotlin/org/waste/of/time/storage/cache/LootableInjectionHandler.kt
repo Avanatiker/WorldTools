@@ -3,9 +3,12 @@ package org.waste.of.time.storage.cache
 import net.minecraft.block.ChestBlock
 import net.minecraft.block.entity.*
 import net.minecraft.block.enums.ChestType
+import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.ingame.*
+import net.minecraft.inventory.EnderChestInventory
 import net.minecraft.inventory.SimpleInventory
+import net.minecraft.screen.GenericContainerScreenHandler
 import org.waste.of.time.WorldTools
 import org.waste.of.time.extension.IBlockEntityContainerExtension
 import org.waste.of.time.manager.StatisticManager
@@ -14,7 +17,12 @@ object LootableInjectionHandler {
     fun onScreenRemoved(screen: Screen) {
         // ToDo: Add support for entity containers like chest boat and minecart
         if (screen !is HandledScreen<*>) return
-        val container = HotCache.lastOpenedContainer ?: return
+        if (HotCache.lastInteractedBlockEntity is EnderChestBlockEntity
+            && !WorldTools.mc.isInSingleplayer) { // SinglePlayer populates contents automatically
+            cacheEnderChestContents(screen)
+            return
+        }
+        val container = HotCache.lastInteractedBlockEntity as? LockableContainerBlockEntity ?: return
 
         when (container) {
             is AbstractFurnaceBlockEntity -> {
@@ -59,7 +67,18 @@ object LootableInjectionHandler {
         container.world?.registryKey?.value?.path?.let {
             StatisticManager.dimensions.add(it)
         }
-        HotCache.lastOpenedContainer = null
+    }
+
+    private fun cacheEnderChestContents(screen: HandledScreen<*>) {
+        val screenHandler = screen.screenHandler as? GenericContainerScreenHandler ?: return
+        val inventory = screenHandler.inventory as? SimpleInventory ?: return
+        if (inventory.size() != 27) return
+        val enderChestInv = EnderChestInventory()
+        for (i in 0..<inventory.size()) {
+            enderChestInv.setStack(i, inventory.getStack(i))
+        }
+        MinecraftClient.getInstance().player?.enderChestInventory = enderChestInv
+        StatisticManager.containers++
     }
 
     private fun AbstractFurnaceBlockEntity.injectDataToFurnace(screen: HandledScreen<*>) {
