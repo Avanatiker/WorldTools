@@ -26,31 +26,17 @@ object MapScanner {
         MessageManager.sendInfo("Listing maps for $worldName")
         val storage = WorldStorage(worldDirectoryPath)
         CoroutineScope(Dispatchers.IO).launch {
-            storage.worldDataStorageFlow().collect {
-                val fileName = it.fileName.toString()
-                if (fileName.startsWith("map_") && fileName.endsWith(".dat")) {
-                    val index1 = fileName.indexOfFirst { c -> c == '_' } + 1
-                    val index2 = fileName.indexOfLast { c -> c == '.' }
-                    val mapId = fileName.substring(index1, index2).toInt()
-                    MessageManager.sendInfo("Found map ID: $mapId")
-                }
-            }
+            listMapsFromWorldData(storage)
             storage.dimensionPaths.forEach { dimPath ->
-                try {
-                    storage.getEntityStorage(dimPath).use { entityStorage ->
-                        entityStorage.regionFileFlow().collect { regionFile ->
-                            listMapsInItemFrameEntities(regionFile)
-                            listMapsInItemEntities(regionFile)
-                            listMapsInEntityInventories(regionFile)
-                        }
+                storage.getEntityStorage(dimPath).use { entityStorage ->
+                    entityStorage.regionFileFlow().collect { regionFile ->
+                        listMapsInEntityRegion(regionFile)
                     }
-                    storage.getRegionStorage(dimPath).use { regionStorage ->
-                        regionStorage.regionFileFlow().collect { regionFile ->
-                            listMapsInContainers(regionFile)
-                        }
+                }
+                storage.getRegionStorage(dimPath).use { regionStorage ->
+                    regionStorage.regionFileFlow().collect { regionFile ->
+                        listMapsInContainers(regionFile)
                     }
-                } catch (e: Exception) {
-                    LOG.error("Caught exception while listing entities", e)
                 }
             }
             storage.playerDataStorageFlow().collect {
@@ -59,148 +45,23 @@ object MapScanner {
                     listMapsInPlayerData(it)
                 }
             }
-
-            // level.dat
-            val levelDatPath = storage.getLevelDatPath()
-            val levelDatNbt = NbtIo.readCompressed(levelDatPath.toFile())
-            val dataNbt = levelDatNbt.getCompound("Data")
-            val playerDataNbt = dataNbt.getCompound("Player")
-            val inventoryTagList = playerDataNbt.getList("Inventory", 10)
-            inventoryTagList.forEach { inventorySlotTag ->
-                val inventorySlotNbt = inventorySlotTag as NbtCompound
-                val itemId = inventorySlotNbt.getString("id")
-                if ("minecraft:filled_map" != itemId) return@forEach
-                val itemNbtTag = inventorySlotNbt.getCompound("tag")
-                val mapId = itemNbtTag.getInt("map")
-                MessageManager.sendInfo("Found map ID: $mapId in player inventory in level.dat")
-            }
+            listMapsInLevelDat(storage)
         }
     }
 
-    fun findMapsInItemFrames(worldName: String) {
-        val worldDirectoryPath = mc.levelStorage.savesDirectory.resolve(worldName)
-        if (!worldDirectoryPath.toFile().exists()) {
-            LOG.error("World $worldName does not exist")
-            MessageManager.sendInfo("World $worldName does not exist")
-            return
-        }
-
-        MessageManager.sendInfo("Listing maps for $worldName")
-        val storage = WorldStorage(worldDirectoryPath)
-        CoroutineScope(Dispatchers.IO).launch {
-            storage.dimensionPaths.forEach { dimPath ->
-                try {
-                    storage.getEntityStorage(dimPath).use { entityStorage ->
-                        entityStorage.regionFileFlow().collect { regionFile ->
-                            listMapsInItemFrameEntities(regionFile)
-                        }
-                    }
-                } catch (e: Exception) {
-                    LOG.error("Caught exception while listing entities", e)
-                }
-            }
-        }
-    }
-
-    // i.e. item entities on the ground
-    fun findMapsInItemEntities(worldName: String) {
-        val worldDirectoryPath = mc.levelStorage.savesDirectory.resolve(worldName)
-        if (!worldDirectoryPath.toFile().exists()) {
-            LOG.error("World $worldName does not exist")
-            MessageManager.sendInfo("World $worldName does not exist")
-            return
-        }
-
-        MessageManager.sendInfo("Listing maps for $worldName")
-        val storage = WorldStorage(worldDirectoryPath)
-        CoroutineScope(Dispatchers.IO).launch {
-            storage.dimensionPaths.forEach { dimPath ->
-                try {
-                    storage.getEntityStorage(dimPath).use { entityStorage ->
-                        entityStorage.regionFileFlow().collect { regionFile ->
-                            listMapsInItemEntities(regionFile)
-                        }
-                    }
-                } catch (e: Exception) {
-                    LOG.error("Caught exception while listing entities", e)
-                }
-            }
-        }
-    }
-
-    fun findMapsInEntityInventories(worldName: String) {
-        val worldDirectoryPath = mc.levelStorage.savesDirectory.resolve(worldName)
-        if (!worldDirectoryPath.toFile().exists()) {
-            LOG.error("World $worldName does not exist")
-            MessageManager.sendInfo("World $worldName does not exist")
-            return
-        }
-
-        MessageManager.sendInfo("Listing maps for $worldName")
-        val storage = WorldStorage(worldDirectoryPath)
-        CoroutineScope(Dispatchers.IO).launch {
-            storage.dimensionPaths.forEach { dimPath ->
-                try {
-                    storage.getEntityStorage(dimPath).use { entityStorage ->
-                        entityStorage.regionFileFlow().collect { regionFile ->
-                            listMapsInEntityInventories(regionFile)
-                        }
-                    }
-                } catch (e: Exception) {
-                    LOG.error("Caught exception while listing entities", e)
-                }
-            }
-        }
-    }
-
-    fun findMapsFromPlayerDataInLevelDat(worldName: String) {
-        val worldDirectoryPath = mc.levelStorage.savesDirectory.resolve(worldName)
-        if (!worldDirectoryPath.toFile().exists()) {
-            LOG.error("World $worldName does not exist")
-            MessageManager.sendInfo("World $worldName does not exist")
-            return
-        }
-        MessageManager.sendInfo("Listing maps for $worldName")
-        val storage = WorldStorage(worldDirectoryPath)
-        CoroutineScope(Dispatchers.IO).launch {
-            val levelDatPath = storage.getLevelDatPath()
-            val levelDatNbt = NbtIo.readCompressed(levelDatPath.toFile())
-            val dataNbt = levelDatNbt.getCompound("Data")
-            val playerDataNbt = dataNbt.getCompound("Player")
-            val inventoryTagList = playerDataNbt.getList("Inventory", 10)
-            inventoryTagList.forEach { inventorySlotTag ->
-                val inventorySlotNbt = inventorySlotTag as NbtCompound
-                val itemId = inventorySlotNbt.getString("id")
-                if ("minecraft:filled_map" != itemId) return@forEach
-                val itemNbtTag = inventorySlotNbt.getCompound("tag")
-                val mapId = itemNbtTag.getInt("map")
-                MessageManager.sendInfo("Found map ID: $mapId in player inventory in level.dat")
-            }
-            // todo: Search Ender chest data
-        }
-    }
-
-    fun findMapsInPlayerInventories(worldName: String) {
-        val worldDirectoryPath = mc.levelStorage.savesDirectory.resolve(worldName)
-        if (!worldDirectoryPath.toFile().exists()) {
-            LOG.error("World $worldName does not exist")
-            MessageManager.sendInfo("World $worldName does not exist")
-            return
-        }
-
-        MessageManager.sendInfo("Listing maps for $worldName")
-        val storage = WorldStorage(worldDirectoryPath)
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                storage.playerDataStorageFlow().collect {
-                    val fileName = it.fileName.toString()
-                    if (fileName.endsWith(".dat")) {
-                        listMapsInPlayerData(it)
-                    }
-                }
-            } catch (e: Exception) {
-                LOG.error("Caught exception while listing entities", e)
-            }
+    private fun listMapsInLevelDat(storage: WorldStorage) {
+        val levelDatPath = storage.getLevelDatPath()
+        val levelDatNbt = NbtIo.readCompressed(levelDatPath.toFile())
+        val dataNbt = levelDatNbt.getCompound("Data")
+        val playerDataNbt = dataNbt.getCompound("Player")
+        val inventoryTagList = playerDataNbt.getList("Inventory", 10)
+        inventoryTagList.forEach { inventorySlotTag ->
+            val inventorySlotNbt = inventorySlotTag as NbtCompound
+            val itemId = inventorySlotNbt.getString("id")
+            if ("minecraft:filled_map" != itemId) return@forEach
+            val itemNbtTag = inventorySlotNbt.getCompound("tag")
+            val mapId = itemNbtTag.getInt("map")
+            MessageManager.sendInfo("Found map ID: $mapId in player inventory in level.dat")
         }
     }
 
@@ -223,126 +84,67 @@ object MapScanner {
         }
     }
 
-    fun findMapsInContainers(worldName: String) {
-        val worldDirectoryPath = mc.levelStorage.savesDirectory.resolve(worldName)
-        if (!worldDirectoryPath.toFile().exists()) {
-            LOG.error("World $worldName does not exist")
-            MessageManager.sendInfo("World $worldName does not exist")
-            return
-        }
-
-        MessageManager.sendInfo("Listing maps for $worldName")
-        val storage = WorldStorage(worldDirectoryPath)
-        CoroutineScope(Dispatchers.IO).launch {
-            storage.dimensionPaths.forEach { dimPath ->
-                try {
-                    storage.getRegionStorage(dimPath).use { regionStorage ->
-                        regionStorage.regionFileFlow().collect { regionFile ->
-                            listMapsInContainers(regionFile)
-                        }
-                    }
-                } catch (e: Exception) {
-                    LOG.error("Caught exception while listing entities", e)
-                }
+    private suspend fun listMapsFromWorldData(storage: WorldStorage) {
+        storage.worldDataStorageFlow().collect {
+            val fileName = it.fileName.toString()
+            if (fileName.startsWith("map_") && fileName.endsWith(".dat")) {
+                val index1 = fileName.indexOfFirst { c -> c == '_' } + 1
+                val index2 = fileName.indexOfLast { c -> c == '.' }
+                val mapId = fileName.substring(index1, index2).toInt()
+                MessageManager.sendInfo("Found map ID: $mapId")
             }
         }
     }
 
-    fun findMapsFromWorldData(worldName: String) {
-        val worldDirectoryPath = mc.levelStorage.savesDirectory.resolve(worldName)
-        if (!worldDirectoryPath.toFile().exists()) {
-            LOG.error("World $worldName does not exist")
-            MessageManager.sendInfo("World $worldName does not exist")
-            return
-        }
-        MessageManager.sendInfo("Listing maps for $worldName")
-        val storage = WorldStorage(worldDirectoryPath)
-        CoroutineScope(Dispatchers.IO).launch {
-            storage.worldDataStorageFlow().collect {
-                val fileName = it.fileName.toString()
-                if (fileName.startsWith("map_") && fileName.endsWith(".dat")) {
-                    val index1 = fileName.indexOfFirst { c -> c == '_' } + 1
-                    val index2 = fileName.indexOfLast { c -> c == '.' }
-                    val mapId = fileName.substring(index1, index2).toInt()
-                    MessageManager.sendInfo("Found map ID: $mapId")
-                }
-            }
-        }
-    }
-
-    private fun listMapsInItemFrameEntities(regionFile: RegionFile) {
+    private fun listMapsInEntityRegion(regionFile: RegionFile) {
         val chunkPosList = regionFile.chunkPosList()
         chunkPosList.forEach { chunkPos ->
             regionFile.getChunkInputStream(chunkPos).use {
                 val nbt = NbtIo.read(it)
                 val entities = nbt.getList("Entities", 10)
-                entities.forEach entityLoop@ { entity ->
+                entities.forEach { entity ->
                     val entityNbt = entity as NbtCompound
                     val id = entityNbt.getString("id")
-                    if ("minecraft:item_frame" != id) return@entityLoop
-                    val pos = entityNbt.getList("Pos", 6)
-                    val x = pos.getDouble(0)
-                    val y = pos.getDouble(1)
-                    val z = pos.getDouble(2)
-                    val itemTag = entityNbt.getCompound("Item")
-                    val itemId = itemTag.getString("id")
-                    if ("minecraft:filled_map" != itemId) return@entityLoop
-                    val mapTag = itemTag.getCompound("tag")
-                    val mapId = mapTag.getInt("map")
-                    MessageManager.sendInfo("Found MapId: $mapId in item frame at: ($x, $y, $z)")
+                    val posNbt = entityNbt.getList("Pos", 6)
+                    val x = posNbt.getDouble(0)
+                    val y = posNbt.getDouble(1)
+                    val z = posNbt.getDouble(2)
+                    searchEntityNbtForMapsInItemFrames(entityNbt, id, x, y, z)
+                    searchEntityNbtForMapsInItemEntities(entityNbt, id, x, y, z)
+                    searchEntityNbtForMapsInEntityInventories(entityNbt, id, x, y, z)
                 }
             }
         }
     }
 
-    private fun listMapsInItemEntities(regionFile: RegionFile) {
-        val chunkPosList = regionFile.chunkPosList()
-        chunkPosList.forEach { chunkPos ->
-            regionFile.getChunkInputStream(chunkPos).use {
-                val nbt = NbtIo.read(it)
-                val entities = nbt.getList("Entities", 10)
-                entities.forEach entityLoop@ { entity ->
-                    val entityNbt = entity as NbtCompound
-                    val id = entityNbt.getString("id")
-                    if ("minecraft:item" != id) return@entityLoop
-                    val pos = entityNbt.getList("Pos", 6)
-                    val x = pos.getDouble(0)
-                    val y = pos.getDouble(1)
-                    val z = pos.getDouble(2)
-                    val itemTag = entityNbt.getCompound("Item")
-                    val itemId = itemTag.getString("id")
-                    if ("minecraft:filled_map" != itemId) return@entityLoop
-                    val mapTag = itemTag.getCompound("tag")
-                    val mapId = mapTag.getInt("map")
-                    MessageManager.sendInfo("Found MapId: $mapId in item entity at: ($x, $y, $z)")
-                }
-            }
-        }
+    private fun searchEntityNbtForMapsInItemFrames(entityNbt: NbtCompound, id: String, x: Double, y: Double, z: Double) {
+        if ("minecraft:item_frame" != id) return
+        val itemTag = entityNbt.getCompound("Item")
+        val itemId = itemTag.getString("id")
+        if ("minecraft:filled_map" != itemId) return
+        val mapTag = itemTag.getCompound("tag")
+        val mapId = mapTag.getInt("map")
+        MessageManager.sendInfo("Found MapId: $mapId in item frame at: ($x, $y, $z)")
     }
 
-    private fun listMapsInEntityInventories(regionFile: RegionFile) {
-        val chunkPosList = regionFile.chunkPosList()
-        chunkPosList.forEach { chunkPos ->
-            regionFile.getChunkInputStream(chunkPos).use {
-                val nbt = NbtIo.read(it)
-                val entities = nbt.getList("Entities", 10)
-                entities.forEach entityLoop@ { entity ->
-                    val entityNbt = entity as NbtCompound
-                    val entityId = entityNbt.getString("id")
-                    if (!entityNbt.contains("Items", 10)) return@entityLoop
-                    val pos = entityNbt.getList("Pos", 6)
-                    val x = pos.getDouble(0)
-                    val y = pos.getDouble(1)
-                    val z = pos.getDouble(2)
-                    entityNbt.getList("Items", 10).forEach { itemTag ->
-                        val itemId = (itemTag as NbtCompound).getString("id")
-                        if ("minecraft:filled_map" != itemId) return@entityLoop
-                        val mapTag = itemTag.getCompound("tag")
-                        val mapId = mapTag.getInt("map")
-                        MessageManager.sendInfo("Found MapId: $mapId in $entityId inventory at: ($x, $y, $z)")
-                    }
-                }
-            }
+    private fun searchEntityNbtForMapsInItemEntities(entityNbt: NbtCompound, id: String, x: Double, y: Double, z: Double) {
+        if ("minecraft:item" != id) return
+        val itemTag = entityNbt.getCompound("Item")
+        val itemId = itemTag.getString("id")
+        if ("minecraft:filled_map" != itemId) return
+        val mapTag = itemTag.getCompound("tag")
+        val mapId = mapTag.getInt("map")
+        MessageManager.sendInfo("Found MapId: $mapId in item entity at: ($x, $y, $z)")
+    }
+
+    private fun searchEntityNbtForMapsInEntityInventories(entityNbt: NbtCompound, id: String, x: Double, y: Double, z: Double) {
+        if (!entityNbt.contains("Items", 10)) return
+        entityNbt.getList("Items", 10).forEach { itemTag ->
+            val itemId = (itemTag as NbtCompound).getString("id")
+            if ("minecraft:filled_map" != itemId) return@forEach
+            val mapTag = itemTag.getCompound("tag")
+            val mapId = mapTag.getInt("map")
+            MessageManager.sendInfo("Found MapId: $mapId in $id inventory at: ($x, $y, $z)")
         }
     }
 
