@@ -1,6 +1,5 @@
 package org.waste.of.time
 
-import net.minecraft.block.entity.LockableContainerBlockEntity
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ButtonWidget
@@ -98,8 +97,8 @@ object Events {
     fun onInteractBlock(world: World, hitResult: BlockHitResult) {
         if (!capturing) return
 
-        val blockEntity = (world.getBlockEntity(hitResult.blockPos) as? LockableContainerBlockEntity) ?: return
-        HotCache.lastOpenedContainer = blockEntity
+        val blockEntity = world.getBlockEntity(hitResult.blockPos)
+        HotCache.lastInteractedBlockEntity = blockEntity
     }
 
     fun onDebugRenderStart(
@@ -159,6 +158,7 @@ object Events {
     fun onScreenRemoved(screen: Screen) {
         if (!capturing) return
         LootableInjectionHandler.onScreenRemoved(screen)
+        HotCache.lastInteractedBlockEntity = null
     }
 
     fun onEntityRemoved(entity: Entity, reason: Entity.RemovalReason) {

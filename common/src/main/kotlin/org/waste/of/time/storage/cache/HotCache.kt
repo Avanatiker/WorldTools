@@ -1,10 +1,13 @@
 package org.waste.of.time.storage.cache
 
 import it.unimi.dsi.fastutil.longs.LongArraySet
+import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.LockableContainerBlockEntity
+import net.minecraft.inventory.EnderChestInventory
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.world.World
 import org.waste.of.time.WorldTools.LOG
+import org.waste.of.time.WorldTools.mc
 import org.waste.of.time.storage.serializable.PlayerStoreable
 import org.waste.of.time.storage.serializable.RegionBasedChunk
 import org.waste.of.time.storage.serializable.RegionBasedEntities
@@ -23,7 +26,7 @@ object HotCache {
     val players: ConcurrentHashMap.KeySetView<PlayerStoreable, Boolean> = ConcurrentHashMap.newKeySet()
     val blockEntities: ConcurrentHashMap.KeySetView<LockableContainerBlockEntity, Boolean> =
         ConcurrentHashMap.newKeySet()
-    var lastOpenedContainer: LockableContainerBlockEntity? = null
+    var lastInteractedBlockEntity: BlockEntity? = null
     // TODO: load existing cached containers from already written chunks
     //  e.g. the player reloads a chunk that contains block entities that we already saved in the storage session
     //  The loading should be done async as it requires IO, so we should add some delay onto the debug rendering here
@@ -56,7 +59,11 @@ object HotCache {
         entities.clear()
         players.clear()
         blockEntities.clear()
-        lastOpenedContainer = null
+        lastInteractedBlockEntity = null
+        // failing to reset this could cause users to accidentally save their echest contents on subsequent captures
+        // todo: make a setting to configure this behavior
+        if (!mc.isInSingleplayer)
+            mc.player?.enderChestInventory = EnderChestInventory()
         maps.clear()
         LOG.info("Cleared hot cache")
     }
