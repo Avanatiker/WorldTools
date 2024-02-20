@@ -2,6 +2,7 @@
   "text.autoconfig.worldtools.option.advanced": "Erweitert",
   "text.autoconfig.worldtools.option.advanced.accentColor": "Aktzentfarbe (RGB Hex)",
   "text.autoconfig.worldtools.option.advanced.anonymousMode": "Anonyme Koordinaten",
+  "text.autoconfig.worldtools.option.advanced.hideExperimentalWorldGui": "Benutzeroberfläche der Experimentalwelt ausblenden",
   "text.autoconfig.worldtools.option.advanced.captureBarColor": "Aufzeichnungsbalkenfarbe (RGB Hex)",
   "text.autoconfig.worldtools.option.advanced.captureBarStyle": "Aufzeichnungsbalkenstil",
   "text.autoconfig.worldtools.option.advanced.progressBarColor": "Vortschrittsbalkenfarbe (RGB Hex)",

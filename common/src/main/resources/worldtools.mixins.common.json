@@ -10,7 +10,8 @@
     "ClientWorldMixin",
     "ContainerBlockEntityExtension",
     "DebugRendererMixin",
-    "GameMenuScreenMixin"
+    "GameMenuScreenMixin",
+    "IntegratedServerLoaderMixin"
   ],
   "injectors": {
     "defaultRequire": 1
