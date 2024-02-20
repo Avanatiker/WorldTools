@@ -1,6 +1,10 @@
 package org.waste.of.time.storage
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtIo
@@ -16,6 +20,7 @@ import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.MCA_EXTENSION
 import java.io.DataOutput
 import java.io.IOException
+import java.nio.file.Files
 import java.nio.file.Path
 
 
@@ -26,7 +31,7 @@ open class CustomRegionBasedStorage internal constructor(
     private val cachedRegionFiles: Long2ObjectLinkedOpenHashMap<RegionFile?> = Long2ObjectLinkedOpenHashMap()
 
     @Throws(IOException::class)
-    fun getRegionFile(pos: ChunkPos): RegionFile {
+    fun getRegionFile(pos: ChunkPos, create: Boolean = true): RegionFile {
         val longPos = ChunkPos.toLong(pos.regionX, pos.regionZ)
         cachedRegionFiles.getAndMoveToFirst(longPos)?.let { return it }
 
@@ -36,6 +41,11 @@ open class CustomRegionBasedStorage internal constructor(
 
         PathUtil.createDirectories(directory)
         val path = directory.resolve("r." + pos.regionX + "." + pos.regionZ + MCA_EXTENSION)
+        if (!path.toFile().exists()) {
+            if (!create) {
+                throw IOException("Region file containing chunk: $pos does not exist")
+            }
+        }
         val regionFile = RegionFile(path, directory, dsync)
         cachedRegionFiles.putAndMoveToFirst(longPos, regionFile)
         return regionFile
@@ -53,7 +63,18 @@ open class CustomRegionBasedStorage internal constructor(
         }
     }
 
-    fun getTagAt(chunkPos: ChunkPos): NbtCompound? {
+    fun regionFileFlow(): Flow<RegionFile> = flow<RegionFile> {
+        LOG.info("Building region file flow in $directory")
+        if (!Files.exists(directory) || !Files.isDirectory(directory)) return@flow
+        Files.newDirectoryStream(directory, "r.*$MCA_EXTENSION").use { stream ->
+            stream.forEach { path ->
+                LOG.info("Emitting RegionFile at $path")
+                emit(RegionFile(path, directory, dsync))
+            }
+        }
+    }.flowOn(Dispatchers.IO)
+
+    private fun getChunkDataTag(chunkPos: ChunkPos): NbtCompound? {
         val regionFile = getRegionFile(chunkPos)
         var nbt: NbtCompound? = null
         regionFile.getChunkInputStream(chunkPos)?.use { dataInputStream ->
@@ -64,7 +85,7 @@ open class CustomRegionBasedStorage internal constructor(
 
     fun getBlockEntities(chunkPos: ChunkPos): List<BlockEntity> {
         val blockEntities = mutableListOf<BlockEntity>()
-        getTagAt(chunkPos)?.let { chunkNbt ->
+        getChunkDataTag(chunkPos)?.let { chunkNbt ->
             val compoundTagsList: NbtList = chunkNbt.getList("block_entities", 10)
             compoundTagsList.filterIsInstance<NbtCompound>().forEach { compoundTag ->
                 try {

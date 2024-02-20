@@ -11,3 +11,4 @@ accessible field net/minecraft/client/world/ClientChunkManager$ClientChunkMap di
 accessible method net/minecraft/client/world/ClientWorld getMapStates ()Ljava/util/Map;
 accessible method net/minecraft/block/entity/LootableContainerBlockEntity getInvStackList ()Lnet/minecraft/util/collection/DefaultedList;
 accessible field net/minecraft/entity/player/PlayerEntity enderChestInventory Lnet/minecraft/inventory/EnderChestInventory;
+accessible field net/minecraft/world/storage/RegionFile directory Ljava/nio/file/Path;

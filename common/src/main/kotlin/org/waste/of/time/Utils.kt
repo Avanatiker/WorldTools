@@ -1,7 +1,9 @@
 package org.waste.of.time
 
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.util.math.ChunkPos
 import net.minecraft.util.math.Vec3d
+import net.minecraft.world.storage.RegionFile
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -30,5 +32,26 @@ object Utils {
 
     fun Vec3d.manhattanDistance2d(other: Vec3d): Double {
         return abs(this.x - other.x) + abs(this.z - other.z)
+    }
+
+    // All possible "relative" ChunkPos positions in a RegionFile
+    private val possibleChunkPosList: List<ChunkPos> by lazy { genPossibleChunkPosList() }
+    private fun genPossibleChunkPosList(): List<ChunkPos> {
+        val list = mutableListOf<ChunkPos>()
+        for (x in 0 until 32) {
+            for (z in 0 until 32) {
+                list.add(ChunkPos(x, z))
+            }
+        }
+        return list
+    }
+    fun RegionFile.chunkPosList(): List<ChunkPos> {
+        val list = mutableListOf<ChunkPos>()
+        for (chunkPos in possibleChunkPosList) {
+            if (hasChunk(chunkPos)) {
+                list.add(chunkPos)
+            }
+        }
+        return list
     }
 }

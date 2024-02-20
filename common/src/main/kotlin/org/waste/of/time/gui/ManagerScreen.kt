@@ -9,11 +9,20 @@ import org.waste.of.time.config.WorldToolsConfig
 import org.waste.of.time.manager.CaptureManager
 import org.waste.of.time.manager.CaptureManager.currentLevelName
 import org.waste.of.time.manager.CaptureManager.levelName
+import org.waste.of.time.maps.MapScanner
 
 object ManagerScreen : Screen(Text.translatable("worldtools.gui.manager.title")) {
     private lateinit var worldNameTextEntryWidget: TextFieldWidget
     private lateinit var titleWidget: TextWidget
     private lateinit var downloadButton: ButtonWidget
+    private lateinit var findMapsInWorldDataButton: ButtonWidget
+    private lateinit var findMapsButton: ButtonWidget
+    private lateinit var findMapsInItemFramesButton: ButtonWidget
+    private lateinit var findMapsInContainersButton: ButtonWidget
+    private lateinit var findMapsInItemEntitiesButton: ButtonWidget
+    private lateinit var findMapsInPlayerInventoriesButton: ButtonWidget
+    private lateinit var findMapsInEntityInventoriesButton: ButtonWidget
+    private lateinit var findMapsInLevelDatPlayerDataButton: ButtonWidget
     private lateinit var configButton: ButtonWidget
     private lateinit var cancelButton: ButtonWidget
     private const val BUTTON_WIDTH = 90
@@ -61,9 +70,50 @@ object ManagerScreen : Screen(Text.translatable("worldtools.gui.manager.title"))
                 CaptureManager.start(worldNameTextEntryWidget.text)
             }
         }
+        findMapsButton = createButton("Find Maps") {
+            client?.setScreen(null)
+            MapScanner.findMaps(worldNameTextEntryWidget.text)
+        }
+//        findMapsInWorldDataButton = createButton("Find Maps In World Data") {
+//            client?.setScreen(null)
+//            MapScanner.findMapsFromWorldData(worldNameTextEntryWidget.text)
+//        }
+//        findMapsInItemFramesButton = createButton("Find Maps In Item Frames") {
+//            client?.setScreen(null)
+//            MapScanner.findMapsInItemFrames(worldNameTextEntryWidget.text)
+//        }
+//        findMapsInContainersButton = createButton("Find Maps In Containers") {
+//            client?.setScreen(null)
+//            MapScanner.findMapsInContainers(worldNameTextEntryWidget.text)
+//        }
+//        findMapsInItemEntitiesButton = createButton("Find Maps In Item Entities") {
+//            client?.setScreen(null)
+//            MapScanner.findMapsInItemEntities(worldNameTextEntryWidget.text)
+//        }
+//        findMapsInPlayerInventoriesButton = createButton("Find Maps In Player Invs") {
+//            client?.setScreen(null)
+//            MapScanner.findMapsInPlayerInventories(worldNameTextEntryWidget.text)
+//        }
+//        findMapsInEntityInventoriesButton = createButton("Find Maps In Player Invs") {
+//            client?.setScreen(null)
+//            MapScanner.findMapsInEntityInventories(worldNameTextEntryWidget.text)
+//        }
+//        findMapsInLevelDatPlayerDataButton = createButton("Find Maps In Player Invs") {
+//            client?.setScreen(null)
+//            MapScanner.findMapsFromPlayerDataInLevelDat(worldNameTextEntryWidget.text)
+//        }
 
         adder.add(worldNameTextEntryWidget, 2)
         adder.add(downloadButton, 1)
+        adder.add(findMapsButton, 1)
+//        adder.add(findMapsInWorldDataButton, 1)
+//        adder.add(findMapsInItemFramesButton, 1)
+//        adder.add(findMapsInContainersButton, 1)
+//        adder.add(findMapsInItemEntitiesButton, 1)
+//        adder.add(findMapsInPlayerInventoriesButton, 1)
+//        adder.add(findMapsInEntityInventoriesButton, 1)
+//        adder.add(findMapsInLevelDatPlayerDataButton, 1)
+
 
         entryGridWidget.refreshPositions()
         SimplePositioningWidget.setPos(entryGridWidget, 0, titleWidget.y, width, height, 0.5f, 0.05f)
