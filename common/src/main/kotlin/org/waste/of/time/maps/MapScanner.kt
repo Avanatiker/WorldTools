@@ -13,7 +13,10 @@ import org.waste.of.time.manager.MessageManager
 import org.waste.of.time.storage.WorldStorage
 import java.nio.file.Path
 
+// todo: Merge with MapRemapper to reduce duplicate code
 object MapScanner {
+
+    // todo: Return results in a useable form so we can display them in a UI
 
     fun findMaps(worldName: String) {
         val worldDirectoryPath = mc.levelStorage.savesDirectory.resolve(worldName)

@@ -1,6 +1,7 @@
 package org.waste.of.time.fabric
 
 import com.mojang.brigadier.CommandDispatcher
+import com.mojang.brigadier.arguments.IntegerArgumentType.integer
 import com.mojang.brigadier.arguments.StringArgumentType.string
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.argument
@@ -17,6 +18,8 @@ import org.waste.of.time.Events
 import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.manager.CaptureManager
+import org.waste.of.time.maps.MapRemapper
+import org.waste.of.time.maps.MapScanner
 
 object WorldToolsFabric : ClientModInitializer {
     override fun onInitializeClient() {
@@ -79,6 +82,27 @@ object WorldToolsFabric : ClientModInitializer {
                         CaptureManager.toggleCapture()
                         0
                     }
+                )
+                .then(literal("maps")
+                    .then(literal("find")
+                        .then(argument("worldName", string()).executes {
+                            MapScanner.findMaps(it.getArgument("worldName", String::class.java))
+                            0
+                        })
+                    )
+                    .then(literal("remap")
+                        .then(argument("worldName", string())
+                            .then(argument("existingId", integer())
+                                .then(argument("newId", integer()).executes {
+                                    MapRemapper.remap(
+                                        it.getArgument("worldName", String::class.java),
+                                        it.getArgument("existingId", Int::class.java),
+                                        it.getArgument("newId", Int::class.java))
+                                    0
+                                })
+                            )
+                        )
+                    )
                 )
         )
     }
