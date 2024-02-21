@@ -63,12 +63,11 @@ open class CustomRegionBasedStorage internal constructor(
         }
     }
 
-    fun regionFileFlow(): Flow<RegionFile> = flow<RegionFile> {
-        LOG.info("Building region file flow in $directory")
+    // note: this does not use the region file cache mechanism at all
+    fun regionFileFlow(): Flow<RegionFile> = flow {
         if (!Files.exists(directory) || !Files.isDirectory(directory)) return@flow
         Files.newDirectoryStream(directory, "r.*$MCA_EXTENSION").use { stream ->
             stream.forEach { path ->
-                LOG.info("Emitting RegionFile at $path")
                 emit(RegionFile(path, directory, dsync))
             }
         }

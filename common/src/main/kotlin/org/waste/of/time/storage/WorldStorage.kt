@@ -6,15 +6,25 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.io.path.exists
+import kotlin.io.path.isDirectory
 
-class WorldStorage {
-    val path: Path
+class WorldStorage(val path: Path) {
     val dimensionPaths: List<String>
-    constructor(path: Path) {
-        this.path = path
-        // todo: handle custom dimensions
-        this.dimensionPaths = listOf("", "DIM-1/", "DIM1/")
-            .filter { path.resolve(it).toFile().exists() }
+
+    init {
+        val dimRegex = Regex("^(DIM-?[0-9]+)$")
+        Files.newDirectoryStream(path).use { stream ->
+            val dims = stream
+                .filter {
+                    it.exists() && it.isDirectory()
+                }
+                .map { it.fileName.toString() }
+                .filter { dimRegex.matches(it) }
+                .toMutableList()
+            dims.add("") // base case for top level dir (overworld)
+            this.dimensionPaths = dims
+        }
     }
 
     fun getRegionStorage(dimensionPath: String): CustomRegionBasedStorage {
@@ -25,11 +35,11 @@ class WorldStorage {
         return CustomRegionBasedStorage(path.resolve(dimensionPath).resolve("entities"), false)
     }
 
-    fun getWorldDataStoragePath(): Path {
+    private fun getWorldDataStoragePath(): Path {
         return path.resolve("data")
     }
 
-    fun getPlayerDataStoragePath(): Path {
+    private fun getPlayerDataStoragePath(): Path {
         return path.resolve("playerdata")
     }
 

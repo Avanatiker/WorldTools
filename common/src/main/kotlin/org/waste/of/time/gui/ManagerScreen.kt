@@ -9,7 +9,7 @@ import org.waste.of.time.config.WorldToolsConfig
 import org.waste.of.time.manager.CaptureManager
 import org.waste.of.time.manager.CaptureManager.currentLevelName
 import org.waste.of.time.manager.CaptureManager.levelName
-import org.waste.of.time.maps.MapScanner
+import org.waste.of.time.maps.MapsRemapper
 
 object ManagerScreen : Screen(Text.translatable("worldtools.gui.manager.title")) {
     private lateinit var worldNameTextEntryWidget: TextFieldWidget
@@ -65,7 +65,7 @@ object ManagerScreen : Screen(Text.translatable("worldtools.gui.manager.title"))
         }
         findMapsButton = createButton("Find Maps") {
             client?.setScreen(null)
-            MapScanner.findMaps(worldNameTextEntryWidget.text)
+            MapsRemapper.findMaps(worldNameTextEntryWidget.text)
         }
 
         adder.add(worldNameTextEntryWidget, 2)

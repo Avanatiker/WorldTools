@@ -18,8 +18,7 @@ import org.waste.of.time.Events
 import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.manager.CaptureManager
-import org.waste.of.time.maps.MapRemapper
-import org.waste.of.time.maps.MapScanner
+import org.waste.of.time.maps.MapsRemapper
 
 object WorldToolsFabric : ClientModInitializer {
     override fun onInitializeClient() {
@@ -86,7 +85,7 @@ object WorldToolsFabric : ClientModInitializer {
                 .then(literal("maps")
                     .then(literal("find")
                         .then(argument("worldName", string()).executes {
-                            MapScanner.findMaps(it.getArgument("worldName", String::class.java))
+                            MapsRemapper.findMaps(it.getArgument("worldName", String::class.java))
                             0
                         })
                     )
@@ -94,10 +93,15 @@ object WorldToolsFabric : ClientModInitializer {
                         .then(argument("worldName", string())
                             .then(argument("existingId", integer())
                                 .then(argument("newId", integer()).executes {
-                                    MapRemapper.remap(
-                                        it.getArgument("worldName", String::class.java),
-                                        it.getArgument("existingId", Int::class.java),
-                                        it.getArgument("newId", Int::class.java))
+                                    val worldName = it.getArgument("worldName", String::class.java)
+                                    val existingId = it.getArgument("existingId", Int::class.java)
+                                    val newId = it.getArgument("newId", Int::class.java)
+                                    MapsRemapper.remapMaps(
+                                        worldName,
+                                        mapOf(
+                                            existingId to newId
+                                        )
+                                    )
                                     0
                                 })
                             )
