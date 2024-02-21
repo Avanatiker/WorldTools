@@ -105,6 +105,11 @@ object WorldToolsFabric : ClientModInitializer {
                                     0
                                 })
                             )
+                            .executes {
+                                val worldName = it.getArgument("worldName", String::class.java)
+                                MapsRemapper.remapMapsWithRemapFile(worldName)
+                                0
+                            }
                         )
                     )
                 )

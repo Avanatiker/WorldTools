@@ -36,18 +36,38 @@ object MapsRemapper {
     }
 
     private fun verifyRemap(remap: Map<Int, Int>): Boolean {
-        // todo: verify 1:1 relationships
-        //  i.e. not remapping 2 map ID's to the same new map ID
+        if (remap.values.distinct().size != remap.size) {
+            MessageManager.sendError("Duplicate remap ID")
+            return false
+        }
 
-        // todo: verify the map ID's actually exist?
+        // todo: verify the existing map ID's actually exist
+        // todo: verify there are no maps with new ID's
+        //  basically we have to scan maps to determine this before the remapping T.T
         return true
     }
 
     fun remapMaps(worldName: String, remap: Map<Int, Int>) {
         val worldDirectoryPath = mc.levelStorage.savesDirectory.resolve(worldName)
         if (!verifyWorld(worldName, worldDirectoryPath)) return
+        if (!verifyRemap(remap)) return
         MessageManager.sendInfo("Remapping maps in $worldName")
         val ctx = MapScanContext(worldName, WorldStorage(worldDirectoryPath), remap)
+        CoroutineScope(Dispatchers.IO).launch {
+            scanMaps(ctx)
+            val remapCount = ctx.foundMaps.count { ctx.remap.containsKey(it.mapId) }
+            MessageManager.sendInfo("Remapped $remapCount map instances")
+        }
+    }
+
+    fun remapMapsWithRemapFile(worldName: String) {
+        val worldDirectoryPath = mc.levelStorage.savesDirectory.resolve(worldName)
+        if (!verifyWorld(worldName, worldDirectoryPath)) return
+        val storage = WorldStorage(worldDirectoryPath)
+        val remap = MapRemapSerializer.deserializeRemaps(storage)
+        if (!verifyRemap(remap)) return
+        MessageManager.sendInfo("Remapping maps in $worldName")
+        val ctx = MapScanContext(worldName, storage, remap)
         CoroutineScope(Dispatchers.IO).launch {
             scanMaps(ctx)
             val remapCount = ctx.foundMaps.count { ctx.remap.containsKey(it.mapId) }
@@ -63,8 +83,6 @@ object MapsRemapper {
         CoroutineScope(Dispatchers.IO).launch {
             scanMaps(ctx)
             val foundMaps = ctx.foundMaps
-            // todo: write maps to CSV
-            //  dedupe list on unique map id?
             val uniqueMaps = foundMaps
                 .map { it.mapId }
                 .distinct()
@@ -72,9 +90,9 @@ object MapsRemapper {
             val uniqueMapCount = uniqueMaps
                 .count()
             MessageManager.sendInfo("Found $uniqueMapCount map ID's: $uniqueMaps")
-            foundMaps.groupingBy { it.source.src }.eachCount().forEach {
-                MessageManager.sendInfo("Count: [${it.key}] ${it.value}")
-            }
+//            foundMaps.groupingBy { it.source.src }.eachCount().forEach {
+//                MessageManager.sendInfo("Count: [${it.key}] ${it.value}")
+//            }
             foundMaps.groupingBy { it.source.src }.aggregate { key, accumulator: StringBuilder?, element, first ->
                 if (first)
                     StringBuilder().append("[$key] ").append(element.mapId)
@@ -295,18 +313,10 @@ object MapsRemapper {
                     val z = blockEntityNbt.getInt("z")
                     if (!blockEntityNbt.contains("Items")) return@blockEntityLoop
                     val itemsListTag = blockEntityNbt.getList("Items", 10)
-                    itemsListTag.forEach itemsLoop@ { itemCompoundTag ->
-                        val itemTag = itemCompoundTag as NbtCompound
-                        val itemId = itemTag.getString("id")
-                        if ("minecraft:filled_map" != itemId) return@blockEntityLoop
-                        val mapTag = itemTag.getCompound("tag")
-                        val mapId = mapTag.getInt("map")
-                        ctx.foundMaps.add(FoundMap(mapId, MapSource(MapSourceId.CONTAINER, containerBlockId, Vec3d(x.toDouble(), y.toDouble(), z.toDouble()))))
-                        if (ctx.remap.containsKey(mapId)) {
-                            mapTag.putInt("map", ctx.remap[mapId]!!)
-                            dirty = true
-                            chunkNbt = nbt
-                        }
+                    val containerDirty = searchInventory(itemsListTag, MapSource(MapSourceId.CONTAINER, containerBlockId, Vec3d(x.toDouble(), y.toDouble(), z.toDouble())), ctx)
+                    if (containerDirty) {
+                        dirty = true
+                        chunkNbt = nbt
                     }
                 }
             }
