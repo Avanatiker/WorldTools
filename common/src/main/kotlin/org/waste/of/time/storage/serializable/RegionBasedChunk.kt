@@ -5,9 +5,7 @@ import net.minecraft.block.Block
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
 import net.minecraft.block.entity.BlockEntity
-import net.minecraft.block.entity.LockableContainerBlockEntity
 import net.minecraft.fluid.Fluid
-import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtList
 import net.minecraft.nbt.NbtLongArray
@@ -16,7 +14,6 @@ import net.minecraft.registry.Registries
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.text.MutableText
 import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.ChunkPos
 import net.minecraft.util.math.ChunkSectionPos
 import net.minecraft.world.ChunkSerializer
 import net.minecraft.world.LightType
@@ -27,9 +24,9 @@ import net.minecraft.world.chunk.WorldChunk
 import net.minecraft.world.gen.chunk.BlendingData
 import net.minecraft.world.level.storage.LevelStorage
 import org.waste.of.time.Utils.addAuthor
-import org.waste.of.time.WorldTools
+import org.waste.of.time.WorldTools.LOG
+import org.waste.of.time.WorldTools.TIMESTAMP_KEY
 import org.waste.of.time.WorldTools.config
-import org.waste.of.time.extension.IBlockEntityContainerExtension
 import org.waste.of.time.manager.MessageManager.translateHighlight
 import org.waste.of.time.manager.StatisticManager
 import org.waste.of.time.storage.Cacheable
@@ -37,20 +34,24 @@ import org.waste.of.time.storage.CustomRegionBasedStorage
 import org.waste.of.time.storage.RegionBased
 import org.waste.of.time.storage.cache.HotCache
 
-class RegionBasedChunk(val chunk: WorldChunk) : RegionBased(chunk.pos, chunk.world, "region"), Cacheable {
-    // storing a reference to the block entities in the chunk
-    // so it doesn't get removed out from under us while the chunk is unloaded
-    private var cachedBlockEntities: Map<BlockPos, BlockEntity>? = null
+open class RegionBasedChunk(
+    val chunk: WorldChunk,
+) : RegionBased(chunk.pos, chunk.world, "region"), Cacheable {
+    // storing a reference to the block entities in the chunk to prevent them from being unloaded
+    val cachedBlockEntities = mutableMapOf<BlockPos, BlockEntity>()
 
-    fun cacheBlockEntities() {
-        cachedBlockEntities = HashMap(chunk.blockEntities)
+    init {
+        cachedBlockEntities.putAll(chunk.blockEntities)
+
+        cachedBlockEntities.values.associateWith { fresh ->
+            HotCache.scannedContainers[fresh.pos]
+        }.forEach { (fresh, cached) ->
+            if (cached == null) return@forEach
+            cachedBlockEntities[fresh.pos] = cached
+        }
     }
 
-    private fun getBlockEntities() : Map<BlockPos, BlockEntity> {
-        return cachedBlockEntities ?: chunk.blockEntities
-    }
-
-    override fun shouldStore() = config.capture.chunks
+    override fun shouldStore() = config.general.capture.chunks
 
     override val verboseInfo: MutableText
         get() = translateHighlight(
@@ -86,23 +87,35 @@ class RegionBasedChunk(val chunk: WorldChunk) : RegionBased(chunk.pos, chunk.wor
         StatisticManager.dimensions.add(dimension)
     }
 
-    override fun writeToStorage(session: LevelStorage.Session, storage: CustomRegionBasedStorage, cachedStorages: MutableMap<String, CustomRegionBasedStorage>) {
+    override fun writeToStorage(
+        session: LevelStorage.Session,
+        storage: CustomRegionBasedStorage,
+        cachedStorages: MutableMap<String, CustomRegionBasedStorage>
+    ) {
         // avoiding `emit` here due to flow order issues when capture is stopped
-        // i.e. if EndFlow is emitted before this, these are not written because they're behind it in the flow
-        HotCache.getEntitySerializableForChunk(chunkPos, world)?.store(session, cachedStorages)
+        // i.e., if EndFlow is emitted before this,
+        // these are not written because they're behind it in the flow
+        HotCache.getEntitySerializableForChunk(chunkPos, world)
+            ?.store(session, cachedStorages)
             ?: run {
-                // remove any previously stored entities in this chunk
+                // remove any previously stored entities in this chunk in case there are no entities to store
                 RegionBasedEntities(chunkPos, emptySet(), world).store(session, cachedStorages)
         }
-        if (this.chunk.isEmpty) return
+        if (chunk.isEmpty) return
         super.writeToStorage(session, storage, cachedStorages)
     }
 
     /**
      * See [net.minecraft.world.ChunkSerializer.serialize]
      */
-    override fun compound(storage: CustomRegionBasedStorage) = NbtCompound().apply {
-        addAuthor()
+    override fun compound() = NbtCompound().apply {
+        if (config.world.metadata.captureTimestamp) {
+            putLong(TIMESTAMP_KEY, System.currentTimeMillis())
+        }
+
+        if (config.world.metadata.waterMark) {
+            addAuthor()
+        }
 
         putInt("DataVersion", SharedConstants.getGameVersion().saveVersion.id)
         putInt(ChunkSerializer.X_POS_KEY, chunk.pos.x)
@@ -125,7 +138,7 @@ class RegionBasedChunk(val chunk: WorldChunk) : RegionBased(chunk.pos, chunk.wor
         }
 
         put("block_entities", NbtList().apply {
-            upsertBlockEntities(this, storage)
+            upsertBlockEntities()
         })
 
         getTickSchedulers(chunk)
@@ -133,69 +146,17 @@ class RegionBasedChunk(val chunk: WorldChunk) : RegionBased(chunk.pos, chunk.wor
 
         // skip structures
         if (config.debug.logSavedChunks)
-            WorldTools.LOG.info("Chunk saved: $chunkPos ($dimension)")
+            LOG.info("Chunk saved: $chunkPos ($dimension)")
     }
 
-    private fun upsertBlockEntities(
-        outputNbt: NbtList,
-        storage: CustomRegionBasedStorage
-    ) {
-        val existingContainers = getExistingContainerBlockEntities(storage, chunkPos)
-        getBlockEntities().entries.map {
-            if (it.value is LockableContainerBlockEntity) {
-                existingContainers.find { existing -> existing.pos == it.key }?.let { existing ->
-                    mergeInventoryContainerContents(existing, it.value as LockableContainerBlockEntity)
-                }
+    private fun NbtList.upsertBlockEntities() {
+        cachedBlockEntities.entries.map { (_, blockEntity) ->
+            blockEntity.createNbtWithIdentifyingData().apply {
+                putBoolean("keepPacked", false)
             }
-            getPackedBlockEntityNbt(it)
-        }.forEach { outputNbt.add(it) }
-    }
-
-    private fun getExistingContainerBlockEntities(
-        storage: CustomRegionBasedStorage,
-        chunkPos: ChunkPos
-    ): List<LockableContainerBlockEntity> {
-        return storage.getBlockEntities(chunkPos)
-            .filterIsInstance<LockableContainerBlockEntity>()
-            .toList()
-    }
-
-    // in-place merge onto the new block entity container contents
-    private fun mergeInventoryContainerContents(
-        existing: LockableContainerBlockEntity,
-        new: LockableContainerBlockEntity
-    ) {
-        if ((new as IBlockEntityContainerExtension).wtContentsRead) return
-        if (existing.pos != new.pos) {
-            WorldTools.LOG.warn("[Container Merge] BlockEntity at ${new.pos} is not at the expected pos ${existing.pos}")
-            return
+        }.apply {
+            addAll(this)
         }
-        if (existing.javaClass != new.javaClass) {
-            WorldTools.LOG.warn("[Container Merge] BlockEntity type ${new.javaClass} is not the expected type ${existing.javaClass}")
-            return
-        }
-        // todo: we need extra context to know if the newStacks have been captured during the WDL
-        //  or if we just loaded the block entity without viewing its content
-        //  e.g. the player reloads a block entity and removes all items from its inventory during WDL
-        var shouldOverwrite = true
-        for (i in 0 until new.size()) {
-            if (new.getStack(i) != ItemStack.EMPTY) {
-                shouldOverwrite = false
-                break
-            }
-        }
-        if (shouldOverwrite) {
-            for (i in 0 until existing.size()) {
-                new.setStack(i, existing.getStack(i))
-            }
-        }
-    }
-
-    private fun getPackedBlockEntityNbt(entry: Map.Entry<BlockPos, BlockEntity>): NbtCompound {
-        val blockEntity: BlockEntity = entry.value
-        var nbtCompound: NbtCompound = blockEntity.createNbtWithIdentifyingData()
-        nbtCompound.putBoolean("keepPacked", false)
-        return nbtCompound
     }
 
     private fun generateSections(chunk: WorldChunk) = NbtList().apply {
@@ -226,13 +187,13 @@ class RegionBasedChunk(val chunk: WorldChunk) : RegionBased(chunk.pos, chunk.wor
                         "block_states",
                         stateIdContainer.encodeStart(NbtOps.INSTANCE, chunkSection.blockStateContainer).getOrThrow(
                             false
-                        ) { WorldTools.LOG.error(it) }
+                        ) { LOG.error(it) }
                     )
                     put(
                         "biomes",
                         biomeCodec.encodeStart(NbtOps.INSTANCE, chunkSection.biomeContainer).getOrThrow(
                             false
-                        ) { WorldTools.LOG.error(it) }
+                        ) { LOG.error(it) }
                     )
                 }
                 if (blockLightSection != null && !blockLightSection.isUninitialized) {
@@ -250,7 +211,7 @@ class RegionBasedChunk(val chunk: WorldChunk) : RegionBased(chunk.pos, chunk.wor
     private fun NbtCompound.genBackwardsCompat(chunk: WorldChunk) {
         chunk.blendingData?.let { bleedingData ->
             BlendingData.CODEC.encodeStart(NbtOps.INSTANCE, bleedingData).resultOrPartial {
-                WorldTools.LOG.error(it)
+                LOG.error(it)
             }.ifPresent {
                 put("blending_data", it)
             }
@@ -258,7 +219,7 @@ class RegionBasedChunk(val chunk: WorldChunk) : RegionBased(chunk.pos, chunk.wor
 
         chunk.belowZeroRetrogen?.let { belowZeroRetrogen ->
             BelowZeroRetrogen.CODEC.encodeStart(NbtOps.INSTANCE, belowZeroRetrogen).resultOrPartial {
-                WorldTools.LOG.error(it)
+                LOG.error(it)
             }.ifPresent {
                 put("below_zero_retrogen", it)
             }

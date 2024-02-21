@@ -21,7 +21,7 @@ import java.io.File
 data class PlayerStoreable(
     val player: PlayerEntity
 ) : Cacheable, Storeable {
-    override fun shouldStore() = config.capture.players
+    override fun shouldStore() = config.general.capture.players
 
     override val verboseInfo: MutableText
         get() = translateHighlight(
@@ -48,6 +48,7 @@ data class PlayerStoreable(
 
     override fun store(session: Session, cachedStorages: MutableMap<String, CustomRegionBasedStorage>) {
         savePlayerData(player, session)
+        session.createSaveHandler()
         StatisticManager.players++
         StatisticManager.dimensions.add(player.world.registryKey.value.path)
     }
@@ -56,14 +57,17 @@ data class PlayerStoreable(
         try {
             val playerDataDir = session.getDirectory(WorldSavePath.PLAYERDATA).toFile()
             playerDataDir.mkdirs()
-            val nbtCompound = player.writeNbt(NbtCompound())
-            nbtCompound.remove("LastDeathLocation") // can contain sensitive information
-            val file = File.createTempFile(player.uuidAsString + "-", ".dat", playerDataDir)
-            NbtIo.writeCompressed(nbtCompound, file)
-            val file2 = File(playerDataDir, player.uuidAsString + ".dat")
-            val file3 = File(playerDataDir, player.uuidAsString + ".dat_old")
-            Util.backupAndReplace(file2, file, file3)
-        } catch (var6: Exception) {
+
+            val newPlayerFile = File.createTempFile(player.uuidAsString + "-", ".dat", playerDataDir)
+            NbtIo.writeCompressed(player.writeNbt(NbtCompound()).apply {
+                if (config.entity.censor.lastDeathLocation) {
+                    remove("LastDeathLocation")
+                }
+            }, newPlayerFile)
+            val currentFile = File(playerDataDir, player.uuidAsString + ".dat")
+            val backupFile = File(playerDataDir, player.uuidAsString + ".dat_old")
+            Util.backupAndReplace(currentFile, newPlayerFile, backupFile)
+        } catch (e: Exception) {
             WorldTools.LOG.warn("Failed to save player data for {}", player.name.string)
         }
     }

@@ -17,7 +17,7 @@ import org.waste.of.time.storage.Storeable
 import java.lang.reflect.Type
 
 class AdvancementsStoreable : Storeable {
-    override fun shouldStore() = config.capture.advancements
+    override fun shouldStore() = config.general.capture.advancements
 
     override val verboseInfo: MutableText
         get() = translateHighlight(
