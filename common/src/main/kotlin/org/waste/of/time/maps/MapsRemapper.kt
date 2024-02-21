@@ -72,17 +72,17 @@ object MapsRemapper {
             val uniqueMapCount = uniqueMaps
                 .count()
             MessageManager.sendInfo("Found $uniqueMapCount map ID's: $uniqueMaps")
-//            foundMaps.groupingBy { it.source.src }.eachCount().forEach {
-//                MessageManager.sendInfo("Count: [${it.key}] ${it.value}")
-//            }
-//            foundMaps.groupingBy { it.source.src }.aggregate { key, accumulator: StringBuilder?, element, first ->
-//                if (first)
-//                    StringBuilder().append("[$key] ").append(element.mapId)
-//                else
-//                    accumulator!!.append(", ${element.mapId}")
-//            }.forEach { (_, maps) ->
-//                MessageManager.sendInfo("$maps")
-//            }
+            foundMaps.groupingBy { it.source.src }.eachCount().forEach {
+                MessageManager.sendInfo("Count: [${it.key}] ${it.value}")
+            }
+            foundMaps.groupingBy { it.source.src }.aggregate { key, accumulator: StringBuilder?, element, first ->
+                if (first)
+                    StringBuilder().append("[$key] ").append(element.mapId)
+                else
+                    accumulator!!.append(", ${element.mapId}")
+            }.forEach { (_, maps) ->
+                MessageManager.sendInfo("$maps")
+            }
         }
     }
 
@@ -93,20 +93,21 @@ object MapsRemapper {
         ctx.storage.dimensionPaths.forEach { dimPath ->
             ctx.storage.getEntityStorage(dimPath).use { entityStorage ->
                 entityStorage.regionFileFlow().collect { regionFile ->
-                    listMapsInEntityRegion(regionFile, ctx)
+                    regionFile.use {
+                        listMapsInEntityRegion(regionFile, ctx)
+                    }
                 }
             }
             ctx.storage.getRegionStorage(dimPath).use { regionStorage ->
                 regionStorage.regionFileFlow().collect { regionFile ->
-                    listMapsInContainers(regionFile, ctx)
+                    regionFile.use {
+                        listMapsInContainers(regionFile, ctx)
+                    }
                 }
             }
         }
         ctx.storage.playerDataStorageFlow().collect {
-            val fileName = it.fileName.toString()
-            if (fileName.endsWith(".dat")) {
-                listMapsInPlayerData(it, ctx)
-            }
+            listMapsInPlayerData(it, ctx)
         }
         listMapsInLevelDat(ctx)
         return foundMaps

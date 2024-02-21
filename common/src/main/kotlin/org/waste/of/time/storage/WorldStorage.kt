@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.flowOn
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.exists
+import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
 
 class WorldStorage(val path: Path) {
@@ -49,17 +50,17 @@ class WorldStorage(val path: Path) {
 
     fun worldDataStorageFlow(): Flow<Path> = flow<Path> {
         Files.newDirectoryStream(getWorldDataStoragePath()).use { stream ->
-            stream.forEach { path ->
-                emit(path)
-            }
+            stream
+                .filter { it.fileName.extension == "dat" }
+                .forEach { emit(it) }
         }
     }.flowOn(Dispatchers.IO)
 
     fun playerDataStorageFlow(): Flow<Path> = flow<Path> {
         Files.newDirectoryStream(getPlayerDataStoragePath()).use { stream ->
-            stream.forEach { path ->
-                emit(path)
-            }
+            stream
+                .filter { it.fileName.extension == "dat" }
+                .forEach { emit(it) }
         }
     }.flowOn(Dispatchers.IO)
 }
