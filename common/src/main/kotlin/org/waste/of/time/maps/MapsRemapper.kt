@@ -83,6 +83,7 @@ object MapsRemapper {
             }.forEach { (_, maps) ->
                 MessageManager.sendInfo("$maps")
             }
+            MapRemapSerializer.serialize(ctx)
         }
     }
 
