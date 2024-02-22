@@ -228,10 +228,10 @@ class LevelDataStoreable : Storeable {
             }
             "the_end" -> {
                 put("biome_source", NbtCompound().apply {
-                    putString("type", "minecraft:end")
+                    putString("type", "minecraft:the_end")
                 })
                 putString("settings", "minecraft:end")
-                putString("type", "minecraft:the_end")
+                putString("type", "minecraft:noise")
             }
             else -> {
                 put("biome_source", NbtCompound().apply {
@@ -267,7 +267,7 @@ class LevelDataStoreable : Storeable {
                 add(NbtString.of("minecraft:strongholds"))
                 add(NbtString.of("minecraft:villages"))
             })
-            putString("type", "minecraft:flat")
         })
+        putString("type", "minecraft:flat")
     }
 }
