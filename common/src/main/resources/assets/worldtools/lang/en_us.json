@@ -57,7 +57,7 @@
   "text.autoconfig.worldtools.option.render.captureBarColor": "Capture Info Bar Color (RGB Hex)",
   "text.autoconfig.worldtools.option.render.captureBarStyle": "Capture Info Bar Style",
   "text.autoconfig.worldtools.option.render.containerColor": "Missing Container Color (RGB Hex)",
-  "text.autoconfig.worldtools.option.render.progressBarColor": "Progress Bar Color (RGB Hex)",
+  "text.autoconfig.worldtools.option.render.progressBarColor": "Progress Bar Color",
   "text.autoconfig.worldtools.option.render.progressBarStyle": "Progress Bar Style",
   "text.autoconfig.worldtools.option.render.progressBarTimeout": "Progress Bar Timeout (ms)",
   "text.autoconfig.worldtools.option.render.renderNotYetCachedContainers": "Render Not Yet Cached Containers",
