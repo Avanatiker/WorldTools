@@ -23,7 +23,7 @@ object WorldTools {
     const val TIMESTAMP_KEY = "CaptureTimestamp"
     val GSON: Gson = GsonBuilder().setPrettyPrinting().create()
     val CURRENT_VERSION = SharedConstants.getGameVersion().saveVersion.id
-    private val VERSION: String = LoaderInfo.getVersion() ?: "DEV"
+    private val VERSION: String = LoaderInfo.getVersion()
     val CREDIT_MESSAGE = "This file was created by $MOD_NAME $VERSION ($URL)"
     val CREDIT_MESSAGE_MD = "This file was created by [$MOD_NAME $VERSION]($URL)"
     val LOG: Logger = LogManager.getLogger()
