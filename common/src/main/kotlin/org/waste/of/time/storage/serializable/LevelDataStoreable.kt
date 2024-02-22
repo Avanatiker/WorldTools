@@ -196,7 +196,7 @@ class LevelDataStoreable : Storeable {
         when (config.world.worldGenerator.type) {
             GeneratorType.VOID -> voidGenerator()
             GeneratorType.DEFAULT -> defaultGenerator(path)
-            GeneratorType.FLAT -> flatGenerator(path)
+            GeneratorType.FLAT -> flatGenerator()
         }
     }
 
@@ -244,7 +244,30 @@ class LevelDataStoreable : Storeable {
         }
     }
 
-    private fun NbtCompound.flatGenerator(path: String) {
-        // ToDo: Implement flat generator
+    private fun NbtCompound.flatGenerator() {
+        put("settings", NbtCompound().apply {
+            putString("biome", "minecraft:plains")
+            putByte("features", 0)
+            putByte("lakes", 0)
+            put("layers", NbtList().apply {
+                add(NbtCompound().apply {
+                    putString("block", "minecraft:bedrock")
+                    putInt("height", 1)
+                })
+                add(NbtCompound().apply {
+                    putString("block", "minecraft:dirt")
+                    putInt("height", 2)
+                })
+                add(NbtCompound().apply {
+                    putString("block", "minecraft:grass_block")
+                    putInt("height", 1)
+                })
+            })
+            put("structure_overrides", NbtList().apply {
+                add(NbtString.of("minecraft:strongholds"))
+                add(NbtString.of("minecraft:villages"))
+            })
+            putString("type", "minecraft:flat")
+        })
     }
 }
