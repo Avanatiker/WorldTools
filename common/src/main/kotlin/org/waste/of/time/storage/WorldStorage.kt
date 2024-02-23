@@ -4,6 +4,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import net.minecraft.world.storage.RegionFile
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.exists
@@ -11,45 +12,45 @@ import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
 
 class WorldStorage(val path: Path) {
-    val dimensionPaths: List<String>
+    private val dimensionPaths: List<String>
 
     init {
         val dimRegex = Regex("^(DIM-?[0-9]+)$")
         Files.newDirectoryStream(path).use { stream ->
             val dims = stream
-                .filter {
-                    it.exists() && it.isDirectory()
-                }
+                .filter { it.exists() && it.isDirectory() }
                 .map { it.fileName.toString() }
                 .filter { dimRegex.matches(it) }
                 .toMutableList()
-            dims.add("") // base case for top level dir (overworld)
+                .also { it.add("") } // base case for top level dir (overworld)
             this.dimensionPaths = dims
         }
     }
 
-    fun getRegionStorage(dimensionPath: String): CustomRegionBasedStorage {
-        return CustomRegionBasedStorage(path.resolve(dimensionPath).resolve("region"), false)
-    }
+    // flow on all dimensions
+    fun regionStorageRegionFileFlow(): Flow<RegionFile> = flow {
+        dimensionPaths.forEach { dimensionPath ->
+            getRegionStorage(dimensionPath).regionFileFlow().collect { emit(it) }
+        }
+    }.flowOn(Dispatchers.IO)
 
-    fun getEntityStorage(dimensionPath: String): CustomRegionBasedStorage {
-        return CustomRegionBasedStorage(path.resolve(dimensionPath).resolve("entities"), false)
-    }
+    private fun getRegionStorage(dimensionPath: String): CustomRegionBasedStorage =
+        CustomRegionBasedStorage(path.resolve(dimensionPath).resolve("region"), false)
 
-    private fun getWorldDataStoragePath(): Path {
-        return path.resolve("data")
-    }
+    // flow on all dimensions
+    fun entityStorageRegionFileFlow(): Flow<RegionFile> = flow {
+        dimensionPaths.forEach { dimensionPath ->
+            getEntityStorage(dimensionPath).regionFileFlow().collect { emit(it) }
+        }
+    }.flowOn(Dispatchers.IO)
 
-    private fun getPlayerDataStoragePath(): Path {
-        return path.resolve("playerdata")
-    }
+    private fun getEntityStorage(dimensionPath: String): CustomRegionBasedStorage =
+        CustomRegionBasedStorage(path.resolve(dimensionPath).resolve("entities"), false)
 
-    fun getLevelDatPath(): Path {
-        return path.resolve("level.dat")
-    }
+    fun getLevelDatPath(): Path = path.resolve("level.dat")
 
     fun worldDataStorageFlow(): Flow<Path> = flow<Path> {
-        Files.newDirectoryStream(getWorldDataStoragePath()).use { stream ->
+        Files.newDirectoryStream(path.resolve("data")).use { stream ->
             stream
                 .filter { it.fileName.extension == "dat" }
                 .forEach { emit(it) }
@@ -57,7 +58,7 @@ class WorldStorage(val path: Path) {
     }.flowOn(Dispatchers.IO)
 
     fun playerDataStorageFlow(): Flow<Path> = flow<Path> {
-        Files.newDirectoryStream(getPlayerDataStoragePath()).use { stream ->
+        Files.newDirectoryStream(path.resolve("playerdata")).use { stream ->
             stream
                 .filter { it.fileName.extension == "dat" }
                 .forEach { emit(it) }

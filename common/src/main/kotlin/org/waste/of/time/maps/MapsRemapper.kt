@@ -116,37 +116,29 @@ object MapsRemapper {
         return true
     }
 
-    private suspend fun scanMaps(ctx: MapScanContext): MutableList<FoundMap> {
-        val foundMaps = mutableListOf<FoundMap>()
-        listMapsFromWorldData(ctx)
-        ctx.storage.dimensionPaths.forEach { dimPath ->
-            ctx.storage.getEntityStorage(dimPath).use { entityStorage ->
-                entityStorage.regionFileFlow().collect { regionFile ->
-                    regionFile.use {
-                        listMapsInEntityRegion(regionFile, ctx)
-                    }
-                }
+    private suspend fun scanMaps(ctx: MapScanContext) {
+        scanMapsFromWorldData(ctx)
+        ctx.storage.regionStorageRegionFileFlow().collect { regionFile ->
+            regionFile.use {
+                scanMapsInContainers(it, ctx)
             }
-            ctx.storage.getRegionStorage(dimPath).use { regionStorage ->
-                regionStorage.regionFileFlow().collect { regionFile ->
-                    regionFile.use {
-                        listMapsInContainers(regionFile, ctx)
-                    }
-                }
+        }
+        ctx.storage.entityStorageRegionFileFlow().collect { regionFile ->
+            regionFile.use {
+                scanMapsInEntityRegion(it, ctx)
             }
         }
         ctx.storage.playerDataStorageFlow().collect {
-            searchPlayerDataMaps(it, ctx)
+            scanPlayerDataMaps(it, ctx)
         }
-        searchLevelDatMaps(ctx)
-        return foundMaps
+        scanLevelDatMaps(ctx)
     }
 
     private fun isWorldCurrentlyOpen(worldName: String): Boolean {
         return mc.isInSingleplayer && mc.server?.saveProperties?.levelName.equals(worldName)
     }
 
-    private fun searchLevelDatMaps(ctx: MapScanContext) {
+    private fun scanLevelDatMaps(ctx: MapScanContext) {
         val levelDatPath = ctx.storage.getLevelDatPath()
         val levelDatNbt = NbtIo.readCompressed(levelDatPath.toFile()) ?: return
         val playerDataNbt = levelDatNbt.getCompound("Data").getCompound("Player")
@@ -155,7 +147,7 @@ object MapsRemapper {
         }
     }
 
-    private fun searchPlayerDataMaps(nbtPath: Path, ctx: MapScanContext) {
+    private fun scanPlayerDataMaps(nbtPath: Path, ctx: MapScanContext) {
         val nbt = NbtIo.readCompressed(nbtPath.toFile()) ?: return
         if (searchPlayerDataMapsBase(nbt, MapSourceId.PLAYER_DATA, ctx)) {
             NbtIo.writeCompressed(nbt, nbtPath.toFile())
@@ -163,11 +155,11 @@ object MapsRemapper {
     }
 
     private fun searchPlayerDataMapsBase(nbt: NbtCompound, mapSourceId: MapSourceId, ctx: MapScanContext): Boolean {
-        return searchInventory(nbt.getList("Inventory", 10), MapSource(mapSourceId, "Inventory"), ctx) or
-                searchInventory(nbt.getList("EnderItems", 10), MapSource(mapSourceId, "Ender Chest"), ctx)
+        return scanInventory(nbt.getList("Inventory", 10), MapSource(mapSourceId, "Inventory"), ctx) or
+                scanInventory(nbt.getList("EnderItems", 10), MapSource(mapSourceId, "Ender Chest"), ctx)
     }
 
-    private suspend fun listMapsFromWorldData(ctx: MapScanContext) {
+    private suspend fun scanMapsFromWorldData(ctx: MapScanContext) {
         ctx.storage.worldDataStorageFlow().collect {
             val fileName = it.fileName.toString()
             if (fileName.startsWith("map_") && fileName.endsWith(".dat")) {
@@ -183,7 +175,7 @@ object MapsRemapper {
         }
     }
 
-    private fun listMapsInEntityRegion(regionFile: RegionFile, ctx: MapScanContext) {
+    private fun scanMapsInEntityRegion(regionFile: RegionFile, ctx: MapScanContext) {
         regionFile.chunkPosList().forEach { chunkPos ->
             var dirty = false
             var chunkNbt: NbtCompound?
@@ -201,9 +193,9 @@ object MapsRemapper {
                         posNbt.getDouble(2)
                     )
                     dirty = dirty or
-                            searchEntityNbtForMapsInItemFrames(entityNbt, id, pos, ctx) or
-                            searchEntityNbtForMapsInItemEntities(entityNbt, id, pos, ctx) or
-                            searchEntityNbtForMapsInEntityInventories(entityNbt, id, pos, ctx)
+                            scanEntityNbtForMapsInItemFrames(entityNbt, id, pos, ctx) or
+                            scanEntityNbtForMapsInItemEntities(entityNbt, id, pos, ctx) or
+                            scanEntityNbtForMapsInEntityInventories(entityNbt, id, pos, ctx)
                 }
             }
             if (dirty) {
@@ -216,17 +208,17 @@ object MapsRemapper {
         }
     }
 
-    private fun searchEntityNbtForMapsInItemFrames(
+    private fun scanEntityNbtForMapsInItemFrames(
         entityNbt: NbtCompound,
         id: String,
         pos: Vec3d,
         ctx: MapScanContext
     ) : Boolean {
         if ("minecraft:item_frame" != id) return false
-        return searchItemNbtForMap(entityNbt.getCompound("Item"), MapSource(MapSourceId.ITEM_FRAME, id, pos), ctx)
+        return scanItemNbtForMap(entityNbt.getCompound("Item"), MapSource(MapSourceId.ITEM_FRAME, id, pos), ctx)
     }
 
-    private fun searchItemNbtForMap(nbt: NbtCompound, mapSource: MapSource, ctx: MapScanContext): Boolean {
+    private fun scanItemNbtForMap(nbt: NbtCompound, mapSource: MapSource, ctx: MapScanContext): Boolean {
         if ("minecraft:filled_map" != nbt.getString("id")) return false
         val mapTag = nbt.getCompound("tag")
         val mapId = mapTag.getInt("map")
@@ -238,23 +230,23 @@ object MapsRemapper {
         return false
     }
 
-    private fun searchEntityNbtForMapsInItemEntities(
+    private fun scanEntityNbtForMapsInItemEntities(
         entityNbt: NbtCompound,
         id: String,
         pos: Vec3d,
         ctx: MapScanContext
     ) : Boolean {
         if ("minecraft:item" != id) return false
-        return searchItemNbtForMap(entityNbt.getCompound("Item"), MapSource(MapSourceId.ITEM_ENTITY, id, pos), ctx)
+        return scanItemNbtForMap(entityNbt.getCompound("Item"), MapSource(MapSourceId.ITEM_ENTITY, id, pos), ctx)
     }
 
-    private fun searchEntityNbtForMapsInEntityInventories(
+    private fun scanEntityNbtForMapsInEntityInventories(
         entityNbt: NbtCompound,
         id: String,
         pos: Vec3d,
         ctx: MapScanContext
     ) : Boolean {
-        return searchInventory(
+        return scanInventory(
             // todo: there may be other nbt tags to search on different entity types
             entityNbt.getList("Inventory", 10), // entities that implement InventoryOwner
             MapSource(MapSourceId.ENTITY_INVENTORY, id, pos),
@@ -262,19 +254,19 @@ object MapsRemapper {
         )
     }
 
-    private fun searchInventory(
+    private fun scanInventory(
         inventoryTagList: NbtList,
         mapSource: MapSource,
         ctx: MapScanContext
     ) : Boolean {
         var dirty = false
         inventoryTagList.forEach { inventorySlotTag ->
-            dirty = dirty or searchItemNbtForMap(inventorySlotTag as NbtCompound, mapSource, ctx)
+            dirty = dirty or scanItemNbtForMap(inventorySlotTag as NbtCompound, mapSource, ctx)
         }
         return dirty
     }
 
-    private fun listMapsInContainers(regionFile: RegionFile, ctx: MapScanContext) {
+    private fun scanMapsInContainers(regionFile: RegionFile, ctx: MapScanContext) {
         regionFile.chunkPosList().forEach { chunkPos ->
             var dirty = false
             var chunkNbt: NbtCompound?
@@ -284,16 +276,16 @@ object MapsRemapper {
                 val blockEntities = nbt.getList("block_entities", 10)
                 blockEntities.forEach blockEntityLoop@ { blockEntity ->
                     val blockEntityNbt = blockEntity as NbtCompound
+                    if (!blockEntityNbt.contains("Items")) return@blockEntityLoop
                     val containerBlockId = blockEntityNbt.getString("id")
                     val pos = Vec3d(
                         blockEntityNbt.getInt("x").toDouble(),
                         blockEntityNbt.getInt("y").toDouble(),
                         blockEntityNbt.getInt("z").toDouble()
                     )
-                    if (!blockEntityNbt.contains("Items")) return@blockEntityLoop
                     val itemsListTag = blockEntityNbt.getList("Items", 10)
                     dirty = dirty or
-                            searchInventory(itemsListTag, MapSource(MapSourceId.CONTAINER, containerBlockId, pos), ctx)
+                            scanInventory(itemsListTag, MapSource(MapSourceId.CONTAINER, containerBlockId, pos), ctx)
                 }
             }
             if (dirty) {
