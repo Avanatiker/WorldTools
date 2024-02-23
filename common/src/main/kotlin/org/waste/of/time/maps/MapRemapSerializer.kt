@@ -10,6 +10,7 @@ import kotlin.io.path.notExists
 object MapRemapSerializer {
 
     // Serialize the maps we've found
+    // Format: unique map id int on each line
     fun serialize(ctx: MapScanContext) {
         val uniqueMapIds = ctx.foundMaps
             .map { it.mapId }
@@ -21,10 +22,11 @@ object MapRemapSerializer {
                 writer.newLine()
             }
         }
-        MessageManager.sendInfo("Wrote map id's to $outputFilePath")
+        MessageManager.sendInfo("Wrote map id's to ${outputFilePath.fileName}")
     }
 
     // deserialize the remaps for this world
+    // Format: existingId:newId
     fun deserializeRemaps(worldStorage: WorldStorage): Map<Int, Int> {
         val inputFile = worldStorage.path.resolve("map_remaps.txt")
         if (inputFile.notExists() || !inputFile.isRegularFile()) throw RuntimeException("map_remaps.txt not found")

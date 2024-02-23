@@ -1,6 +1,7 @@
 package org.waste.of.time.fabric
 
 import com.mojang.brigadier.CommandDispatcher
+import com.mojang.brigadier.arguments.BoolArgumentType.bool
 import com.mojang.brigadier.arguments.IntegerArgumentType.integer
 import com.mojang.brigadier.arguments.StringArgumentType.string
 import net.fabricmc.api.ClientModInitializer
@@ -92,6 +93,11 @@ object WorldToolsFabric : ClientModInitializer {
                     .then(literal("remap")
                         .then(argument("worldName", string())
                             .then(argument("existingId", integer())
+                                .executes {
+                                    val worldName = it.getArgument("worldName", String::class.java)
+                                    MapsRemapper.remapMapsWithRemapFile(worldName)
+                                    0
+                                }
                                 .then(argument("newId", integer()).executes {
                                     val worldName = it.getArgument("worldName", String::class.java)
                                     val existingId = it.getArgument("existingId", Int::class.java)
@@ -103,13 +109,23 @@ object WorldToolsFabric : ClientModInitializer {
                                         )
                                     )
                                     0
-                                })
+                                }
+                                    .then(argument("force", bool()).executes {
+                                        val worldName = it.getArgument("worldName", String::class.java)
+                                        val existingId = it.getArgument("existingId", Int::class.java)
+                                        val newId = it.getArgument("newId", Int::class.java)
+                                        val force = it.getArgument("force", Boolean::class.java)
+                                        MapsRemapper.remapMaps(
+                                            worldName,
+                                            mapOf(
+                                                existingId to newId
+                                            ),
+                                            force
+                                        )
+                                        0
+                                    })
+                                )
                             )
-                            .executes {
-                                val worldName = it.getArgument("worldName", String::class.java)
-                                MapsRemapper.remapMapsWithRemapFile(worldName)
-                                0
-                            }
                         )
                     )
                 )

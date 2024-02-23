@@ -31,7 +31,7 @@ open class CustomRegionBasedStorage internal constructor(
     private val cachedRegionFiles: Long2ObjectLinkedOpenHashMap<RegionFile?> = Long2ObjectLinkedOpenHashMap()
 
     @Throws(IOException::class)
-    fun getRegionFile(pos: ChunkPos, create: Boolean = true): RegionFile {
+    fun getRegionFile(pos: ChunkPos): RegionFile {
         val longPos = ChunkPos.toLong(pos.regionX, pos.regionZ)
         cachedRegionFiles.getAndMoveToFirst(longPos)?.let { return it }
 
@@ -41,11 +41,6 @@ open class CustomRegionBasedStorage internal constructor(
 
         PathUtil.createDirectories(directory)
         val path = directory.resolve("r." + pos.regionX + "." + pos.regionZ + MCA_EXTENSION)
-        if (!path.toFile().exists()) {
-            if (!create) {
-                throw IOException("Region file containing chunk: $pos does not exist")
-            }
-        }
         val regionFile = RegionFile(path, directory, dsync)
         cachedRegionFiles.putAndMoveToFirst(longPos, regionFile)
         return regionFile
