@@ -1,6 +1,8 @@
 package org.waste.of.time.forge
 
 import com.mojang.brigadier.CommandDispatcher
+import com.mojang.brigadier.arguments.BoolArgumentType
+import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.arguments.StringArgumentType
 import net.minecraft.server.command.CommandManager.argument
 import net.minecraft.server.command.CommandManager.literal
@@ -20,6 +22,7 @@ import org.waste.of.time.Events
 import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.manager.CaptureManager
+import org.waste.of.time.maps.MapsRemapper
 import thedarkcolour.kotlinforforge.forge.FORGE_BUS
 
 @Mod(WorldTools.MOD_ID)
@@ -81,6 +84,44 @@ object WorldToolsForge {
                         CaptureManager.toggleCapture()
                         0
                     }
+                )
+                .then(literal("remap")
+                    .then(argument("worldName", StringArgumentType.string())
+                        .then(argument("existingId", IntegerArgumentType.integer())
+                            .executes {
+                                val worldName = it.getArgument("worldName", String::class.java)
+                                MapsRemapper.remapMapsWithRemapFile(worldName)
+                                0
+                            }
+                            .then(argument("newId", IntegerArgumentType.integer()).executes {
+                                val worldName = it.getArgument("worldName", String::class.java)
+                                val existingId = it.getArgument("existingId", Int::class.java)
+                                val newId = it.getArgument("newId", Int::class.java)
+                                MapsRemapper.remapMaps(
+                                    worldName,
+                                    mapOf(
+                                        existingId to newId
+                                    )
+                                )
+                                0
+                            }
+                                .then(argument("force", BoolArgumentType.bool()).executes {
+                                    val worldName = it.getArgument("worldName", String::class.java)
+                                    val existingId = it.getArgument("existingId", Int::class.java)
+                                    val newId = it.getArgument("newId", Int::class.java)
+                                    val force = it.getArgument("force", Boolean::class.java)
+                                    MapsRemapper.remapMaps(
+                                        worldName,
+                                        mapOf(
+                                            existingId to newId
+                                        ),
+                                        force
+                                    )
+                                    0
+                                })
+                            )
+                        )
+                    )
                 )
         )
     }
