@@ -5,8 +5,6 @@ import net.minecraft.client.toast.Toast
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.text.TextColor
-import net.minecraft.util.Formatting
-import net.minecraft.util.math.Vec3d
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.config
 import org.waste.of.time.WorldTools.mc
@@ -14,21 +12,20 @@ import org.waste.of.time.WorldTools.mc
 object MessageManager {
     private const val ERROR_COLOR = 0xff3333
 
-    val brand: Text = Text.literal("W").styled {
-        it.withColor(TextColor.fromRgb(config.render.accentColor))
-    }.append(
-        Text.literal("orld").styled {
-            it.withColor(Formatting.RESET)
-        }
-    ).append(
-        Text.literal("T").styled {
-            it.withColor(TextColor.fromRgb(config.render.accentColor))
-        }
-    ).append(
-        Text.literal("ools").styled {
-            it.withColor(Formatting.RESET)
-        }
-    )
+    val brand: Text = Text.empty()
+        .append(
+            Text.literal("W").styled {
+                it.withColor(TextColor.fromRgb(config.render.accentColor))
+            }
+        ).append(
+            Text.literal("orld")
+        ).append(
+            Text.literal("T").styled {
+                it.withColor(TextColor.fromRgb(config.render.accentColor))
+            }
+        ).append(
+            Text.literal("ools")
+        )
     private val converted by lazy {
         Text.literal("[").append(brand).append(Text.of("] "))
     }
