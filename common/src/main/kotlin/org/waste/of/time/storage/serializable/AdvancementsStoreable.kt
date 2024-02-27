@@ -20,7 +20,7 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 
 class AdvancementsStoreable : Storeable {
-    override fun shouldStore() = config.capture.advancements
+    override fun shouldStore() = config.general.capture.advancements
 
     override val verboseInfo: MutableText
         get() = translateHighlight(

@@ -3,6 +3,7 @@ package org.waste.of.time.manager
 import kotlinx.coroutines.Job
 import net.minecraft.client.gui.screen.ConfirmScreen
 import net.minecraft.client.network.ServerInfo
+import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.network.packet.c2s.play.ClientStatusC2SPacket
 import net.minecraft.text.Text
 import org.waste.of.time.WorldTools
@@ -11,6 +12,7 @@ import org.waste.of.time.WorldTools.config
 import org.waste.of.time.WorldTools.mc
 import org.waste.of.time.config.WorldToolsConfig
 import org.waste.of.time.storage.StorageFlow
+import org.waste.of.time.storage.cache.EntityCacheable
 import org.waste.of.time.storage.cache.HotCache
 import org.waste.of.time.storage.serializable.*
 
@@ -19,8 +21,6 @@ object CaptureManager {
     var capturing = false
     private var storeJob: Job? = null
     var currentLevelName: String = "Not yet initialized"
-    val serverInfo: ServerInfo
-        get() = mc.networkHandler?.serverInfo ?: throw IllegalStateException("Server info should not be null")
 
     val levelName: String
         get() = if (mc.isInSingleplayer) {
@@ -77,6 +77,8 @@ object CaptureManager {
         storeJob = StorageFlow.launch(potentialName)
         mc.networkHandler?.sendPacket(ClientStatusC2SPacket(ClientStatusC2SPacket.Mode.REQUEST_STATS))
         capturing = true
+
+        syncCacheFromWorldState()
     }
 
     private fun logCaptureSettingsState() {
@@ -112,6 +114,26 @@ object CaptureManager {
         MetadataStoreable().emit()
         CompressLevelStoreable().emit()
         EndFlow().emit()
+    }
+
+    private fun syncCacheFromWorldState() {
+        val world = mc.world ?: return
+        val diameter = world.chunkManager.chunks.diameter
+
+        repeat(diameter * diameter) { i ->
+            world.chunkManager.chunks.getChunk(i)?.let { chunk ->
+                RegionBasedChunk(chunk).cache()
+                BlockEntityLoadable(chunk).tryEmit()
+            }
+        }
+
+        world.entities.forEach {
+            if (it is PlayerEntity) {
+                PlayerStoreable(it).cache()
+            } else {
+                EntityCacheable(it).cache()
+            }
+        }
     }
 
     private fun String.sanitizeWorldName() = replace(":", "_")

@@ -7,6 +7,8 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.math.abs
+import kotlin.math.ln
+import kotlin.math.pow
 
 object Utils {
     // Why cant I use the std lib?
@@ -30,5 +32,13 @@ object Utils {
 
     fun Vec3d.manhattanDistance2d(other: Vec3d): Double {
         return abs(this.x - other.x) + abs(this.z - other.z)
+    }
+
+    fun Long.toReadableByteCount(si: Boolean = true): String {
+        val unit = if (si) 1000 else 1024
+        if (this < unit) return "$this B"
+        val exp = (ln(toDouble()) / ln(unit.toDouble())).toInt()
+        val pre = (if (si) "kMGTPE" else "KMGTPE")[exp - 1] + if (si) "" else "i"
+        return String.format("%.1f %sB", this / unit.toDouble().pow(exp.toDouble()), pre)
     }
 }

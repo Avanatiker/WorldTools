@@ -6,19 +6,19 @@ import net.minecraft.text.TextColor
 import org.waste.of.time.manager.CaptureManager.currentLevelName
 import org.waste.of.time.manager.MessageManager.translateHighlight
 import org.waste.of.time.WorldTools.config
+import org.waste.of.time.storage.cache.HotCache
 
 object StatisticManager {
     var chunks = 0
     var entities = 0
     var players = 0
-    var containers = 0
+    private val containers get(): Int = HotCache.scannedContainers.size
     val dimensions = mutableSetOf<String>()
 
     fun reset() {
         chunks = 0
         entities = 0
         players = 0
-        containers = 0
         dimensions.clear()
     }
 
@@ -59,7 +59,7 @@ object StatisticManager {
             } else {
                 val dimensionsFormatted = dimensions.map {
                     Text.literal(it).styled { text ->
-                        text.withColor(TextColor.fromRgb(config.advanced.accentColor))
+                        text.withColor(TextColor.fromRgb(config.render.accentColor))
                     }
                 }.joinWithAnd()
                 Text.translatable("worldtools.capture.saved").copy()

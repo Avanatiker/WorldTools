@@ -8,7 +8,7 @@ import net.minecraft.text.MutableText
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.world.World
 import net.minecraft.world.level.storage.LevelStorage
-import org.waste.of.time.WorldTools
+import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.config
 import org.waste.of.time.manager.MessageManager.translateHighlight
 import org.waste.of.time.manager.StatisticManager
@@ -22,7 +22,7 @@ class RegionBasedEntities(
     val entities: Set<EntityCacheable>, // can be empty, signifies we should clear any previously saved entities
     world: World
 ) : RegionBased(chunkPos, world, "entities") {
-    override fun shouldStore() = config.capture.entities
+    override fun shouldStore() = config.general.capture.entities
 
     override val verboseInfo: MutableText
         get() = translateHighlight(
@@ -39,7 +39,7 @@ class RegionBasedEntities(
             dimension
         )
 
-    override fun compound(storage: CustomRegionBasedStorage) = NbtCompound().apply {
+    override fun compound() = NbtCompound().apply {
         put("Entities", NbtList().apply {
             entities.forEach { entity ->
                 add(entity.compound())
@@ -48,15 +48,21 @@ class RegionBasedEntities(
 
         putInt("DataVersion", SharedConstants.getGameVersion().saveVersion.id)
         put("Position", NbtIntArray(intArrayOf(chunkPos.x, chunkPos.z)))
-        if (config.debug.logSavedEntities)
-            entities.forEach { entity -> WorldTools.LOG.info("Entity saved: $entity (Chunk: $chunkPos)") }
+        if (config.debug.logSavedEntities) {
+            entities.forEach { entity -> LOG.info("Entity saved: $entity (Chunk: $chunkPos)") }
+        }
     }
 
-    override fun writeToStorage(session: LevelStorage.Session, storage: CustomRegionBasedStorage, cachedStorages: MutableMap<String, CustomRegionBasedStorage>) {
-        if (this.entities.isEmpty()) {
+    override fun writeToStorage(
+        session: LevelStorage.Session,
+        storage: CustomRegionBasedStorage,
+        cachedStorages: MutableMap<String, CustomRegionBasedStorage>
+    ) {
+        if (entities.isEmpty()) {
             // remove any previously stored entities in this chunk
-            if (WorldTools.config.debug.logSavedEntities)
-                WorldTools.LOG.info("Removing any previously saved entities from chunk: {}", chunkPos)
+            if (config.debug.logSavedEntities) {
+                LOG.info("Removing any previously saved entities from chunk: {}", chunkPos)
+            }
             storage.write(chunkPos, null)
             return
         }

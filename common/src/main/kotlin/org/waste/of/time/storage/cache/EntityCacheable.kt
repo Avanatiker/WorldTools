@@ -5,6 +5,7 @@ import net.minecraft.entity.EntityType
 import net.minecraft.nbt.NbtCompound
 import org.waste.of.time.Utils.addAuthor
 import org.waste.of.time.Utils.toByte
+import org.waste.of.time.WorldTools.TIMESTAMP_KEY
 import org.waste.of.time.WorldTools.config
 import org.waste.of.time.storage.Cacheable
 
@@ -12,28 +13,32 @@ data class EntityCacheable(
     val entity: Entity
 ) : Cacheable {
     fun compound() = NbtCompound().apply {
-
-        // saveSelfNbt has a check for DISCARDED
+        // saveSelfNbt has a check for RemovalReason.DISCARDED
         EntityType.getId(entity.type)?.let { putString(Entity.ID_KEY, it.toString()) }
         entity.writeNbt(this)
 
-        if (config.entity.modifyEntityNbt) {
+        if (config.entity.behavior.modifyEntityBehavior) {
+            putByte("NoAI", config.entity.behavior.noAI.toByte())
+            putByte("NoGravity", config.entity.behavior.noGravity.toByte())
+            putByte("Invulnerable", config.entity.behavior.invulnerable.toByte())
+            putByte("Silent", config.entity.behavior.silent.toByte())
+        }
+
+        if (config.entity.metadata.captureTimestamp) {
+            putLong(TIMESTAMP_KEY, System.currentTimeMillis())
+        }
+
+        if (config.entity.metadata.waterMark) {
             addAuthor()
-            putByte("NoAI", config.entity.noAI.toByte())
-            putByte("NoGravity", config.entity.noGravity.toByte())
-            putByte("Invulnerable", config.entity.invulnerable.toByte())
-            putByte("Silent", config.entity.silent.toByte())
         }
     }
 
     override fun cache() {
-        val chunkPos = entity.chunkPos
-        val set = HotCache.entities[chunkPos] ?: mutableSetOf()
-        // can occur when we reload the same entity
-        // equality is based off entity uuid, prefer caching the newest (this) entity
-        if (set.contains(this)) set.remove(this)
-        set.add(this)
-        HotCache.entities[chunkPos] = set
+        HotCache.entities.computeIfAbsent(entity.chunkPos) { mutableSetOf() }.apply {
+            // Remove the entity if it already exists to update it
+            removeIf { it.entity.uuid == entity.uuid }
+            add(this@EntityCacheable)
+        }
     }
 
     override fun flush() {
@@ -42,8 +47,6 @@ data class EntityCacheable(
             list.remove(this)
             if (list.isEmpty()) {
                 HotCache.entities.remove(chunkPos)
-            } else {
-                HotCache.entities[chunkPos] = list
             }
         }
     }
@@ -53,8 +56,5 @@ data class EntityCacheable(
         return entity.uuid == other.entity.uuid
     }
 
-    override fun hashCode(): Int {
-        // consistent based off entity uuid
-        return entity.uuid.hashCode()
-    }
+    override fun hashCode() = entity.uuid.hashCode()
 }

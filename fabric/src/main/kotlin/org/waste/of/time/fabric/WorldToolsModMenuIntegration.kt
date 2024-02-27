@@ -11,9 +11,8 @@ import org.waste.of.time.config.WorldToolsConfig
 @Environment(EnvType.CLIENT)
 class WorldToolsModMenuIntegration : ModMenuApi {
 
-    override fun getModConfigScreenFactory(): ConfigScreenFactory<*> {
-        return ConfigScreenFactory { parent: Screen? ->
+    override fun getModConfigScreenFactory() =
+        ConfigScreenFactory { parent: Screen? ->
             AutoConfig.getConfigScreen(WorldToolsConfig::class.java, parent).get()
         }
-    }
 }

@@ -4,7 +4,6 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtIo
-import net.minecraft.nbt.NbtList
 import net.minecraft.registry.Registries
 import net.minecraft.util.Identifier
 import net.minecraft.util.PathUtil
@@ -53,45 +52,35 @@ open class CustomRegionBasedStorage internal constructor(
         }
     }
 
-    fun getTagAt(chunkPos: ChunkPos): NbtCompound? {
-        val regionFile = getRegionFile(chunkPos)
-        var nbt: NbtCompound? = null
-        regionFile.getChunkInputStream(chunkPos)?.use { dataInputStream ->
-            nbt = NbtIo.readCompound(dataInputStream)
+    private fun getNbtAt(chunkPos: ChunkPos) =
+        getRegionFile(chunkPos).getChunkInputStream(chunkPos)?.use { dataInputStream ->
+            NbtIo.readCompound(dataInputStream)
         }
-        return nbt
-    }
 
-    fun getBlockEntities(chunkPos: ChunkPos): List<BlockEntity> {
-        val blockEntities = mutableListOf<BlockEntity>()
-        getTagAt(chunkPos)?.let { chunkNbt ->
-            val compoundTagsList: NbtList = chunkNbt.getList("block_entities", 10)
-            compoundTagsList.filterIsInstance<NbtCompound>().forEach { compoundTag ->
+    fun getBlockEntities(chunkPos: ChunkPos) =
+        getNbtAt(chunkPos)
+            ?.getList("block_entities", 10)
+            ?.filterIsInstance<NbtCompound>()
+            ?.mapNotNull { compoundTag ->
+                val blockPos = BlockPos(compoundTag.getInt("x"), compoundTag.getInt("y"), compoundTag.getInt("z"))
+                val blockStateIdentifier = Identifier(compoundTag.getString("id"))
+                // todo: read block state from section data NBT?
+                //  doesn't seem necessary rn because we're just using this to get the pos and container contents
+                //  might be needed for certain container types with multiple block states, like chest vs double chest?
                 try {
-                    val blockPos = BlockPos(compoundTag.getInt("x"), compoundTag.getInt("y"), compoundTag.getInt("z"))
-                    val blockStateIdentifier = Identifier(compoundTag.getString("id"))
                     Registries.BLOCK.get(blockStateIdentifier).let { block ->
-                        // todo: read block state from section data NBT?
-                        //  doesn't seem necessary rn because we're just using this to get the pos and container contents
-                        //  might be needed for certain container types with multiple block states, like chest vs double chest?
-                        try {
-                            Registries.BLOCK_ENTITY_TYPE.getOrEmpty(blockStateIdentifier).ifPresent {
-                                it.instantiate(blockPos, block.defaultState)?.let { blockEntity ->
-                                    blockEntity.readNbt(compoundTag)
-                                    blockEntities.add(blockEntity)
-                                }
+                        Registries.BLOCK_ENTITY_TYPE
+                            .getOrEmpty(blockStateIdentifier)
+                            .orElse(null)
+                            ?.instantiate(blockPos, block.defaultState)?.apply {
+                                readNbt(compoundTag)
                             }
-                        } catch (e: Exception) {
-                            LOG.debug("Error creating block entity: {} from NBT at chunk: {}", blockStateIdentifier, chunkPos)
-                        }
                     }
                 } catch (e: Exception) {
-                    LOG.debug("Error reading existing block entity from chunk: {}", chunkPos)
+                    LOG.error("Error creating block entity: {} from NBT at chunk: {}", blockStateIdentifier, chunkPos)
+                    null
                 }
-            }
-        }
-        return blockEntities
-    }
+            } ?: emptyList()
 
     @Throws(IOException::class)
     override fun close() {
