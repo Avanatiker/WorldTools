@@ -18,7 +18,7 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 
 class StatisticStoreable : Storeable {
-    override fun shouldStore() = config.capture.statistics
+    override fun shouldStore() = config.general.capture.statistics
 
     override val verboseInfo: MutableText
         get() = translateHighlight(

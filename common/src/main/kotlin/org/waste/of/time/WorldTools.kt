@@ -20,6 +20,7 @@ object WorldTools {
     const val MCA_EXTENSION = ".mca"
     const val DAT_EXTENSION = ".dat"
     const val MAX_LEVEL_NAME_LENGTH = 64
+    const val TIMESTAMP_KEY = "CaptureTimestamp"
     val GSON: Gson = GsonBuilder().setPrettyPrinting().create()
     val CURRENT_VERSION = SharedConstants.getGameVersion().saveVersion.id
     private val VERSION: String = LoaderInfo.getVersion() ?: "DEV"

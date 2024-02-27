@@ -15,14 +15,14 @@ object MessageManager {
     private const val ERROR_COLOR = 0xff3333
 
     val brand: Text = Text.literal("W").styled {
-        it.withColor(TextColor.fromRgb(config.advanced.accentColor))
+        it.withColor(TextColor.fromRgb(config.render.accentColor))
     }.append(
         Text.literal("orld").styled {
             it.withColor(Formatting.RESET)
         }
     ).append(
         Text.literal("T").styled {
-            it.withColor(TextColor.fromRgb(config.advanced.accentColor))
+            it.withColor(TextColor.fromRgb(config.render.accentColor))
         }
     ).append(
         Text.literal("ools").styled {
@@ -91,7 +91,7 @@ object MessageManager {
 
     fun translateHighlight(key: String, vararg args: Any): MutableText {
         args.map { element ->
-            val secondaryColor = TextColor.fromRgb(config.advanced.accentColor)
+            val secondaryColor = TextColor.fromRgb(config.render.accentColor)
             if (element is Text) {
                 if (element.style.color != null) {
                     element

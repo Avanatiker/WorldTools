@@ -31,6 +31,7 @@ import org.waste.of.time.storage.StorageFlow
 import org.waste.of.time.storage.cache.EntityCacheable
 import org.waste.of.time.storage.cache.HotCache
 import org.waste.of.time.storage.cache.LootableInjectionHandler
+import org.waste.of.time.storage.serializable.BlockEntityLoadable
 import org.waste.of.time.storage.serializable.PlayerStoreable
 import org.waste.of.time.storage.serializable.RegionBasedChunk
 import java.awt.Color
@@ -39,13 +40,12 @@ object Events {
     fun onChunkLoad(chunk: WorldChunk) {
         if (!capturing) return
         RegionBasedChunk(chunk).cache()
+        BlockEntityLoadable(chunk).tryEmit()
     }
 
     fun onChunkUnload(chunk: WorldChunk) {
         if (!capturing) return
-        val regionBasedChunk = HotCache.chunks[chunk.pos] ?: RegionBasedChunk(chunk)
-        regionBasedChunk.apply {
-            cacheBlockEntities()
+        (HotCache.chunks[chunk.pos] ?: RegionBasedChunk(chunk)).apply {
             emit()
             flush()
         }
@@ -86,7 +86,7 @@ object Events {
         HotCache.clear()
         StorageFlow.lastStored = null
         StatisticManager.reset()
-        if (config.capture.autoDownload) CaptureManager.start()
+        if (config.general.autoDownload) CaptureManager.start()
     }
 
     fun onClientDisconnect() {
@@ -108,20 +108,19 @@ object Events {
         cameraY: Double,
         cameraZ: Double
     ) {
-        if (!capturing || !config.capture.renderNotYetCachedContainers) return
+        if (!capturing || !config.render.renderNotYetCachedContainers) return
 
-        val world = mc.world ?: return
         val vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getLines()) ?: return
 
-        HotCache.cachedMissingContainers
+        HotCache.unscannedContainers
             .forEach { blockEntity ->
                 val blockPos = blockEntity.pos
-                val color = Color(config.capture.containerColor)
                 val x1 = (blockPos.x - cameraX).toFloat()
                 val y1 = (blockPos.y - cameraY).toFloat()
                 val z1 = (blockPos.z - cameraZ).toFloat()
                 val x2 = x1 + 1
                 val z2 = z1 + 1
+                val color = Color(config.render.containerColor)
                 val r = color.red / 255.0f
                 val g = color.green / 255.0f
                 val b = color.blue / 255.0f
@@ -194,6 +193,6 @@ object Events {
     fun onMapStateGet(id: String) {
         if (!capturing) return
         // todo: check if this also populates maps when we open a container that contains a map but don't hold it
-        HotCache.maps.add(id)
+        HotCache.mapIDs.add(id)
     }
 }

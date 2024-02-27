@@ -1,6 +1,7 @@
 package org.waste.of.time.storage.serializable
 
 import net.minecraft.SharedConstants
+import org.waste.of.time.config.WorldToolsConfig.World.WorldGenerator.GeneratorType
 import net.minecraft.nbt.*
 import net.minecraft.text.MutableText
 import net.minecraft.util.Util
@@ -8,6 +9,7 @@ import net.minecraft.util.WorldSavePath
 import net.minecraft.world.GameRules
 import net.minecraft.world.level.storage.LevelStorage.Session
 import org.waste.of.time.Utils.addAuthor
+import org.waste.of.time.Utils.toByte
 import org.waste.of.time.WorldTools.DAT_EXTENSION
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.config
@@ -21,7 +23,7 @@ import java.io.File
 import java.io.IOException
 
 class LevelDataStoreable : Storeable {
-    override fun shouldStore() = config.capture.levelData
+    override fun shouldStore() = config.general.capture.levelData
 
     override val verboseInfo: MutableText
         get() = translateHighlight(
@@ -149,49 +151,56 @@ class LevelDataStoreable : Storeable {
     }
 
     private fun genGameRules(gameRules: GameRules) = gameRules.toNbt().apply {
-        if (!config.world.modifyGameRules) return@apply
+        val setting = config.world.gameRules
+        if (!setting.modifyGameRules) return@apply
 
-        putString(GameRules.DO_WARDEN_SPAWNING.name, config.world.doWardenSpawning.toString())
-        putString(GameRules.DO_FIRE_TICK.name, config.world.doFireTick.toString())
-        putString(GameRules.DO_VINES_SPREAD.name, config.world.doVinesSpread.toString())
-        putString(GameRules.DO_MOB_SPAWNING.name, config.world.doMobSpawning.toString())
-        putString(GameRules.DO_DAYLIGHT_CYCLE.name, config.world.doDaylightCycle.toString())
-        putString(GameRules.KEEP_INVENTORY.name, config.world.keepInventory.toString())
-        putString(GameRules.DO_MOB_GRIEFING.name, config.world.doMobGriefing.toString())
-        putString(GameRules.DO_TRADER_SPAWNING.name, config.world.doTraderSpawning.toString())
-        putString(GameRules.DO_PATROL_SPAWNING.name, config.world.doPatrolSpawning.toString())
-        putString(GameRules.DO_WEATHER_CYCLE.name, config.world.doWeatherCycle.toString())
+        putString(GameRules.DO_WARDEN_SPAWNING.name, setting.doWardenSpawning.toString())
+        putString(GameRules.DO_FIRE_TICK.name, setting.doFireTick.toString())
+        putString(GameRules.DO_VINES_SPREAD.name, setting.doVinesSpread.toString())
+        putString(GameRules.DO_MOB_SPAWNING.name, setting.doMobSpawning.toString())
+        putString(GameRules.DO_DAYLIGHT_CYCLE.name, setting.doDaylightCycle.toString())
+        putString(GameRules.KEEP_INVENTORY.name, setting.keepInventory.toString())
+        putString(GameRules.DO_MOB_GRIEFING.name, setting.doMobGriefing.toString())
+        putString(GameRules.DO_TRADER_SPAWNING.name, setting.doTraderSpawning.toString())
+        putString(GameRules.DO_PATROL_SPAWNING.name, setting.doPatrolSpawning.toString())
+        putString(GameRules.DO_WEATHER_CYCLE.name, setting.doWeatherCycle.toString())
     }
 
     private fun generatorMockNbt() = NbtCompound().apply {
-        putByte("bonus_chest", 0)
-        putLong("seed", 0)
-        putByte("generate_features", 0)
+        putByte("bonus_chest", config.world.worldGenerator.bonusChest.toByte())
+        putLong("seed", config.world.worldGenerator.seed)
+        putByte("generate_features", config.world.worldGenerator.generateFeatures.toByte())
 
         put("dimensions", NbtCompound().apply {
-            put("minecraft:${mc.player?.world?.registryKey?.value?.path}", NbtCompound().apply {
-                put("generator", voidGenerator())
-                putString("type", "minecraft:overworld")
-            })
+            mc.networkHandler?.worldKeys?.forEach { key ->
+                put("minecraft:${key.value.path}", NbtCompound().apply {
+                    put("generator", generateGenerator(key.value.path))
 
-            put("minecraft:overworld", NbtCompound().apply {
-                put("generator", voidGenerator())
-                putString("type", "minecraft:overworld")
-            })
-
-            put("minecraft:the_nether", NbtCompound().apply {
-                put("generator", voidGenerator())
-                putString("type", "minecraft:the_nether")
-            })
-
-            put("minecraft:the_end", NbtCompound().apply {
-                put("generator", voidGenerator())
-                putString("type", "minecraft:the_end")
-            })
+                    when (key.value.path) {
+                        "the_nether" -> {
+                            putString("type", "minecraft:the_nether")
+                        }
+                        "the_end" -> {
+                            putString("type", "minecraft:the_end")
+                        }
+                        else -> {
+                            putString("type", "minecraft:overworld")
+                        }
+                    }
+                })
+            }
         })
     }
 
-    private fun voidGenerator() = NbtCompound().apply {
+    private fun generateGenerator(path: String) = NbtCompound().apply {
+        when (config.world.worldGenerator.type) {
+            GeneratorType.VOID -> voidGenerator()
+            GeneratorType.DEFAULT -> defaultGenerator(path)
+            GeneratorType.FLAT -> flatGenerator(path)
+        }
+    }
+
+    private fun NbtCompound.voidGenerator() {
         put("settings", NbtCompound().apply {
             putByte("features", 1)
             putString("biome", "minecraft:the_void")
@@ -205,5 +214,37 @@ class LevelDataStoreable : Storeable {
             putByte("lakes", 0)
         })
         putString("type", "minecraft:flat")
+    }
+
+    private fun NbtCompound.defaultGenerator(path: String) {
+        when (path) {
+            "the_nether" -> {
+                put("biome_source", NbtCompound().apply {
+                    putString("preset", "minecraft:nether")
+                    putString("type", "minecraft:multi_noise")
+                })
+                putString("settings", "minecraft:nether")
+                putString("type", "minecraft:noise")
+            }
+            "the_end" -> {
+                put("biome_source", NbtCompound().apply {
+                    putString("type", "minecraft:end")
+                })
+                putString("settings", "minecraft:end")
+                putString("type", "minecraft:the_end")
+            }
+            else -> {
+                put("biome_source", NbtCompound().apply {
+                    putString("preset", "minecraft:overworld")
+                    putString("type", "minecraft:multi_noise")
+                })
+                putString("settings", "minecraft:overworld")
+                putString("type", "minecraft:noise")
+            }
+        }
+    }
+
+    private fun NbtCompound.flatGenerator(path: String) {
+        // ToDo: Implement flat generator
     }
 }

@@ -14,6 +14,7 @@ import org.waste.of.time.manager.MessageManager
 import org.waste.of.time.manager.StatisticManager
 import org.waste.of.time.storage.cache.EntityCacheable
 import org.waste.of.time.storage.cache.HotCache
+import org.waste.of.time.storage.serializable.BlockEntityLoadable
 import org.waste.of.time.storage.serializable.EndFlow
 import org.waste.of.time.storage.serializable.PlayerStoreable
 import org.waste.of.time.storage.serializable.RegionBasedChunk
@@ -43,7 +44,6 @@ object StorageFlow {
 
         try {
             LOG.info("Started caching")
-            syncCacheFromWorldState()
             mc.levelStorage.createSession(levelName).use { openSession ->
                 sharedFlow.collect { storeable ->
                     if (!storeable.shouldStore()) {
@@ -51,7 +51,11 @@ object StorageFlow {
                     }
 
                     val time = measureTime {
-                        storeable.store(openSession, cachedStorages)
+                        if (storeable is BlockEntityLoadable) {
+                            storeable.load(openSession, cachedStorages)
+                        } else {
+                            storeable.store(openSession, cachedStorages)
+                        }
                     }
 
                     lastStored = storeable
@@ -81,20 +85,6 @@ object StorageFlow {
         HotCache.clear()
         CaptureManager.capturing = false
         LOG.info("Finished caching")
-    }
-
-    private fun syncCacheFromWorldState() {
-        val diameter = mc.world?.chunkManager?.chunks?.diameter ?: 0
-        for (i in 0..<(diameter * diameter)) {
-            mc.world?.chunkManager?.chunks?.getChunk(i)?.let { chunk ->
-                RegionBasedChunk(chunk).cache()
-            }
-        }
-
-        mc.world?.entities?.forEach {
-            if (it is PlayerEntity) PlayerStoreable(it).cache()
-            else EntityCacheable(it).cache()
-        }
     }
 
     class StopCollectingException : Exception()

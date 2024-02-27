@@ -24,7 +24,7 @@ import java.nio.file.Path
 import kotlin.io.path.writeBytes
 
 class MetadataStoreable : Storeable {
-    override fun shouldStore() = config.capture.metadata
+    override fun shouldStore() = config.general.capture.metadata
 
     override val verboseInfo: MutableText
         get() = translateHighlight(

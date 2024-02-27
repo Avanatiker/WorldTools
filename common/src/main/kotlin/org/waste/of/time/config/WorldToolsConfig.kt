@@ -3,6 +3,11 @@ package org.waste.of.time.config
 import me.shedaniel.autoconfig.ConfigData
 import me.shedaniel.autoconfig.annotation.Config
 import me.shedaniel.autoconfig.annotation.ConfigEntry
+import me.shedaniel.autoconfig.annotation.ConfigEntry.Gui.TransitiveObject
+import me.shedaniel.autoconfig.annotation.ConfigEntry.Gui.CollapsibleObject
+import me.shedaniel.autoconfig.annotation.ConfigEntry.Gui.Tooltip
+import me.shedaniel.autoconfig.annotation.ConfigEntry.Category
+import me.shedaniel.autoconfig.annotation.ConfigEntry.Gui.Excluded
 import net.minecraft.entity.boss.BossBar
 
 /**
@@ -11,72 +16,168 @@ import net.minecraft.entity.boss.BossBar
  */
 @Config(name = "worldtools")
 class WorldToolsConfig : ConfigData {
-    @ConfigEntry.Gui.CollapsibleObject
-    val capture = Capture()
+    @TransitiveObject
+    @Category("General")
+    val general = General()
 
-    @ConfigEntry.Gui.CollapsibleObject
+    @TransitiveObject
+    @Category("World")
     val world = World()
 
-    @ConfigEntry.Gui.CollapsibleObject
+    @TransitiveObject
+    @Category("Entity")
     val entity = Entity()
 
-    @ConfigEntry.Gui.CollapsibleObject
+    @TransitiveObject
+    @Category("Render")
+    val render = Render()
+
+    @TransitiveObject
+    @Category("Advanced")
     val advanced = Advanced()
 
-    @ConfigEntry.Gui.CollapsibleObject
+    @TransitiveObject
+    @Category("Debug")
+    @ConfigEntry.Gui.PrefixText
     val debug = Debug()
 
-    class Capture {
+    class General {
+        @Tooltip
         var autoDownload = false
+        @Tooltip
         var compressLevel = true
-        var renderNotYetCachedContainers = true
-        var containerColor = 0xDE0000
-        var chunks = true
-        var entities = true
-        var players = true
-        var statistics = true
-        var levelData = true
-        var advancements = true
-        var metadata = true
-        var maps = true
+        @Excluded
+        var reloadBlockEntities = true
+
+        @CollapsibleObject(startExpanded = true)
+        @Tooltip
+        var capture = Capture()
+
+        class Capture {
+            var chunks = true
+            var entities = true
+            var players = true
+            var statistics = true
+            var levelData = true
+            var advancements = true
+            var metadata = true
+            var maps = true
+        }
     }
 
     class World {
-//        var modifyWorldGenerator = true
-        var modifyGameRules = true
+        @CollapsibleObject(startExpanded = true)
+        val worldGenerator = WorldGenerator()
 
-        var doWardenSpawning = false
-        var doFireTick = false
-        var doVinesSpread = false
-        var doMobSpawning = false
-        var doDaylightCycle = false
-        var doWeatherCycle = false
-        var keepInventory = true
-        var doMobGriefing = false
-        var doTraderSpawning = false
-        var doPatrolSpawning = false
+        @CollapsibleObject(startExpanded = true)
+        val gameRules = GameRules()
+
+        @CollapsibleObject(startExpanded = true)
+        val metadata = Metadata()
+
+        @CollapsibleObject(startExpanded = true)
+        @Excluded
+        val censor = Censor()
+
+        class WorldGenerator {
+            @Tooltip
+            var type = GeneratorType.VOID
+            val bonusChest = false
+            val generateFeatures = false
+            var seed = 0L
+
+            enum class GeneratorType {
+                VOID,
+                DEFAULT,
+                FLAT
+            }
+        }
+
+        class GameRules {
+            @Tooltip
+            var modifyGameRules = true
+
+            var doWardenSpawning = false
+            var doFireTick = false
+            var doVinesSpread = false
+            var doMobSpawning = false
+            var doDaylightCycle = false
+            var doWeatherCycle = false
+            var keepInventory = true
+            var doMobGriefing = false
+            var doTraderSpawning = false
+            var doPatrolSpawning = false
+        }
+
+        class Metadata {
+            var captureTimestamp = true
+            var waterMark = true
+        }
+
+        class Censor {
+            // ToDo: Add censoring options
+        }
     }
 
     class Entity {
-        var modifyEntityNbt = false
+        @CollapsibleObject(startExpanded = true)
+        val behavior = Behavior()
 
-        var noAI = true
-        var noGravity = true
-        var invulnerable = true
-        var silent = true
+        @CollapsibleObject(startExpanded = true)
+        val metadata = Metadata()
+
+        @CollapsibleObject(startExpanded = true)
+        val censor = Censor()
+
+        class Behavior {
+            @Tooltip
+            var modifyEntityBehavior = false
+
+            var noAI = true
+            var noGravity = true
+            var invulnerable = true
+            var silent = true
+        }
+
+        class Metadata {
+            var captureTimestamp = true
+            var waterMark = true
+        }
+
+        class Censor {
+            // ToDo: Add censoring options
+
+            @Excluded
+            var names = false
+            @Excluded
+            var owner = false
+            @Tooltip
+            var lastDeathLocation = true
+        }
     }
 
-    class Advanced {
-        var anonymousMode = false
-        var hideExperimentalWorldGui = true // See IntegratedServerLoaderMixin
-        var showToasts = true
-        var showChatMessages = true
+    class Render {
+        var renderNotYetCachedContainers = true
+        @ConfigEntry.ColorPicker
+        var containerColor = 0xDE0000
+        @ConfigEntry.ColorPicker
         var accentColor = 0xA2FF4C
         var captureBarColor = BossBar.Color.PINK
         var captureBarStyle = BossBar.Style.NOTCHED_10
         var progressBarColor = BossBar.Color.GREEN
         var progressBarStyle = BossBar.Style.PROGRESS
+        @ConfigEntry.BoundedDiscrete(min = 50, max = 60000)
         var progressBarTimeout = 3000L
+    }
+
+    class Advanced {
+        @Tooltip
+        var anonymousMode = false
+        @Tooltip
+        var hideExperimentalWorldGui = true // See IntegratedServerLoaderMixin
+        var showToasts = true
+        var showChatMessages = true
+        var keepEnderChestContents = false
     }
 
     class Debug {
@@ -85,5 +186,6 @@ class WorldToolsConfig : ConfigData {
         var logSavedEntities = false
         var logSavedContainers = false
         var logSavedMaps = false
+        var logZippingProgress = false
     }
 }

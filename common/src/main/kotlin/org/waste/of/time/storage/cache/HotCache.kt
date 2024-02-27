@@ -4,9 +4,11 @@ import it.unimi.dsi.fastutil.longs.LongArraySet
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.LockableContainerBlockEntity
 import net.minecraft.inventory.EnderChestInventory
+import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.world.World
 import org.waste.of.time.WorldTools.LOG
+import org.waste.of.time.WorldTools.config
 import org.waste.of.time.WorldTools.mc
 import org.waste.of.time.storage.serializable.PlayerStoreable
 import org.waste.of.time.storage.serializable.RegionBasedChunk
@@ -24,33 +26,30 @@ object HotCache {
     internal val savedChunks = LongArraySet()
     val entities = ConcurrentHashMap<ChunkPos, MutableSet<EntityCacheable>>()
     val players: ConcurrentHashMap.KeySetView<PlayerStoreable, Boolean> = ConcurrentHashMap.newKeySet()
-    val blockEntities: ConcurrentHashMap.KeySetView<LockableContainerBlockEntity, Boolean> =
-        ConcurrentHashMap.newKeySet()
+    val scannedContainers = ConcurrentHashMap<BlockPos, LockableContainerBlockEntity>()
     var lastInteractedBlockEntity: BlockEntity? = null
-    // TODO: load existing cached containers from already written chunks
-    //  e.g. the player reloads a chunk that contains block entities that we already saved in the storage session
-    //  The loading should be done async as it requires IO, so we should add some delay onto the debug rendering here
-    //  so it doesn't confuse players as the box would pop in and then later disappear
-    val cachedMissingContainers by LazyUpdatingDelegate(100) {
+    val unscannedContainers by LazyUpdatingDelegate(100) {
         chunks.values
             .flatMap { it.chunk.blockEntities.values }
             .filterIsInstance<LockableContainerBlockEntity>()
-            .filter { it !in blockEntities }
+            .filterNot { scannedContainers.containsKey(it.pos) }
     }
     // map id's of maps that we've seen during the capture
-    val maps = HashSet<String>()
+    val mapIDs = mutableSetOf<String>()
 
     fun getEntitySerializableForChunk(chunkPos: ChunkPos, world: World) =
         entities[chunkPos]?.let { entities ->
             RegionBasedEntities(chunkPos, entities, world)
         }
 
-    fun convertEntities(world: World) =
-        entities.map { entry ->
-            RegionBasedEntities(entry.key, entry.value, world)
-        }
-
-    // used as public API for external mods like XaeroPlus, change carefully
+    /**
+     * Used as a public API for external mods like [XaeroPlus](https://github.com/rfresh2/XaeroPlus), change carefully.
+     *
+     * @param chunkX The X coordinate of the chunk.
+     * @param chunkZ The Z coordinate of the chunk.
+     * @return True if the chunk is saved, false otherwise.
+     */
+    @Suppress("unused")
     fun isChunkSaved(chunkX: Int, chunkZ: Int) = savedChunks.contains(ChunkPos.toLong(chunkX, chunkZ))
 
     fun clear() {
@@ -58,13 +57,14 @@ object HotCache {
         savedChunks.clear()
         entities.clear()
         players.clear()
-        blockEntities.clear()
-        lastInteractedBlockEntity = null
+        scannedContainers.clear()
+        mapIDs.clear()
+
         // failing to reset this could cause users to accidentally save their echest contents on subsequent captures
-        // todo: make a setting to configure this behavior
-        if (!mc.isInSingleplayer)
+        if (!mc.isInSingleplayer && !config.advanced.keepEnderChestContents) {
             mc.player?.enderChestInventory = EnderChestInventory()
-        maps.clear()
+        }
+        lastInteractedBlockEntity = null
         LOG.info("Cleared hot cache")
     }
 }

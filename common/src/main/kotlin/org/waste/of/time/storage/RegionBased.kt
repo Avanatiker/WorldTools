@@ -10,11 +10,11 @@ import org.waste.of.time.WorldTools.LOG
 abstract class RegionBased(
     val chunkPos: ChunkPos,
     val world: World,
-    val suffix: String
+    private val suffix: String
 ) : Storeable {
     val dimension: String = world.registryKey.value.path
 
-    val dimensionPath
+    private val dimensionPath
         get() = when (dimension) {
             "overworld" -> ""
             "the_nether" -> "DIM-1/"
@@ -22,16 +22,20 @@ abstract class RegionBased(
             else -> "dimensions/minecraft/$dimension/"
         }
 
-    abstract fun compound(storage: CustomRegionBasedStorage): NbtCompound
+    abstract fun compound(): NbtCompound
 
     abstract fun incrementStats()
 
     // can be overridden but super should be called after
-    open fun writeToStorage(session: LevelStorage.Session, storage: CustomRegionBasedStorage, cachedStorages: MutableMap<String, CustomRegionBasedStorage>) {
+    open fun writeToStorage(
+        session: LevelStorage.Session,
+        storage: CustomRegionBasedStorage,
+        cachedStorages: MutableMap<String, CustomRegionBasedStorage>
+    ) {
         try {
             storage.write(
                 chunkPos,
-                compound(storage)
+                compound()
             )
             incrementStats()
         } catch (e: Exception) {
@@ -39,14 +43,23 @@ abstract class RegionBased(
         }
     }
 
-    override fun store(session: LevelStorage.Session, cachedStorages: MutableMap<String, CustomRegionBasedStorage>) {
+    override fun store(
+        session: LevelStorage.Session,
+        cachedStorages: MutableMap<String, CustomRegionBasedStorage>
+    ) {
+        val storage = generateStorage(session, cachedStorages)
+        writeToStorage(session, storage, cachedStorages)
+    }
+
+    fun generateStorage(
+        session: LevelStorage.Session,
+        cachedStorages: MutableMap<String, CustomRegionBasedStorage>
+    ): CustomRegionBasedStorage {
         val path = session.getDirectory(WorldSavePath.ROOT)
             .resolve(dimensionPath)
             .resolve(suffix)
-        val storage = cachedStorages.getOrPut(path.toString()) {
+        return cachedStorages.getOrPut(path.toString()) {
             CustomRegionBasedStorage(path, false)
         }
-
-        writeToStorage(session, storage, cachedStorages)
     }
 }

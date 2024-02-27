@@ -15,8 +15,8 @@ object BarManager {
             UUID.randomUUID(),
             Text.of(""),
             0f,
-            config.advanced.progressBarColor,
-            config.advanced.progressBarStyle,
+            config.render.progressBarColor,
+            config.render.progressBarStyle,
             false,
             false,
             false
@@ -27,8 +27,8 @@ object BarManager {
             UUID.randomUUID(),
             Text.of(""),
             1.0f,
-            config.advanced.captureBarColor,
-            config.advanced.captureBarStyle,
+            config.render.captureBarColor,
+            config.render.captureBarStyle,
             false,
             false,
             false
@@ -48,9 +48,9 @@ object BarManager {
 
     fun updateCapture() {
         captureInfoBar.name = StatisticManager.infoMessage
-        captureInfoBar.color = config.advanced.captureBarColor
-        captureInfoBar.style = config.advanced.captureBarStyle
-        progressBar.color = config.advanced.progressBarColor
+        captureInfoBar.color = config.render.captureBarColor
+        captureInfoBar.style = config.render.captureBarStyle
+        progressBar.color = config.render.progressBarColor
         progressBar.percent = 0f
 
         StorageFlow.lastStored?.let {
@@ -59,7 +59,7 @@ object BarManager {
         }
 
         val elapsed = System.currentTimeMillis() - StorageFlow.lastStoredTimestamp
-        val timeout = elapsed > config.advanced.progressBarTimeout
+        val timeout = elapsed > config.render.progressBarTimeout
 
         if (StorageFlow.lastStoredTimestamp != 0L && timeout) {
             StorageFlow.lastStored = null
