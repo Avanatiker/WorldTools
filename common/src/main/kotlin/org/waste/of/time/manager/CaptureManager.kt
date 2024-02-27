@@ -2,10 +2,13 @@ package org.waste.of.time.manager
 
 import kotlinx.coroutines.Job
 import net.minecraft.client.gui.screen.ConfirmScreen
-import net.minecraft.client.network.ServerInfo
+import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.network.packet.c2s.play.ClientStatusC2SPacket
+import net.minecraft.registry.RegistryKey
+import net.minecraft.registry.RegistryKeys
 import net.minecraft.text.Text
+import net.minecraft.world.World
 import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.config
@@ -21,6 +24,8 @@ object CaptureManager {
     var capturing = false
     private var storeJob: Job? = null
     var currentLevelName: String = "Not yet initialized"
+    var lastPlayer: ClientPlayerEntity? = null
+    var lastWorldKeys = mutableSetOf<RegistryKey<World>>()
 
     val levelName: String
         get() = if (mc.isInSingleplayer) {
@@ -72,6 +77,8 @@ object CaptureManager {
 
         HotCache.clear()
         currentLevelName = potentialName
+        lastPlayer = mc.player
+        lastWorldKeys.addAll(mc.networkHandler?.worldKeys ?: emptySet())
         MessageManager.sendInfo("worldtools.log.info.started_capture", potentialName)
         if (config.debug.logSettings) logCaptureSettingsState()
         storeJob = StorageFlow.launch(potentialName)

@@ -7,6 +7,8 @@ import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.ingame.*
 import net.minecraft.inventory.EnderChestInventory
 import net.minecraft.inventory.SimpleInventory
+import net.minecraft.item.FilledMapItem
+import net.minecraft.item.Items
 import net.minecraft.screen.GenericContainerScreenHandler
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.config
@@ -19,6 +21,16 @@ object LootableInjectionHandler {
     fun onScreenRemoved(screen: Screen) {
         // ToDo: Add support for entity containers like chest boat and minecart
         if (screen !is HandledScreen<*>) return
+
+        // ToDo: Find out if its possible to get the map state update (currently has no effect)
+        screen.getContainerSlots().filter {
+            it.stack.item == Items.FILLED_MAP
+        }.forEach {
+            FilledMapItem.getMapId(it.stack)?.let { id ->
+                HotCache.mapIDs.add(FilledMapItem.getMapName(id))
+            }
+        }
+
         if (HotCache.lastInteractedBlockEntity is EnderChestBlockEntity
             && !mc.isInSingleplayer
         ) { // SinglePlayer populates contents automatically
