@@ -162,29 +162,23 @@ object Events {
 
     fun onEntityRemoved(entity: Entity, reason: Entity.RemovalReason) {
         if (!capturing) return
-        if (reason == Entity.RemovalReason.KILLED || reason == Entity.RemovalReason.DISCARDED) {
-            if (entity is LivingEntity) {
-                if (entity.isDead) {
+        if (reason != Entity.RemovalReason.KILLED && reason != Entity.RemovalReason.DISCARDED) return
+
+        if (entity is LivingEntity) {
+            if (!entity.isDead) return
+
+            val cacheable = EntityCacheable(entity)
+            HotCache.entities.entries.find { (_, entities) ->
+                entities.contains(cacheable)
+            }?.value?.remove(cacheable)
+        } else {
+            // todo: its actually a bit tricky to differentiate the entity being removed from our world or the server world
+            //  need to find a reliable way to determine it
+            //  if chunk is loaded, remove the entity? -> doesn't seem to work because server will remove entity before chunk is unloaded
+            mc.player?.let { player ->
+                if (entity.pos.manhattanDistance2d(player.pos) < 32) { // todo: configurable distance, this should be small enough to be safe for most cases
                     val cacheable = EntityCacheable(entity)
-                    // not particularly efficient, but fine
-                    var foundEntry: MutableMap.MutableEntry<ChunkPos, MutableSet<EntityCacheable>>? = null
-                    for (entry in HotCache.entities) {
-                        if (entry.value.contains(cacheable)) {
-                            foundEntry = entry
-                            break
-                        }
-                    }
-                    foundEntry?.value?.remove(cacheable)
-                }
-            } else {
-                // todo: its actually a bit tricky to differentiate the entity being removed from our world or the server world
-                //  need to find a reliable way to determine it
-                //  if chunk is loaded, remove the entity? -> doesn't seem to work because server will remove entity before chunk is unloaded
-                mc.player?.let { player ->
-                    if (entity.pos.manhattanDistance2d(player.pos) < 32) { // todo: configurable distance, this should be small enough to be safe for most cases
-                        val cacheable = EntityCacheable(entity)
-                        HotCache.entities[entity.chunkPos]?.remove(cacheable)
-                    }
+                    HotCache.entities[entity.chunkPos]?.remove(cacheable)
                 }
             }
         }
@@ -192,7 +186,7 @@ object Events {
 
     fun onMapStateGet(id: String) {
         if (!capturing) return
-        // todo: check if this also populates maps when we open a container that contains a map but don't hold it
+        // todo: looks like the server does not send a map update packet for container
         HotCache.mapIDs.add(id)
     }
 }

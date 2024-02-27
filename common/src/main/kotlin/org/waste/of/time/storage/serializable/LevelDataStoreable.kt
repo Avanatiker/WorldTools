@@ -14,6 +14,7 @@ import org.waste.of.time.WorldTools.DAT_EXTENSION
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.config
 import org.waste.of.time.WorldTools.mc
+import org.waste.of.time.manager.CaptureManager
 import org.waste.of.time.manager.CaptureManager.currentLevelName
 import org.waste.of.time.manager.MessageManager
 import org.waste.of.time.manager.MessageManager.translateHighlight
@@ -71,13 +72,7 @@ class LevelDataStoreable : Storeable {
      * See [net.minecraft.world.level.LevelProperties.updateProperties]
      */
     private fun serializeLevelData() = NbtCompound().apply {
-        val player = mc.player
-        if (player == null) {
-            // TODO: store a reference to the player when we start the capture so this isn't an issue
-            //  can occur when the user disconnects while a capture is ongoing
-            LOG.error("Player is null when trying to serialize level data")
-            LOG.error("Level data will be incomplete")
-        }
+        val player = CaptureManager.lastPlayer ?: mc.player ?: return@apply
 
         mc.networkHandler?.brand?.let {
             put("ServerBrands", NbtList().apply {
@@ -99,47 +94,41 @@ class LevelDataStoreable : Storeable {
         NbtHelper.putDataVersion(this)
 
         put("WorldGenSettings", generatorMockNbt())
-        player?.let { player ->
-            mc.networkHandler?.listedPlayerListEntries?.find {
-                it.profile.id == player.uuid
-            }?.let {
-                putInt("GameType", it.gameMode.id)
-            } ?: putInt("GameType", player.server?.defaultGameMode?.id ?: 0)
+        mc.networkHandler?.listedPlayerListEntries?.find {
+            it.profile.id == player.uuid
+        }?.let {
+            putInt("GameType", it.gameMode.id)
+        } ?: putInt("GameType", player.server?.defaultGameMode?.id ?: 0)
 
-            putInt("SpawnX", player.world.levelProperties.spawnX)
-            putInt("SpawnY", player.world.levelProperties.spawnY)
-            putInt("SpawnZ", player.world.levelProperties.spawnZ)
-            putFloat("SpawnAngle", player.world.levelProperties.spawnAngle)
-            putLong("Time", player.world.time)
-            putLong("DayTime", player.world.timeOfDay)
-        }
+        putInt("SpawnX", player.world.levelProperties.spawnX)
+        putInt("SpawnY", player.world.levelProperties.spawnY)
+        putInt("SpawnZ", player.world.levelProperties.spawnZ)
+        putFloat("SpawnAngle", player.world.levelProperties.spawnAngle)
+        putLong("Time", player.world.time)
+        putLong("DayTime", player.world.timeOfDay)
         putLong("LastPlayed", System.currentTimeMillis())
         putString("LevelName", currentLevelName)
         putInt("version", 19133)
         putInt("clearWeatherTime", 0) // not sure
         putInt("rainTime", 0) // not sure
-        player?.let { player ->
-            putBoolean("raining", player.world.isRaining)
-            putBoolean("thundering", player.world.isThundering)
-            putBoolean("hardcore", player.server?.isHardcore ?: false)
-        }
+        putBoolean("raining", player.world.isRaining)
+        putBoolean("thundering", player.world.isThundering)
+        putBoolean("hardcore", player.server?.isHardcore ?: false)
         putInt("thunderTime", 0) // not sure
         putBoolean("allowCommands", true) // not sure
         putBoolean("initialized", true) // not sure
 
-        player?.let { player ->
-            player.world.worldBorder.write().writeNbt(this)
+        player.world.worldBorder.write().writeNbt(this)
 
-            putByte("Difficulty", player.world.levelProperties.difficulty.id.toByte())
-            putBoolean("DifficultyLocked", false) // not sure
+        putByte("Difficulty", player.world.levelProperties.difficulty.id.toByte())
+        putBoolean("DifficultyLocked", false) // not sure
 
-            put("GameRules", genGameRules(player.world.gameRules))
-            put("Player", NbtCompound().apply {
-                player.writeNbt(this)
-                remove("LastDeathLocation") // can contain sensitive information
-                putString("Dimension", "minecraft:${player.world.registryKey.value.path}")
-            })
-        }
+        put("GameRules", genGameRules(player.world.gameRules))
+        put("Player", NbtCompound().apply {
+            player.writeNbt(this)
+            remove("LastDeathLocation") // can contain sensitive information
+            putString("Dimension", "minecraft:${player.world.registryKey.value.path}")
+        })
 
         put("DragonFight", NbtCompound()) // not sure
         put("CustomBossEvents", NbtCompound()) // not sure
@@ -172,7 +161,7 @@ class LevelDataStoreable : Storeable {
         putByte("generate_features", config.world.worldGenerator.generateFeatures.toByte())
 
         put("dimensions", NbtCompound().apply {
-            mc.networkHandler?.worldKeys?.forEach { key ->
+            CaptureManager.lastWorldKeys.forEach { key ->
                 put("minecraft:${key.value.path}", NbtCompound().apply {
                     put("generator", generateGenerator(key.value.path))
 
