@@ -6,7 +6,9 @@
 
 [![CurseForge Downloads](https://cf.way2muchnoise.eu/worldtools.svg?badge_style=for_the_badge)](https://www.curseforge.com/minecraft/mc-mods/worldtools)
 [![Modrinth Downloads](https://img.shields.io/modrinth/dt/FlFKBOIX?style=for-the-badge&logo=modrinth&label=Modrinth&color=00AF5C)](https://modrinth.com/mod/worldtools)
-[![Minecraft](https://img.shields.io/badge/Minecraft-1.20.1-lime?style=for-the-badge&link=https://www.minecraft.net/)](https://www.minecraft.net/)
+[![Minecraft](https://img.shields.io/badge/Minecraft-1.20.1-yellow?style=for-the-badge&link=https://www.minecraft.net/)](https://www.minecraft.net/)
+[![Minecraft](https://img.shields.io/badge/Minecraft-1.20.2-green?style=for-the-badge&link=https://www.minecraft.net/)](https://www.minecraft.net/)
+[![Minecraft](https://img.shields.io/badge/Minecraft-1.20.4-lime?style=for-the-badge&link=https://www.minecraft.net/)](https://www.minecraft.net/)
 [![License](https://img.shields.io/badge/License-GPL%20v3-blue?style=for-the-badge&link=https://www.gnu.org/licenses/gpl-3.0.en.html)](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
 WorldTools is a powerful Minecraft mod that allows you to capture and save high-detail snapshots of server worlds
@@ -39,7 +41,8 @@ sharing, or backup purposes on your local machine.
     - Players: Player positions and inventories
     - Statistics: Full personal player statistics
     - Advancements: Player advancements and progress
-    - Detailed Metadata: Exhaustive capture details like modt, server version, and more
+    - Special Objects: Maps and Banners
+    - Detailed Metadata: Exhaustive capture details like modt, server version, timestamps, and more
 
 - **Easy Access to Saved Worlds**: Your locally captured world save can be found in the single-player worlds list,
   allowing you to load and explore it conveniently.
@@ -88,10 +91,10 @@ sharing, or backup purposes on your local machine.
 ### Usage
 
 1. **Download**:
-    - Enable capture mode: Hit `F12` the GUI or `/worldtools capture` to start capturing data.
+    - Enable capture mode: Hit `F12` the GUI (on ESC menu) or `/worldtools capture` to start capturing data.
     - Play the game normally while WorldTools downloads the all data. You need to open containers like chests to capture
       their contents.
-    - Save captured data: Hit `F12` the GUI or `/worldtools capture` again to stop capturing data and save the world.
+    - Save captured data: Hit `F12` the GUI (on ESC menu) or `/worldtools capture` again to stop capturing data and save the world.
 2. **Access Downloaded World**: Your downloaded world can be found in the single-player worlds list.
 
 ### File Structure
@@ -133,22 +136,16 @@ Pull Request.
 ## ToDo
 
 ### Fixes 
-- Fix chests being removed from the chunk and then the data is lost until the chunk is serialized
-- Fix save worlds / auto download on disconnect
-- Fix cloth config dependency for forge toml config
 - Fix statistics not updated on stop because the packet answer is not received before the world is saved
 - Fix on capture switch config button functionality in capture gui
 - Dimension, XP, selected item slot, player game type, is not saved to player nbt in level.dat
 
 ### Features
 - Capture Mode: Choose between two capture modes: Full and Incremental. The Full mode captures all data from the server, while the Incremental mode only captures data that has changed since the last capture.
-- Save ender chest, lectern contents
+- Save lectern contents
 - Save server datapack to the downloaded world
 - Save more entity data (NBT) like trades, inventory from boats and minecarts, etc.
 - Live statistics: Data usage, time elapsed, etc.
-- Support for different mc versions and ViaVersion
-- Different world generators and seed setting
-- Download Distance (locked to client's chunkloading distance by default) - decides the chunk radius around the player in which world data is downloaded, has 3 options: Custom, Client View Distance, and Server View Distance.
 
 ## License
 
