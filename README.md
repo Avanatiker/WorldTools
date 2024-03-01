@@ -107,6 +107,23 @@ After capturing data, WorldTools creates the following files in the world direct
 
 - `Player Entry List.csv`: Lists all players that were online during the capture including all known metadata.
 
+## Supported Languages
+
+For the best user experience, WorldTools is available in the following languages:
+
+- German
+- English (Pirate)
+- English (United States)
+- French (Canada)
+- French (France)
+- Dutch (Belgium)
+- Dutch (Netherlands)
+- Nynorsk (Norwegian)
+- Norwegian (Norway)
+- Portuguese (Brazil)
+- Portuguese (Portugal)
+- Russian
+
 ## Contributing
 
 Contributions are welcome!
