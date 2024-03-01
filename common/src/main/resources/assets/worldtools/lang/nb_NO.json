@@ -14,7 +14,7 @@
   "text.autoconfig.worldtools.option.advanced.showChatMessages": "Info Chat Meldinger",
   "text.autoconfig.worldtools.option.advanced.showToasts": "Display Toasts",
   "text.autoconfig.worldtools.option.debug": "Feilsøk",
-  "text.autoconfig.worldtools.option.debug.@PrefixText": "Enabling debug options will make it easier to find issues, using the log file located at .minecraft/logs/latest.log",
+  "text.autoconfig.worldtools.option.debug.@PrefixText": "Aktivering av feilsøkingsalternativer vil gjøre det lettere å finne problemer ved å bruke loggfilen som ligger på .minecraft/logs/latest.log",
   "text.autoconfig.worldtools.option.debug.logSavedChunks": "Log Lagret Chunks",
   "text.autoconfig.worldtools.option.debug.logSavedContainers": "Logg Lagret beholdere",
   "text.autoconfig.worldtools.option.debug.logSavedEntities": "Logg Lagret Enheter",
