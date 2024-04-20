@@ -1,6 +1,6 @@
 package org.waste.of.time.storage.cache
 
-import it.unimi.dsi.fastutil.longs.LongArraySet
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.LockableContainerBlockEntity
 import net.minecraft.inventory.EnderChestInventory
@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 object HotCache {
     val chunks = ConcurrentHashMap<ChunkPos, RegionBasedChunk>()
-    internal val savedChunks = LongArraySet()
+    internal val savedChunks = LongOpenHashSet()
     val entities = ConcurrentHashMap<ChunkPos, MutableSet<EntityCacheable>>()
     val players: ConcurrentHashMap.KeySetView<PlayerStoreable, Boolean> = ConcurrentHashMap.newKeySet()
     val scannedContainers = ConcurrentHashMap<BlockPos, LockableContainerBlockEntity>()
