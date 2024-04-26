@@ -191,8 +191,8 @@ open class RegionBasedChunk(
                      * Force disabling checking the lock's status here as it should be safe to
                      * read here, no write operations should happen after the chunk is unloaded
                      */
-                    (chunkSection.blockStateContainer as IPalettedContainerExtension).setWTIgnoreLock(true);
-                    (chunkSection.biomeContainer as IPalettedContainerExtension).setWTIgnoreLock(true);
+                    (chunkSection.blockStateContainer as IPalettedContainerExtension).setWTIgnoreLock(true)
+                    (chunkSection.biomeContainer as IPalettedContainerExtension).setWTIgnoreLock(true)
                     put(
                         "block_states",
                         stateIdContainer.encodeStart(NbtOps.INSTANCE, chunkSection.blockStateContainer).getOrThrow()
@@ -201,6 +201,8 @@ open class RegionBasedChunk(
                         "biomes",
                         biomeCodec.encodeStart(NbtOps.INSTANCE, chunkSection.biomeContainer).getOrThrow()
                     )
+                    (chunkSection.blockStateContainer as IPalettedContainerExtension).setWTIgnoreLock(false)
+                    (chunkSection.biomeContainer as IPalettedContainerExtension).setWTIgnoreLock(false)
                 }
                 if (blockLightSection != null && !blockLightSection.isUninitialized) {
                     putByteArray(ChunkSerializer.BLOCK_LIGHT_KEY, blockLightSection.asByteArray())
