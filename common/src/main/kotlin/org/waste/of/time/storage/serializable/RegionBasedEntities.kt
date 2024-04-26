@@ -63,7 +63,7 @@ class RegionBasedEntities(
             if (config.debug.logSavedEntities) {
                 LOG.info("Removing any previously saved entities from chunk: {}", chunkPos)
             }
-            storage.write(chunkPos, null)
+            storage.write(session, chunkPos, null)
             return
         }
         super.writeToStorage(session, storage, cachedStorages)

@@ -1,11 +1,11 @@
 package org.waste.of.time.storage.serializable
 
+import com.google.gson.JsonElement
 import com.mojang.serialization.JsonOps
 import net.minecraft.advancement.PlayerAdvancementTracker
 import net.minecraft.datafixer.DataFixTypes
 import net.minecraft.text.MutableText
 import net.minecraft.util.PathUtil
-import net.minecraft.util.Util
 import net.minecraft.util.WorldSavePath
 import net.minecraft.world.level.storage.LevelStorage
 import org.waste.of.time.WorldTools.CURRENT_VERSION
@@ -50,12 +50,12 @@ class AdvancementsStoreable : Storeable {
             .associate {
                 it.key.id to it.value
             }
-        val jsonElement = Util.getResult(
+        val jsonElement =
             progressMapCodec.encodeStart(
                 JsonOps.INSTANCE,
                 PlayerAdvancementTracker.ProgressMap(progressMap)
-            )
-        ) { s -> IllegalStateException(s) }
+            ).getOrThrow() as JsonElement
+
 
         val advancements = session.getDirectory(WorldSavePath.ADVANCEMENTS)
         PathUtil.createDirectories(advancements)

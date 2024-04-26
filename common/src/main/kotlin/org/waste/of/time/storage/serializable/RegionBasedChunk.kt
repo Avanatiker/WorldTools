@@ -24,6 +24,7 @@ import net.minecraft.world.chunk.WorldChunk
 import net.minecraft.world.gen.chunk.BlendingData
 import net.minecraft.world.level.storage.LevelStorage
 import org.waste.of.time.Utils.addAuthor
+import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.TIMESTAMP_KEY
 import org.waste.of.time.WorldTools.config
@@ -152,7 +153,7 @@ open class RegionBasedChunk(
 
     private fun NbtList.upsertBlockEntities() {
         cachedBlockEntities.entries.map { (_, blockEntity) ->
-            blockEntity.createNbtWithIdentifyingData().apply {
+            blockEntity.createNbtWithIdentifyingData(WorldTools.mc.world!!.registryManager).apply {
                 putBoolean("keepPacked", false)
             }
         }.apply {
@@ -164,7 +165,7 @@ open class RegionBasedChunk(
         val biomeRegistry = chunk.world.registryManager.get(RegistryKeys.BIOME)
         val biomeCodec = PalettedContainer.createReadableContainerCodec(
             biomeRegistry.indexedEntries,
-            biomeRegistry.createEntryCodec(),
+            biomeRegistry.entryCodec,
             PalettedContainer.PaletteProvider.BIOME,
             biomeRegistry.entryOf(BiomeKeys.PLAINS)
         )
@@ -194,15 +195,11 @@ open class RegionBasedChunk(
                     (chunkSection.biomeContainer as IPalettedContainerExtension).setWTIgnoreLock(true);
                     put(
                         "block_states",
-                        stateIdContainer.encodeStart(NbtOps.INSTANCE, chunkSection.blockStateContainer).getOrThrow(
-                            false
-                        ) { LOG.error(it) }
+                        stateIdContainer.encodeStart(NbtOps.INSTANCE, chunkSection.blockStateContainer).getOrThrow()
                     )
                     put(
                         "biomes",
-                        biomeCodec.encodeStart(NbtOps.INSTANCE, chunkSection.biomeContainer).getOrThrow(
-                            false
-                        ) { LOG.error(it) }
+                        biomeCodec.encodeStart(NbtOps.INSTANCE, chunkSection.biomeContainer).getOrThrow()
                     )
                 }
                 if (blockLightSection != null && !blockLightSection.isUninitialized) {

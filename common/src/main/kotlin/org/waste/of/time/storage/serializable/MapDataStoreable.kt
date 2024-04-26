@@ -41,7 +41,8 @@ class MapDataStoreable : Storeable {
             HotCache.mapIDs.contains(id)
         }?.forEach { (id, mapState) ->
             NbtCompound().apply {
-                put("data", mapState.writeNbt(NbtCompound()))
+
+                put("data", mapState.writeNbt(NbtCompound(), mc.world!!.registryManager))
                 NbtHelper.putDataVersion(this)
                 val mapFile = dataDirectory.resolve("$id${WorldTools.DAT_EXTENSION}")
                 if (!mapFile.exists()) {

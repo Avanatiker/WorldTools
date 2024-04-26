@@ -7,11 +7,11 @@ import net.minecraft.client.gui.widget.GridWidget
 import net.minecraft.client.render.RenderLayer
 import net.minecraft.client.render.VertexConsumerProvider
 import net.minecraft.client.util.math.MatrixStack
+import net.minecraft.component.type.MapIdComponent
 import net.minecraft.entity.Entity
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.hit.BlockHitResult
-import net.minecraft.util.math.ChunkPos
 import net.minecraft.world.World
 import net.minecraft.world.chunk.WorldChunk
 import org.waste.of.time.Utils.manhattanDistance2d
@@ -126,7 +126,7 @@ object Events {
                 val b = color.blue / 255.0f
                 val a = 1.0f
                 val positionMat = matrices.peek().positionMatrix
-                val normMat = matrices.peek().normalMatrix
+                val normMat = matrices.peek()
                 vertexConsumer.vertex(positionMat, x1, y1, z1).color(r, g, b, a).normal(normMat, 1.0f, 0.0f, 0.0f).next()
                 vertexConsumer.vertex(positionMat, x2, y1, z1).color(r, g, b, a).normal(normMat, 1.0f, 0.0f, 0.0f).next()
                 vertexConsumer.vertex(positionMat, x1, y1, z1).color(r, g, b, a).normal(normMat, 0.0f, 0.0f, 1.0f).next()
@@ -184,7 +184,7 @@ object Events {
         }
     }
 
-    fun onMapStateGet(id: String) {
+    fun onMapStateGet(id: MapIdComponent) {
         if (!capturing) return
         // todo: looks like the server does not send a map update packet for container
         HotCache.mapIDs.add(id)

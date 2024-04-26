@@ -34,6 +34,7 @@ abstract class RegionBased(
     ) {
         try {
             storage.write(
+                session,
                 chunkPos,
                 compound()
             )
