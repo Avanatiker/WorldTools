@@ -27,6 +27,7 @@ import org.waste.of.time.Utils.addAuthor
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.TIMESTAMP_KEY
 import org.waste.of.time.WorldTools.config
+import org.waste.of.time.extension.IPalettedContainerExtension
 import org.waste.of.time.manager.MessageManager.translateHighlight
 import org.waste.of.time.manager.StatisticManager
 import org.waste.of.time.storage.Cacheable
@@ -182,7 +183,15 @@ open class RegionBasedChunk(
             add(NbtCompound().apply {
                 if (inSection) {
                     val chunkSection = chunk.sectionArray[sectionCoord]
-
+                    /**
+                     * Mods like Bobby may also try serializing chunk data concurrently on separate threads
+                     * PalettedContainer contains a lock that is acquired during read/write operations
+                     *
+                     * Force disabling checking the lock's status here as it should be safe to
+                     * read here, no write operations should happen after the chunk is unloaded
+                     */
+                    (chunkSection.blockStateContainer as IPalettedContainerExtension).setWTIgnoreLock(true);
+                    (chunkSection.biomeContainer as IPalettedContainerExtension).setWTIgnoreLock(true);
                     put(
                         "block_states",
                         stateIdContainer.encodeStart(NbtOps.INSTANCE, chunkSection.blockStateContainer).getOrThrow(
