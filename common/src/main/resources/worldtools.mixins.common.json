@@ -11,7 +11,8 @@
     "ContainerBlockEntityExtension",
     "DebugRendererMixin",
     "GameMenuScreenMixin",
-    "IntegratedServerLoaderMixin"
+    "IntegratedServerLoaderMixin",
+    "PalettedContainerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
