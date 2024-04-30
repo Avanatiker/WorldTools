@@ -24,7 +24,6 @@ import net.minecraft.world.chunk.WorldChunk
 import net.minecraft.world.gen.chunk.BlendingData
 import net.minecraft.world.level.storage.LevelStorage
 import org.waste.of.time.Utils.addAuthor
-import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.TIMESTAMP_KEY
 import org.waste.of.time.WorldTools.config
@@ -153,7 +152,7 @@ open class RegionBasedChunk(
 
     private fun NbtList.upsertBlockEntities() {
         cachedBlockEntities.entries.map { (_, blockEntity) ->
-            blockEntity.createNbtWithIdentifyingData(WorldTools.mc.world!!.registryManager).apply {
+            blockEntity.createNbtWithIdentifyingData(world.registryManager).apply {
                 putBoolean("keepPacked", false)
             }
         }.apply {

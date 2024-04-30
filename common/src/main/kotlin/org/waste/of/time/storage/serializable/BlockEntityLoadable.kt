@@ -33,7 +33,7 @@ class BlockEntityLoadable(
     ) {
         LOG.info("[BlockEntity Load] Loading block entities for chunk {} with entities {}", chunk.pos, chunk.blockEntities.size)
         generateStorage(session, cachedStorages)
-            .getBlockEntities(session, chunkPos)
+            .getBlockEntities(chunkPos)
             .filterIsInstance<LockableContainerBlockEntity>()
             .forEach { existing ->
                 LOG.info("[BlockEntity Merge] Checking for existing block entity at {}", existing.pos)
