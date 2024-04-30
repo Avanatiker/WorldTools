@@ -23,7 +23,7 @@ side = "CLIENT"
 [[dependencies.worldtools]]
 modId = "minecraft"
 mandatory = true
-versionRange = "[1.20.4,)"
+versionRange = "[1.20.5,1.20.6)"
 ordering = "NONE"
 side = "CLIENT"
 
@@ -37,6 +37,6 @@ side = "CLIENT"
 [[dependencies.worldtools]]
 modId = "cloth_config"
 mandatory = true
-versionRange = "[13,)"
+versionRange = "[14,)"
 ordering = "AFTER"
 side = "CLIENT"
