@@ -70,7 +70,7 @@ open class CustomRegionBasedStorage internal constructor(
             ?.filterIsInstance<NbtCompound>()
             ?.mapNotNull { compoundTag ->
                 val blockPos = BlockPos(compoundTag.getInt("x"), compoundTag.getInt("y"), compoundTag.getInt("z"))
-                val blockStateIdentifier = Identifier(compoundTag.getString("id"))
+                val blockStateIdentifier = Identifier.of(compoundTag.getString("id"))
                 // todo: read block state from section data NBT?
                 //  doesn't seem necessary rn because we're just using this to get the pos and container contents
                 //  might be needed for certain container types with multiple block states, like chest vs double chest?
