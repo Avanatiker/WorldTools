@@ -46,7 +46,7 @@ jobs:
 
       - name: Generate Changelog
         id: changelog
-        uses: mikepenz/release-changelog-builder-action@v4.2.2
+        uses: mikepenz/release-changelog-builder-action@v5
         with:
           commitMode: true
           configurationJson: |
