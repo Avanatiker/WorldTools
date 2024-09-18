@@ -1,7 +1,6 @@
 package org.waste.of.time.storage.serializable
 
 import net.minecraft.SharedConstants
-import org.waste.of.time.config.WorldToolsConfig.World.WorldGenerator.GeneratorType
 import net.minecraft.nbt.*
 import net.minecraft.text.MutableText
 import net.minecraft.util.Util
@@ -14,6 +13,7 @@ import org.waste.of.time.WorldTools.DAT_EXTENSION
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.config
 import org.waste.of.time.WorldTools.mc
+import org.waste.of.time.config.WorldToolsConfig.World.WorldGenerator.GeneratorType
 import org.waste.of.time.manager.CaptureManager
 import org.waste.of.time.manager.CaptureManager.currentLevelName
 import org.waste.of.time.manager.MessageManager
@@ -53,10 +53,10 @@ class LevelDataStoreable : Storeable {
         }
 
         try {
-            val newFile = File.createTempFile("level", DAT_EXTENSION, resultingFile)
+            val newFile = File.createTempFile("level", DAT_EXTENSION, resultingFile).toPath()
             NbtIo.writeCompressed(levelNbt, newFile)
-            val backup = session.getDirectory(WorldSavePath.LEVEL_DAT_OLD).toFile()
-            val current = session.getDirectory(WorldSavePath.LEVEL_DAT).toFile()
+            val backup = session.getDirectory(WorldSavePath.LEVEL_DAT_OLD)
+            val current = session.getDirectory(WorldSavePath.LEVEL_DAT)
             Util.backupAndReplace(current, newFile, backup)
             LOG.info("Saved level data.")
         } catch (exception: IOException) {
@@ -74,7 +74,7 @@ class LevelDataStoreable : Storeable {
     private fun serializeLevelData() = NbtCompound().apply {
         val player = CaptureManager.lastPlayer ?: mc.player ?: return@apply
 
-        player.serverBrand?.let {
+        mc.networkHandler?.brand?.let {
             put("ServerBrands", NbtList().apply {
                 add(NbtString.of(it))
             })
@@ -100,9 +100,9 @@ class LevelDataStoreable : Storeable {
             putInt("GameType", it.gameMode.id)
         } ?: putInt("GameType", player.server?.defaultGameMode?.id ?: 0)
 
-        putInt("SpawnX", player.world.levelProperties.spawnX)
-        putInt("SpawnY", player.world.levelProperties.spawnY)
-        putInt("SpawnZ", player.world.levelProperties.spawnZ)
+        putInt("SpawnX", player.world.levelProperties.spawnPos.x)
+        putInt("SpawnY", player.world.levelProperties.spawnPos.y)
+        putInt("SpawnZ", player.world.levelProperties.spawnPos.z)
         putFloat("SpawnAngle", player.world.levelProperties.spawnAngle)
         putLong("Time", player.world.time)
         putLong("DayTime", player.world.timeOfDay)

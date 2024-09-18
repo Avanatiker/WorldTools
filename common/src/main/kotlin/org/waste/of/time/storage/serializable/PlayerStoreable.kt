@@ -17,6 +17,8 @@ import org.waste.of.time.storage.CustomRegionBasedStorage
 import org.waste.of.time.storage.Storeable
 import org.waste.of.time.storage.cache.HotCache
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
 
 data class PlayerStoreable(
     val player: PlayerEntity
@@ -58,14 +60,14 @@ data class PlayerStoreable(
             val playerDataDir = session.getDirectory(WorldSavePath.PLAYERDATA).toFile()
             playerDataDir.mkdirs()
 
-            val newPlayerFile = File.createTempFile(player.uuidAsString + "-", ".dat", playerDataDir)
+            val newPlayerFile = File.createTempFile(player.uuidAsString + "-", ".dat", playerDataDir).toPath()
             NbtIo.writeCompressed(player.writeNbt(NbtCompound()).apply {
                 if (config.entity.censor.lastDeathLocation) {
                     remove("LastDeathLocation")
                 }
             }, newPlayerFile)
-            val currentFile = File(playerDataDir, player.uuidAsString + ".dat")
-            val backupFile = File(playerDataDir, player.uuidAsString + ".dat_old")
+            val currentFile = File(playerDataDir, player.uuidAsString + ".dat").toPath()
+            val backupFile = File(playerDataDir, player.uuidAsString + ".dat_old").toPath()
             Util.backupAndReplace(currentFile, newPlayerFile, backupFile)
         } catch (e: Exception) {
             WorldTools.LOG.warn("Failed to save player data for {}", player.name.string)
