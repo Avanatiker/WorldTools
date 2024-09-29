@@ -2,9 +2,9 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import net.fabricmc.loom.task.RemapJarTask
 
 plugins {
-    kotlin("jvm") version ("1.9.22")
+    kotlin("jvm") version ("1.9.23")
     id("architectury-plugin") version "3.4-SNAPSHOT"
-    id("dev.architectury.loom") version "1.5-SNAPSHOT" apply false
+    id("dev.architectury.loom") version "1.6-SNAPSHOT" apply false
     id("com.github.johnrengelman.shadow") version "8.1.1" apply false
 }
 
@@ -29,7 +29,7 @@ subprojects {
 
         tasks.withType<JavaCompile> {
             options.encoding = "UTF-8"
-            options.release = 17
+            options.release = 21
         }
 
         tasks {
@@ -74,12 +74,12 @@ allprojects {
 
     tasks {
         compileKotlin {
-            kotlinOptions.jvmTarget = "17"
+            kotlinOptions.jvmTarget = "21"
         }
     }
 
     tasks.withType(JavaCompile::class.java) {
         options.encoding = "UTF-8"
-        options.release = 17
+        options.release = 21
     }
 }

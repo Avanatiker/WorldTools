@@ -17,8 +17,7 @@ object BrowseDownloadsScreen : Screen(Text.translatable("worldtools.gui.browser.
         width,
         height,
         20,
-        height - 30,
-        20
+        height - 30
     ) {
 
 

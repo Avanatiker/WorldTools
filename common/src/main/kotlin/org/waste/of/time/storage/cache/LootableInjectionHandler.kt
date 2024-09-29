@@ -5,9 +5,9 @@ import net.minecraft.block.entity.*
 import net.minecraft.block.enums.ChestType
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.ingame.*
+import net.minecraft.component.DataComponentTypes
 import net.minecraft.inventory.EnderChestInventory
 import net.minecraft.inventory.SimpleInventory
-import net.minecraft.item.FilledMapItem
 import net.minecraft.item.Items
 import net.minecraft.screen.GenericContainerScreenHandler
 import org.waste.of.time.WorldTools.LOG
@@ -26,8 +26,8 @@ object LootableInjectionHandler {
         screen.getContainerSlots().filter {
             it.stack.item == Items.FILLED_MAP
         }.forEach {
-            FilledMapItem.getMapId(it.stack)?.let { id ->
-                HotCache.mapIDs.add(FilledMapItem.getMapName(id))
+            it.stack.components.get(DataComponentTypes.MAP_ID)?.let { id ->
+                HotCache.mapIDs.add(id)
             }
         }
 

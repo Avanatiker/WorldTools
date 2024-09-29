@@ -116,13 +116,13 @@ class MetadataStoreable : Storeable {
             if (info.playerCountLabel.string.isNotBlank()) {
                 appendLine("- **Capacity**: `${info.playerCountLabel.string}`")
             }
-
-            mc.player?.serverBrand?.let {
-                appendLine("- **Brand**: `${it}`")
+            mc.networkHandler?.let {
+                appendLine("- **Brand**: `${it.brand}`")
             }
             appendLine("- **MOTD**: `${info.label.string.split("\n").joinToString(" ")}`")
             appendLine("- **Version**: `${info.version.string}`")
             appendLine("- **Protocol Version**: `${info.protocolVersion}`")
+            appendLine("- **Server Type**: `${info.serverType}`")
 
             info.players?.sample?.let l@ { sample ->
                 if (sample.isEmpty()) return@l
@@ -169,7 +169,7 @@ class MetadataStoreable : Storeable {
         append("${entry.gameMode.name}, ")
         append("${entry.latency}, ")
         append("${entry.scoreboardTeam?.name}, ")
-        appendLine(entry.model)
+        appendLine(entry.skinTextures.model)
         entry.session?.let {
             append("${it.sessionId}, ")
             append("${it.publicKeyData?.data}, ")

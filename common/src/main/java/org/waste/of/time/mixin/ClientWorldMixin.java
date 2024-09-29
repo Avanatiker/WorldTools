@@ -2,6 +2,7 @@ package org.waste.of.time.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.component.type.MapIdComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.map.MapState;
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,7 +22,7 @@ public class ClientWorldMixin {
     }
 
     @Inject(method = "getMapState", at = @At("HEAD"))
-    public void getMapStateInject(String id, CallbackInfoReturnable<MapState> cir) {
+    public void getMapStateInject(MapIdComponent id, CallbackInfoReturnable<MapState> cir) {
         Events.INSTANCE.onMapStateGet(id);
     }
 }
