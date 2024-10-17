@@ -3,7 +3,6 @@ package org.waste.of.time.storage.cache
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.LockableContainerBlockEntity
-import net.minecraft.component.type.MapIdComponent
 import net.minecraft.inventory.EnderChestInventory
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.ChunkPos
@@ -36,7 +35,7 @@ object HotCache {
             .filterNot { scannedContainers.containsKey(it.pos) }
     }
     // map id's of maps that we've seen during the capture
-    val mapIDs = mutableSetOf<MapIdComponent>()
+    val mapIDs = mutableSetOf<Int>()
 
     fun getEntitySerializableForChunk(chunkPos: ChunkPos, world: World) =
         entities[chunkPos]?.let { entities ->

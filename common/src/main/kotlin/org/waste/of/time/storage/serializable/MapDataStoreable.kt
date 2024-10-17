@@ -38,14 +38,14 @@ class MapDataStoreable : Storeable {
         }
 
         mc.world?.let { world ->
-            world.mapStates?.filter { (id, _) ->
-                HotCache.mapIDs.contains(id)
-            }?.forEach { (id, mapState) ->
+            world.mapStates?.filter { (component, _) ->
+                HotCache.mapIDs.contains(component.id)
+            }?.forEach { (component, mapState) ->
+                val id = component.id
                 NbtCompound().apply {
-
                     put("data", mapState.writeNbt(NbtCompound(), world.registryManager))
                     NbtHelper.putDataVersion(this)
-                    val mapFile = dataDirectory.resolve("$id${WorldTools.DAT_EXTENSION}")
+                    val mapFile = dataDirectory.resolve("map_$id${WorldTools.DAT_EXTENSION}")
                     if (!mapFile.exists()) {
                         mapFile.toFile().createNewFile()
                     }

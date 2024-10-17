@@ -187,6 +187,6 @@ object Events {
     fun onMapStateGet(id: MapIdComponent) {
         if (!capturing) return
         // todo: looks like the server does not send a map update packet for container
-        HotCache.mapIDs.add(id)
+        HotCache.mapIDs.add(id.id)
     }
 }
