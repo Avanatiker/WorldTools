@@ -27,7 +27,7 @@ object LootableInjectionHandler {
             it.stack.item == Items.FILLED_MAP
         }.forEach {
             it.stack.components.get(DataComponentTypes.MAP_ID)?.let { id ->
-                HotCache.mapIDs.add(id)
+                HotCache.mapIDs.add(id.id)
             }
         }
 
