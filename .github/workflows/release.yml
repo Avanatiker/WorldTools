@@ -3,10 +3,10 @@ name: Modrinth and CurseForge Release
 on:
   push:
     tags:
-      - '[0-9]+.[0-9]+.[0-9]+\+1.21.0'
+      - '[0-9]+.[0-9]+.[0-9]+\+1.21.1'
 
 env:
-  MINECRAFT_VERSION: "1.21.0"
+  MINECRAFT_VERSION: "1.21.1"
 
 jobs:
   build:
