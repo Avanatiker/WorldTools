@@ -58,12 +58,11 @@ object CaptureManager {
                 return
             }
 
-            potentialName.ifBlank {
-                levelName
-            }
+            potentialName.ifBlank { levelName }
         } ?: levelName
 
-        if (mc.levelStorage.savesDirectory.resolve(potentialName).toFile().exists() && !confirmed) {
+        val worldExists = mc.levelStorage.savesDirectory.resolve(potentialName).toFile().exists()
+        if (worldExists && !confirmed) {
             mc.setScreen(ConfirmScreen(
                 { yes ->
                     if (yes) start(potentialName, true)
@@ -90,7 +89,7 @@ object CaptureManager {
 
     private fun logCaptureSettingsState() {
         WorldTools.GSON.toJson(config, WorldToolsConfig::class.java).let { configJson ->
-            LOG.info("Launching Capture With Settings:")
+            LOG.info("Launching capture with settings:")
             LOG.info(configJson)
         }
     }
@@ -102,10 +101,6 @@ object CaptureManager {
         }
 
         MessageManager.sendInfo("worldtools.log.info.stopping_capture", currentLevelName)
-
-        // update the stats and trigger writeStats() in StatisticSerializer
-        // todo: useless because this is async and response will probably be received after the flow ends
-//        mc.networkHandler?.sendPacket(ClientStatusC2SPacket(ClientStatusC2SPacket.Mode.REQUEST_STATS))
 
         HotCache.chunks.values.forEach { chunk ->
             chunk.emit() // will also write entities in the chunks

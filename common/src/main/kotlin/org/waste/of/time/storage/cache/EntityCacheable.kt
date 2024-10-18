@@ -3,7 +3,6 @@ package org.waste.of.time.storage.cache
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityType
 import net.minecraft.nbt.NbtCompound
-import org.waste.of.time.Utils.addAuthor
 import org.waste.of.time.Utils.toByte
 import org.waste.of.time.WorldTools.TIMESTAMP_KEY
 import org.waste.of.time.WorldTools.config
@@ -26,10 +25,6 @@ data class EntityCacheable(
 
         if (config.entity.metadata.captureTimestamp) {
             putLong(TIMESTAMP_KEY, System.currentTimeMillis())
-        }
-
-        if (config.entity.metadata.waterMark) {
-            addAuthor()
         }
     }
 

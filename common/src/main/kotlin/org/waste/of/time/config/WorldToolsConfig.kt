@@ -111,7 +111,6 @@ class WorldToolsConfig : ConfigData {
 
         class Metadata {
             var captureTimestamp = true
-            var waterMark = true
         }
 
         class Censor {

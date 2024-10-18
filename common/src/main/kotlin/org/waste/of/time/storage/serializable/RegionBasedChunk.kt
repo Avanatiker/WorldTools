@@ -23,7 +23,6 @@ import net.minecraft.world.chunk.PalettedContainer
 import net.minecraft.world.chunk.WorldChunk
 import net.minecraft.world.gen.chunk.BlendingData
 import net.minecraft.world.level.storage.LevelStorage
-import org.waste.of.time.Utils.addAuthor
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.TIMESTAMP_KEY
 import org.waste.of.time.WorldTools.config
@@ -112,10 +111,6 @@ open class RegionBasedChunk(
     override fun compound() = NbtCompound().apply {
         if (config.world.metadata.captureTimestamp) {
             putLong(TIMESTAMP_KEY, System.currentTimeMillis())
-        }
-
-        if (config.world.metadata.waterMark) {
-            addAuthor()
         }
 
         putInt("DataVersion", SharedConstants.getGameVersion().saveVersion.id)
