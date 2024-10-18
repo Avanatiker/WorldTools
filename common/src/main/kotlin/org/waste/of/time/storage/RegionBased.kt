@@ -47,6 +47,7 @@ abstract class RegionBased(
         session: LevelStorage.Session,
         cachedStorages: MutableMap<String, CustomRegionBasedStorage>
     ) {
+        if (!shouldStore()) return
         val storage = generateStorage(session, cachedStorages)
         writeToStorage(session, storage, cachedStorages)
     }
