@@ -36,13 +36,13 @@ sharing, or backup purposes on your local machine.
   The GUI allows you to tailor the capture process according to your requirements.
   WorldTools facilitates the capture of a wide range of crucial elements, ensuring no detail is missed.
     - Chunks: Terrain, biomes and structures
-    - Entities: Positions and attributes of all entities
+    - Entities: Inventories and attributes of most entities
     - Containers: Contents of all tile entities like chests, shulkers, hoppers, furnaces, brewing stands, droppers,
       dispensers etc...
     - Players: Player positions and inventories
     - Statistics: Full personal player statistics
     - Advancements: Player advancements and progress
-    - Special Objects: Maps and Banners
+    - Special Objects: Maps, Lecterns and Banners
     - Detailed Metadata: Exhaustive capture details like modt, server version, timestamps, and more
 
 - **Easy Access to Saved Worlds**: Your locally captured world save can be found in the single-player worlds list,
@@ -157,12 +157,13 @@ Pull Request.
 - Fix statistics not updated on stop because the packet answer is not received before the world is saved
 - Fix on capture switch config button functionality in capture gui
 - Dimension, XP, selected item slot, player game type, is not saved to player nbt in level.dat
+- EntityLoadable
+- Better rendering
 
 ### Features
 - Capture Mode: Choose between two capture modes: Full and Incremental. The Full mode captures all data from the server, while the Incremental mode only captures data that has changed since the last capture.
-- Save lectern contents
 - Save server datapack to the downloaded world
-- Save more entity data (NBT) like trades, inventory from boats and minecarts, etc.
+- Save more entity data (NBT) like trades etc.
 - Live statistics: Data usage, time elapsed, etc.
 
 ## License

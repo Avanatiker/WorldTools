@@ -75,12 +75,16 @@ open class CustomRegionBasedStorage internal constructor(
             ?.mapNotNull { compoundTag ->
                 val blockPos = BlockPos(compoundTag.getInt("x"), compoundTag.getInt("y"), compoundTag.getInt("z"))
                 val blockStateIdentifier = Identifier.of(compoundTag.getString("id"))
+                val world = mc.world ?: return@mapNotNull null
 
                 runCatching {
-                    mc.world?.let { world ->
-                        val state = Registries.BLOCK.get(blockStateIdentifier).defaultState
-                        BlockEntity.createFromNbt(blockPos, state, compoundTag, world.registryManager)
-                    }
+                    val block = Registries.BLOCK.get(blockStateIdentifier)
+                    Registries.BLOCK_ENTITY_TYPE
+                        .getOrEmpty(blockStateIdentifier)
+                        .orElse(null)
+                        ?.instantiate(blockPos, block.defaultState)?.apply {
+                            read(compoundTag, world.registryManager)
+                        }
                 }.getOrNull()
             } ?: emptyList()
 
