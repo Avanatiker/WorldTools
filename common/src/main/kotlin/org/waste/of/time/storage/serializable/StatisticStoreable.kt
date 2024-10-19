@@ -17,7 +17,7 @@ import org.waste.of.time.storage.CustomRegionBasedStorage
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 
-class StatisticStoreable : Storeable {
+class StatisticStoreable : Storeable() {
     override fun shouldStore() = config.general.capture.statistics
 
     override val verboseInfo: MutableText

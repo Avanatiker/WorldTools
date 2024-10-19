@@ -23,7 +23,7 @@ import java.net.InetSocketAddress
 import java.nio.file.Path
 import kotlin.io.path.writeBytes
 
-class MetadataStoreable : Storeable {
+class MetadataStoreable : Storeable() {
     override fun shouldStore() = config.general.capture.metadata
 
     override val verboseInfo: MutableText

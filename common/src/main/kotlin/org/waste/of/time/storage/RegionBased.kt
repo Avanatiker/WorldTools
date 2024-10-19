@@ -11,7 +11,7 @@ abstract class RegionBased(
     val chunkPos: ChunkPos,
     val world: World,
     private val suffix: String
-) : Storeable {
+) : Storeable() {
     val dimension: String = world.registryKey.value.path
 
     private val dimensionPath

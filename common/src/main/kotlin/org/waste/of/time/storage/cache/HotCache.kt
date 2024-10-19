@@ -2,14 +2,19 @@ package org.waste.of.time.storage.cache
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet
 import net.minecraft.block.entity.BlockEntity
+import net.minecraft.block.entity.LecternBlockEntity
 import net.minecraft.block.entity.LockableContainerBlockEntity
+import net.minecraft.entity.Entity
+import net.minecraft.entity.vehicle.VehicleInventory
 import net.minecraft.inventory.EnderChestInventory
+import net.minecraft.registry.Registries
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.world.World
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.config
 import org.waste.of.time.WorldTools.mc
+import org.waste.of.time.manager.StatisticManager
 import org.waste.of.time.storage.serializable.PlayerStoreable
 import org.waste.of.time.storage.serializable.RegionBasedChunk
 import org.waste.of.time.storage.serializable.RegionBasedEntities
@@ -27,14 +32,28 @@ object HotCache {
     val entities = ConcurrentHashMap<ChunkPos, MutableSet<EntityCacheable>>()
     val players: ConcurrentHashMap.KeySetView<PlayerStoreable, Boolean> = ConcurrentHashMap.newKeySet()
     val scannedBlockEntities = ConcurrentHashMap<BlockPos, BlockEntity>()
+    private val scannedEntities: ConcurrentHashMap.KeySetView<Entity, Boolean> = ConcurrentHashMap.newKeySet()
+    val loadedBlockEntities = ConcurrentHashMap<BlockPos, BlockEntity>()
     var lastInteractedBlockEntity: BlockEntity? = null
+    var lastInteractedEntity: Entity? = null
     val unscannedBlockEntities by LazyUpdatingDelegate(100) {
         chunks.values
             .flatMap { it.chunk.blockEntities.values }
+            .filter { it.isSupported }
             .filterNot { scannedBlockEntities.containsKey(it.pos) }
+    }
+    val unscannedEntities by LazyUpdatingDelegate(100) {
+        entities.values
+            .flatten()
+            .filter { it.entity.isSupported }
+            .filterNot { it.entity in scannedEntities }
     }
     // map id's of maps that we've seen during the capture
     val mapIDs = mutableSetOf<Int>()
+    val BlockEntity.isSupported get() =
+        this is LockableContainerBlockEntity
+                || this is LecternBlockEntity
+    val Entity.isSupported get() = this is VehicleInventory
 
     fun getEntitySerializableForChunk(chunkPos: ChunkPos, world: World) =
         entities[chunkPos]?.let { entities ->
@@ -57,6 +76,7 @@ object HotCache {
         entities.clear()
         players.clear()
         scannedBlockEntities.clear()
+        loadedBlockEntities.clear()
         mapIDs.clear()
 
         // failing to reset this could cause users to accidentally save their echest contents on subsequent captures
@@ -65,5 +85,25 @@ object HotCache {
         }
         lastInteractedBlockEntity = null
         LOG.info("Cleared hot cache")
+    }
+
+    fun BlockEntity.markScanned(fromCache: Boolean = false) {
+        if (fromCache) {
+            loadedBlockEntities[pos] = this
+        } else {
+            scannedBlockEntities[pos] = this
+            loadedBlockEntities.remove(pos)
+        }
+
+        world?.registryKey?.value?.path?.let {
+            StatisticManager.dimensions.add(it)
+        }
+        if (config.debug.logSavedContainers) {
+            LOG.info("Saved block entity: ${Registries.BLOCK_ENTITY_TYPE.getId(type)?.path} at $pos")
+        }
+    }
+
+    fun Entity.markScanned() {
+        scannedEntities.add(this)
     }
 }

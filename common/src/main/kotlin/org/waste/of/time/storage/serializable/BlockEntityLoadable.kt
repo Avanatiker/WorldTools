@@ -9,10 +9,13 @@ import org.waste.of.time.WorldTools.config
 import org.waste.of.time.manager.MessageManager.translateHighlight
 import org.waste.of.time.storage.CustomRegionBasedStorage
 import org.waste.of.time.storage.cache.HotCache
+import org.waste.of.time.storage.cache.HotCache.isSupported
+import org.waste.of.time.storage.cache.HotCache.markScanned
 
 class BlockEntityLoadable(
     chunk: WorldChunk
 ) : RegionBasedChunk(chunk) {
+    private var migrated = false
     override fun shouldStore() =
         config.general.reloadBlockEntities && chunk.blockEntities.isNotEmpty()
 
@@ -30,9 +33,10 @@ class BlockEntityLoadable(
     fun load(
         session: LevelStorage.Session,
         cachedStorages: MutableMap<String, CustomRegionBasedStorage>
-    ) {
+    ): Boolean {
         generateStorage(session, cachedStorages)
             .getBlockEntities(chunkPos)
+            .filter { it.isSupported }
             .forEach { existing ->
                 HotCache.chunks[chunkPos]
                     ?.cachedBlockEntities
@@ -44,19 +48,22 @@ class BlockEntityLoadable(
                         }
                     }
             }
+        return migrated
     }
 
     private fun LockableContainerBlockEntity.migrateData(existing: BlockEntity) {
         if (existing !is LockableContainerBlockEntity) return
         if (!isEmpty) return
         heldStacks = existing.heldStacks
-        HotCache.scannedBlockEntities[existing.pos] = this
+        markScanned(true)
+        migrated = true
     }
 
     private fun LecternBlockEntity.migrateData(existing: BlockEntity) {
         if (existing !is LecternBlockEntity) return
         if (!book.isEmpty) return
         book = existing.book
-        HotCache.scannedBlockEntities[existing.pos] = this
+        markScanned(true)
+        migrated = true
     }
 }

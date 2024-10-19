@@ -6,24 +6,25 @@ import net.minecraft.world.level.storage.LevelStorage.Session
 import org.waste.of.time.manager.MessageManager.translateHighlight
 import org.waste.of.time.WorldTools.config
 
-interface Storeable {
-    fun store(
+abstract class Storeable {
+    abstract fun store(
         session: Session,
         cachedStorages: MutableMap<String, CustomRegionBasedStorage>
     )
 
+    abstract fun shouldStore(): Boolean
+
+    abstract val verboseInfo: MutableText
+
+    abstract val anonymizedInfo: MutableText
+
     fun emit() = StorageFlow.emit(this)
 
-    fun shouldStore(): Boolean
-
-    val verboseInfo: MutableText
-
-    val anonymizedInfo: MutableText
-
-    val formattedInfo: Text
-        get() = if (config.advanced.anonymousMode) {
+    val formattedInfo: Text by lazy {
+        if (config.advanced.anonymousMode) {
             anonymizedInfo
         } else {
             verboseInfo
         }.append(translateHighlight("worldtools.capture.took", StorageFlow.lastStoredTimeNeeded))
+    }
 }

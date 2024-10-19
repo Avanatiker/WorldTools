@@ -46,14 +46,17 @@ object StorageFlow {
                         return@collect
                     }
 
+                    val shouldSaveLastStored: Boolean
                     val time = measureTime {
-                        (storeable as? BlockEntityLoadable)?.load(openSession, cachedStorages)
+                        shouldSaveLastStored = (storeable as? BlockEntityLoadable)?.load(openSession, cachedStorages) ?: true
                         storeable.store(openSession, cachedStorages)
                     }
 
-                    lastStored = storeable
-                    lastStoredTimestamp = System.currentTimeMillis()
-                    lastStoredTimeNeeded = time
+                    if (shouldSaveLastStored) {
+                        lastStored = storeable
+                        lastStoredTimestamp = System.currentTimeMillis()
+                        lastStoredTimeNeeded = time
+                    }
 
                     if (storeable is EndFlow) {
                         throw StopCollectingException()

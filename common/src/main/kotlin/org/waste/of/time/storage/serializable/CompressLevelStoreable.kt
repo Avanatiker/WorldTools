@@ -21,7 +21,7 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import kotlin.io.path.name
 
-class CompressLevelStoreable : Storeable {
+class CompressLevelStoreable : Storeable() {
     private val zipName: String get() = "$currentLevelName-${System.currentTimeMillis()}.zip"
 
     override fun shouldStore() = config.general.compressLevel

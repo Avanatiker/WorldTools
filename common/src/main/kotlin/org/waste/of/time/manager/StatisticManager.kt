@@ -12,7 +12,8 @@ object StatisticManager {
     var chunks = 0
     var entities = 0
     var players = 0
-    private val containers get(): Int = HotCache.scannedBlockEntities.size
+    private val containers get(): Int =
+        HotCache.scannedBlockEntities.size + HotCache.loadedBlockEntities.size
     val dimensions = mutableSetOf<String>()
 
     fun reset() {

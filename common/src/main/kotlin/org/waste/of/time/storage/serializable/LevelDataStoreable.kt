@@ -22,7 +22,7 @@ import org.waste.of.time.storage.Storeable
 import java.io.File
 import java.io.IOException
 
-class LevelDataStoreable : Storeable {
+class LevelDataStoreable : Storeable() {
     override fun shouldStore() = config.general.capture.levelData
 
     override val verboseInfo: MutableText

@@ -157,7 +157,13 @@ class WorldToolsConfig : ConfigData {
     class Render {
         var renderNotYetCachedContainers = true
         @ConfigEntry.ColorPicker
-        var containerColor = 0xDE0000
+        var unscannedContainerColor = 0xDE0000
+        @ConfigEntry.ColorPicker
+        var fromCacheLoadedContainerColor = 0xFFA500
+        @ConfigEntry.ColorPicker
+        var unscannedEntityColor = 0xDE0000
+        @ConfigEntry.ColorPicker
+        var fromCacheLoadedEntityColor = 0xFFA500
         @ConfigEntry.ColorPicker
         var accentColor = 0xA2FF4C
         var captureBarColor = BossBar.Color.PINK

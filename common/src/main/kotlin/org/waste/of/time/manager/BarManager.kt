@@ -5,6 +5,7 @@ import net.minecraft.client.gui.hud.ClientBossBar
 import net.minecraft.text.Text
 import org.waste.of.time.manager.CaptureManager.capturing
 import org.waste.of.time.WorldTools.config
+import org.waste.of.time.manager.MessageManager.info
 import org.waste.of.time.storage.StorageFlow
 import java.util.*
 
@@ -54,16 +55,17 @@ object BarManager {
         progressBar.percent = 0f
 
         StorageFlow.lastStored?.let {
-            progressBar.percent = 1f
+            val elapsed = System.currentTimeMillis() - StorageFlow.lastStoredTimestamp
+            val timeout = config.render.progressBarTimeout
+            val progress = (elapsed.toFloat() / timeout).coerceAtMost(1f)
+
+            progressBar.percent = progress
             progressBar.name = it.formattedInfo
-        }
 
-        val elapsed = System.currentTimeMillis() - StorageFlow.lastStoredTimestamp
-        val timeout = elapsed > config.render.progressBarTimeout
-
-        if (StorageFlow.lastStoredTimestamp != 0L && timeout) {
-            StorageFlow.lastStored = null
-            progressBar.percent = 0f
+            if (elapsed >= timeout) {
+                StorageFlow.lastStored = null
+                progressBar.percent = 0f
+            }
         }
     }
 }

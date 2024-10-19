@@ -19,7 +19,7 @@ import org.waste.of.time.storage.Storeable
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 
-class AdvancementsStoreable : Storeable {
+class AdvancementsStoreable : Storeable() {
     override fun shouldStore() = config.general.capture.advancements
 
     override val verboseInfo: MutableText

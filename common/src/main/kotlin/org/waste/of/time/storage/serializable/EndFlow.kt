@@ -13,7 +13,7 @@ import org.waste.of.time.manager.StatisticManager
 import org.waste.of.time.storage.CustomRegionBasedStorage
 import org.waste.of.time.storage.Storeable
 
-class EndFlow : Storeable {
+class EndFlow : Storeable() {
     override fun shouldStore() = true
 
     override val verboseInfo: MutableText

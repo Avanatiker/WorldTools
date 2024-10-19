@@ -22,7 +22,7 @@ import java.nio.file.Path
 
 data class PlayerStoreable(
     val player: PlayerEntity
-) : Cacheable, Storeable {
+) : Cacheable, Storeable() {
     override fun shouldStore() = config.general.capture.players
 
     override val verboseInfo: MutableText

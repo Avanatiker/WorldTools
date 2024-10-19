@@ -5,6 +5,7 @@ import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.GridWidget
 import net.minecraft.client.render.RenderLayer
+import net.minecraft.client.render.VertexConsumer
 import net.minecraft.client.render.VertexConsumerProvider
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.component.type.MapIdComponent
@@ -12,6 +13,8 @@ import net.minecraft.entity.Entity
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.hit.BlockHitResult
+import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 import net.minecraft.world.chunk.WorldChunk
 import org.waste.of.time.Utils.manhattanDistance2d
@@ -30,7 +33,7 @@ import org.waste.of.time.manager.StatisticManager
 import org.waste.of.time.storage.StorageFlow
 import org.waste.of.time.storage.cache.EntityCacheable
 import org.waste.of.time.storage.cache.HotCache
-import org.waste.of.time.storage.cache.LootableInjectionHandler
+import org.waste.of.time.storage.cache.DataInjectionHandler
 import org.waste.of.time.storage.serializable.BlockEntityLoadable
 import org.waste.of.time.storage.serializable.PlayerStoreable
 import org.waste.of.time.storage.serializable.RegionBasedChunk
@@ -96,9 +99,15 @@ object Events {
 
     fun onInteractBlock(world: World, hitResult: BlockHitResult) {
         if (!capturing) return
-
         val blockEntity = world.getBlockEntity(hitResult.blockPos)
         HotCache.lastInteractedBlockEntity = blockEntity
+        HotCache.lastInteractedEntity = null
+    }
+
+    fun onInteractEntity(entity: Entity) {
+        if (!capturing) return
+        HotCache.lastInteractedEntity = entity
+        HotCache.lastInteractedBlockEntity = null
     }
 
     fun onDebugRenderStart(
@@ -113,29 +122,45 @@ object Events {
         val vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getLines()) ?: return
 
         HotCache.unscannedBlockEntities
-            .forEach { blockEntity ->
-                val blockPos = blockEntity.pos
-                val x1 = (blockPos.x - cameraX).toFloat()
-                val y1 = (blockPos.y - cameraY).toFloat()
-                val z1 = (blockPos.z - cameraZ).toFloat()
-                val x2 = x1 + 1
-                val z2 = z1 + 1
-                val color = Color(config.render.containerColor)
-                val r = color.red / 255.0f
-                val g = color.green / 255.0f
-                val b = color.blue / 255.0f
-                val a = 1.0f
-                val positionMat = matrices.peek().positionMatrix
-                val normMat = matrices.peek()
-                vertexConsumer.vertex(positionMat, x1, y1, z1).color(r, g, b, a).normal(normMat, 1.0f, 0.0f, 0.0f)
-                vertexConsumer.vertex(positionMat, x2, y1, z1).color(r, g, b, a).normal(normMat, 1.0f, 0.0f, 0.0f)
-                vertexConsumer.vertex(positionMat, x1, y1, z1).color(r, g, b, a).normal(normMat, 0.0f, 0.0f, 1.0f)
-                vertexConsumer.vertex(positionMat, x1, y1, z2).color(r, g, b, a).normal(normMat, 0.0f, 0.0f, 1.0f)
-                vertexConsumer.vertex(positionMat, x1, y1, z2).color(r, g, b, a).normal(normMat, 1.0f, 0.0f, 0.0f)
-                vertexConsumer.vertex(positionMat, x2, y1, z2).color(r, g, b, a).normal(normMat, 1.0f, 0.0f, 0.0f)
-                vertexConsumer.vertex(positionMat, x2, y1, z2).color(r, g, b, a).normal(normMat, 0.0f, 0.0f, -1.0f)
-                vertexConsumer.vertex(positionMat, x2, y1, z1).color(r, g, b, a).normal(normMat, 0.0f, 0.0f, -1.0f)
-            }
+            .forEach { render(it.pos.vec, cameraX, cameraY, cameraZ, matrices, vertexConsumer, Color(config.render.unscannedContainerColor)) }
+
+        HotCache.loadedBlockEntities
+            .forEach { render(it.value.pos.vec, cameraX, cameraY, cameraZ, matrices, vertexConsumer, Color(config.render.fromCacheLoadedContainerColor)) }
+
+        HotCache.unscannedEntities
+            .forEach { render(it.entity.pos.add(-.5, .0, -.5), cameraX, cameraY, cameraZ, matrices, vertexConsumer, Color(config.render.unscannedEntityColor)) }
+    }
+
+    private val BlockPos.vec get() = Vec3d(x.toDouble(), y.toDouble(), z.toDouble())
+
+    private fun render(
+        vec: Vec3d,
+        cameraX: Double,
+        cameraY: Double,
+        cameraZ: Double,
+        matrices: MatrixStack,
+        vertexConsumer: VertexConsumer,
+        color: Color
+    ) {
+        val x1 = (vec.x - cameraX).toFloat()
+        val y1 = (vec.y - cameraY).toFloat()
+        val z1 = (vec.z - cameraZ).toFloat()
+        val x2 = x1 + 1
+        val z2 = z1 + 1
+        val r = color.red / 255.0f
+        val g = color.green / 255.0f
+        val b = color.blue / 255.0f
+        val a = 1.0f
+        val positionMat = matrices.peek().positionMatrix
+        val normMat = matrices.peek()
+        vertexConsumer.vertex(positionMat, x1, y1, z1).color(r, g, b, a).normal(normMat, 1.0f, 0.0f, 0.0f)
+        vertexConsumer.vertex(positionMat, x2, y1, z1).color(r, g, b, a).normal(normMat, 1.0f, 0.0f, 0.0f)
+        vertexConsumer.vertex(positionMat, x1, y1, z1).color(r, g, b, a).normal(normMat, 0.0f, 0.0f, 1.0f)
+        vertexConsumer.vertex(positionMat, x1, y1, z2).color(r, g, b, a).normal(normMat, 0.0f, 0.0f, 1.0f)
+        vertexConsumer.vertex(positionMat, x1, y1, z2).color(r, g, b, a).normal(normMat, 1.0f, 0.0f, 0.0f)
+        vertexConsumer.vertex(positionMat, x2, y1, z2).color(r, g, b, a).normal(normMat, 1.0f, 0.0f, 0.0f)
+        vertexConsumer.vertex(positionMat, x2, y1, z2).color(r, g, b, a).normal(normMat, 0.0f, 0.0f, -1.0f)
+        vertexConsumer.vertex(positionMat, x2, y1, z1).color(r, g, b, a).normal(normMat, 0.0f, 0.0f, -1.0f)
     }
 
     fun onGameMenuScreenInitWidgets(adder: GridWidget.Adder) {
@@ -156,7 +181,7 @@ object Events {
 
     fun onScreenRemoved(screen: Screen) {
         if (!capturing) return
-        LootableInjectionHandler.onScreenRemoved(screen)
+        DataInjectionHandler.onScreenRemoved(screen)
         HotCache.lastInteractedBlockEntity = null
     }
 
