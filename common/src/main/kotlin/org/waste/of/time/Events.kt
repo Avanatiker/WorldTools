@@ -40,7 +40,7 @@ object Events {
     fun onChunkLoad(chunk: WorldChunk) {
         if (!capturing) return
         RegionBasedChunk(chunk).cache()
-        BlockEntityLoadable(chunk).tryEmit()
+        BlockEntityLoadable(chunk).emit()
     }
 
     fun onChunkUnload(chunk: WorldChunk) {
@@ -112,7 +112,7 @@ object Events {
 
         val vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getLines()) ?: return
 
-        HotCache.unscannedContainers
+        HotCache.unscannedBlockEntities
             .forEach { blockEntity ->
                 val blockPos = blockEntity.pos
                 val x1 = (blockPos.x - cameraX).toFloat()

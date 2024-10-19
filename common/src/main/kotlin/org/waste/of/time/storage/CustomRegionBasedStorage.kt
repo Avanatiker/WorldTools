@@ -1,6 +1,7 @@
 package org.waste.of.time.storage
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap
+import net.minecraft.block.entity.BlockEntity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtIo
 import net.minecraft.registry.Registries
@@ -10,10 +11,12 @@ import net.minecraft.util.ThrowableDeliverer
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.world.World
+import net.minecraft.world.chunk.WorldChunk
 import net.minecraft.world.storage.RegionFile
 import net.minecraft.world.storage.StorageKey
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.MCA_EXTENSION
+import org.waste.of.time.WorldTools.mc
 import java.io.DataOutput
 import java.io.IOException
 import java.nio.file.Path
@@ -64,7 +67,7 @@ open class CustomRegionBasedStorage internal constructor(
             NbtIo.readCompound(dataInputStream)
         }
 
-    fun getBlockEntities(chunkPos: ChunkPos): List<Any> =
+    fun getBlockEntities(chunkPos: ChunkPos): List<BlockEntity> =
         getNbtAt(chunkPos)
             ?.getList("block_entities", 10)
             ?.filterIsInstance<NbtCompound>()
@@ -80,7 +83,7 @@ open class CustomRegionBasedStorage internal constructor(
                             .getOrEmpty(blockStateIdentifier)
                             .orElse(null)
                             ?.instantiate(blockPos, block.defaultState)?.apply {
-                                world?.let { world ->
+                                mc.world?.let { world ->
                                     read(compoundTag, world.registryManager)
                                 }
                             }
@@ -104,10 +107,5 @@ open class CustomRegionBasedStorage internal constructor(
         }
 
         throwableDeliverer.deliver()
-    }
-
-    @Throws(IOException::class)
-    fun sync() {
-        cachedRegionFiles.values.filterNotNull().forEach { it.sync() }
     }
 }

@@ -5,19 +5,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
-import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.path.SymlinkValidationException
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.mc
 import org.waste.of.time.manager.CaptureManager
 import org.waste.of.time.manager.MessageManager
 import org.waste.of.time.manager.StatisticManager
-import org.waste.of.time.storage.cache.EntityCacheable
 import org.waste.of.time.storage.cache.HotCache
 import org.waste.of.time.storage.serializable.BlockEntityLoadable
 import org.waste.of.time.storage.serializable.EndFlow
-import org.waste.of.time.storage.serializable.PlayerStoreable
-import org.waste.of.time.storage.serializable.RegionBasedChunk
 import java.io.IOException
 import java.util.concurrent.CancellationException
 import kotlin.time.Duration
@@ -51,11 +47,8 @@ object StorageFlow {
                     }
 
                     val time = measureTime {
-                        if (storeable is BlockEntityLoadable) {
-                            storeable.load(openSession, cachedStorages)
-                        } else {
-                            storeable.store(openSession, cachedStorages)
-                        }
+                        (storeable as? BlockEntityLoadable)?.load(openSession, cachedStorages)
+                        storeable.store(openSession, cachedStorages)
                     }
 
                     lastStored = storeable

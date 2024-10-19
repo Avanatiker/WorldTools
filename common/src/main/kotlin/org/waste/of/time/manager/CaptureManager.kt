@@ -1,6 +1,6 @@
 package org.waste.of.time.manager
 
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import net.minecraft.client.gui.screen.ConfirmScreen
 import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.entity.player.PlayerEntity
@@ -14,6 +14,7 @@ import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.config
 import org.waste.of.time.WorldTools.mc
 import org.waste.of.time.config.WorldToolsConfig
+import org.waste.of.time.manager.MessageManager.info
 import org.waste.of.time.storage.StorageFlow
 import org.waste.of.time.storage.cache.EntityCacheable
 import org.waste.of.time.storage.cache.HotCache
@@ -84,7 +85,13 @@ object CaptureManager {
         mc.networkHandler?.sendPacket(ClientStatusC2SPacket(ClientStatusC2SPacket.Mode.REQUEST_STATS))
         capturing = true
 
-        syncCacheFromWorldState()
+        // Need to wait until the storage flow is running before syncing the cache
+        CoroutineScope(Dispatchers.IO).launch {
+            delay(100L)
+            mc.execute {
+                syncCacheFromWorldState()
+            }
+        }
     }
 
     private fun logCaptureSettingsState() {
@@ -125,7 +132,7 @@ object CaptureManager {
         repeat(diameter * diameter) { i ->
             world.chunkManager.chunks.getChunk(i)?.let { chunk ->
                 RegionBasedChunk(chunk).cache()
-                BlockEntityLoadable(chunk).tryEmit()
+                BlockEntityLoadable(chunk).emit()
             }
         }
 

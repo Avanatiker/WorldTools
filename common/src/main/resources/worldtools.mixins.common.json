@@ -8,7 +8,6 @@
     "ClientPlayInteractionManagerMixin",
     "ClientPlayNetworkHandlerMixin",
     "ClientWorldMixin",
-    "ContainerBlockEntityExtension",
     "DebugRendererMixin",
     "GameMenuScreenMixin",
     "IntegratedServerLoaderMixin",

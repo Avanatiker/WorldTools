@@ -5,87 +5,70 @@ import net.minecraft.block.entity.*
 import net.minecraft.block.enums.ChestType
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.ingame.*
-import net.minecraft.component.DataComponentTypes
 import net.minecraft.inventory.EnderChestInventory
 import net.minecraft.inventory.SimpleInventory
-import net.minecraft.item.Items
-import net.minecraft.screen.GenericContainerScreenHandler
+import net.minecraft.registry.Registries
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.config
 import org.waste.of.time.WorldTools.mc
-import org.waste.of.time.extension.IBlockEntityContainerExtension
 import org.waste.of.time.manager.StatisticManager
-import org.waste.of.time.storage.cache.HotCache.scannedContainers
+import org.waste.of.time.storage.cache.HotCache.scannedBlockEntities
 
 object LootableInjectionHandler {
     fun onScreenRemoved(screen: Screen) {
+        val blockEntity = HotCache.lastInteractedBlockEntity ?: return
+
+        when (screen) {
+            is GenericContainerScreen -> {
+                when (blockEntity) {
+                    is ChestBlockEntity -> blockEntity.injectDataToChest(screen)
+                    is BarrelBlockEntity -> blockEntity.injectDataToBarrelBlock(screen)
+                    is EnderChestBlockEntity -> injectDataToEnderChest(screen)
+                }
+            }
+            is Generic3x3ContainerScreen -> {
+                (blockEntity as? DispenserBlockEntity)?.injectDataToDispenserOrDropper(screen)
+            }
+            is AbstractFurnaceScreen<*> -> {
+                (blockEntity as? AbstractFurnaceBlockEntity)?.injectDataToFurnace(screen)
+            }
+            is BrewingStandScreen -> {
+                (blockEntity as? BrewingStandBlockEntity)?.injectDataToBrewingStand(screen)
+            }
+            is HopperScreen -> {
+                (blockEntity as? HopperBlockEntity)?.injectDataToHopper(screen)
+            }
+            is ShulkerBoxScreen -> {
+                (blockEntity as? ShulkerBoxBlockEntity)?.injectDataToShulkerBox(screen)
+            }
+            is LecternScreen -> {
+                (blockEntity as? LecternBlockEntity)?.injectDataToLectern(screen)
+            }
+        }
+
         // ToDo: Add support for entity containers like chest boat and minecart
-        if (screen !is HandledScreen<*>) return
 
         // ToDo: Find out if its possible to get the map state update (currently has no effect)
-        screen.getContainerSlots().filter {
-            it.stack.item == Items.FILLED_MAP
-        }.forEach {
-            it.stack.components.get(DataComponentTypes.MAP_ID)?.let { id ->
-                HotCache.mapIDs.add(id.id)
-            }
-        }
+//        screen.getContainerSlots().filter {
+//            it.stack.item == Items.FILLED_MAP
+//        }.forEach {
+//            it.stack.components.get(DataComponentTypes.MAP_ID)?.let { id ->
+//                HotCache.mapIDs.add(id.id)
+//            }
+//        }
 
-        if (HotCache.lastInteractedBlockEntity is EnderChestBlockEntity
-            && !mc.isInSingleplayer
-        ) { // SinglePlayer populates contents automatically
-            injectDataToEnderChest(screen)
-            return
-        }
-        val container = HotCache.lastInteractedBlockEntity as? LockableContainerBlockEntity ?: return
-
-        when (container) {
-            is AbstractFurnaceBlockEntity -> {
-                container.injectDataToFurnace(screen)
-                if (config.debug.logSavedContainers)
-                    LOG.info("Saving furnace contents: ${container.pos}")
-            }
-            is BarrelBlockEntity -> {
-                container.injectDataToBarrelBlock(screen)
-                if (config.debug.logSavedContainers)
-                    LOG.info("Saving barrel contents: ${container.pos}")
-            }
-            is BrewingStandBlockEntity -> {
-                container.injectDataToBrewingStand(screen)
-                if (config.debug.logSavedContainers)
-                    LOG.info("Saving brewing stand contents: ${container.pos}")
-            }
-            is ChestBlockEntity -> {
-                container.injectDataToChest(screen)
-                if (config.debug.logSavedContainers)
-                    LOG.info("Saving chest contents: ${container.pos}")
-            }
-            is DispenserBlockEntity -> {
-                container.injectDataToDispenserOrDropper(screen)
-                if (config.debug.logSavedContainers)
-                    LOG.info("Saving dispenser/dropper: ${container.pos}")
-            }
-            is HopperBlockEntity -> {
-                container.injectDataToHopper(screen)
-                if (config.debug.logSavedContainers)
-                    LOG.info("Saving hopper: ${container.pos}")
-            }
-            is ShulkerBoxBlockEntity -> {
-                container.injectDataToShulkerBox(screen)
-                if (config.debug.logSavedContainers)
-                    LOG.info("Saving shulker: ${container.pos}")
-            }
-        }
-
-        scannedContainers[container.pos] = container
-        container.world?.registryKey?.value?.path?.let {
+        scannedBlockEntities[blockEntity.pos] = blockEntity
+        blockEntity.world?.registryKey?.value?.path?.let {
             StatisticManager.dimensions.add(it)
+        }
+        if (config.debug.logSavedContainers) {
+            LOG.info("Saved block entity: ${Registries.BLOCK_ENTITY_TYPE.getId(blockEntity.type)?.path} at ${blockEntity.pos}")
         }
     }
 
-    private fun injectDataToEnderChest(screen: HandledScreen<*>) {
-        val screenHandler = screen.screenHandler as? GenericContainerScreenHandler ?: return
-        val inventory = screenHandler.inventory as? SimpleInventory ?: return
+    private fun injectDataToEnderChest(screen: GenericContainerScreen) {
+        if (mc.isInSingleplayer) return
+        val inventory = screen.screenHandler.inventory as? SimpleInventory ?: return
         if (inventory.size() != 27) return
         mc.player?.enderChestInventory = EnderChestInventory().apply {
             repeat(inventory.size()) { i ->
@@ -94,32 +77,25 @@ object LootableInjectionHandler {
         }
     }
 
-    private fun AbstractFurnaceBlockEntity.injectDataToFurnace(screen: HandledScreen<*>) {
-        if (screen !is AbstractFurnaceScreen) return
+    private fun AbstractFurnaceBlockEntity.injectDataToFurnace(screen: AbstractFurnaceScreen<*>) {
         screen.getContainerSlots().forEach {
             setStack(it.index, it.stack)
         }
-        (this as IBlockEntityContainerExtension).wtContentsRead = true;
     }
 
-    private fun BarrelBlockEntity.injectDataToBarrelBlock(screen: HandledScreen<*>) {
-        if (screen !is GenericContainerScreen) return
+    private fun BarrelBlockEntity.injectDataToBarrelBlock(screen: GenericContainerScreen) {
         screen.getContainerSlots().forEach {
             setStack(it.index, it.stack)
         }
-        (this as IBlockEntityContainerExtension).wtContentsRead = true;
     }
 
-    private fun BrewingStandBlockEntity.injectDataToBrewingStand(screen: HandledScreen<*>) {
-        if (screen !is BrewingStandScreen) return
+    private fun BrewingStandBlockEntity.injectDataToBrewingStand(screen: BrewingStandScreen) {
         screen.getContainerSlots().forEach {
             setStack(it.index, it.stack)
         }
-        (this as IBlockEntityContainerExtension).wtContentsRead = true;
     }
 
-    private fun ChestBlockEntity.injectDataToChest(screen: HandledScreen<*>) {
-        if (screen !is GenericContainerScreen) return
+    private fun ChestBlockEntity.injectDataToChest(screen: GenericContainerScreen) {
         val facing = cachedState[ChestBlock.FACING] ?: return
         val chestType = cachedState[ChestBlock.CHEST_TYPE] ?: return
         val containerSlots = screen.getContainerSlots()
@@ -144,7 +120,7 @@ object LootableInjectionHandler {
                     setStack(it.index - 27, it.stack)
                 }
 
-                scannedContainers[otherChest.pos] = otherChest
+                scannedBlockEntities[otherChest.pos] = otherChest
             }
 
             ChestType.RIGHT -> {
@@ -159,36 +135,32 @@ object LootableInjectionHandler {
                     otherChest.setStack(it.index - 27, it.stack)
                 }
 
-                scannedContainers[otherChest.pos] = otherChest
+                scannedBlockEntities[otherChest.pos] = otherChest
             }
         }
-        (this as IBlockEntityContainerExtension).wtContentsRead = true;
     }
 
-    private fun DispenserBlockEntity.injectDataToDispenserOrDropper(screen: HandledScreen<*>) {
-        if (screen !is Generic3x3ContainerScreen) return
+    private fun DispenserBlockEntity.injectDataToDispenserOrDropper(screen: Generic3x3ContainerScreen) {
         screen.getContainerSlots().forEach {
             setStack(it.index, it.stack)
         }
-        (this as IBlockEntityContainerExtension).wtContentsRead = true;
     }
 
-    private fun HopperBlockEntity.injectDataToHopper(screen: HandledScreen<*>) {
-        if (screen !is HopperScreen) return
+    private fun HopperBlockEntity.injectDataToHopper(screen: HopperScreen) {
         screen.getContainerSlots().forEach {
             setStack(it.index, it.stack)
         }
-        (this as IBlockEntityContainerExtension).wtContentsRead = true;
     }
 
-    private fun ShulkerBoxBlockEntity.injectDataToShulkerBox(screen: HandledScreen<*>) {
-        if (screen !is ShulkerBoxScreen) return
+    private fun ShulkerBoxBlockEntity.injectDataToShulkerBox(screen: ShulkerBoxScreen) {
         screen.getContainerSlots().forEach {
             setStack(it.index, it.stack)
         }
-        (this as IBlockEntityContainerExtension).wtContentsRead = true;
+    }
+
+    private fun LecternBlockEntity.injectDataToLectern(screen: LecternScreen) {
+        book = screen.screenHandler.bookItem
     }
 
     private fun HandledScreen<*>.getContainerSlots() = screenHandler.slots.filter { it.inventory is SimpleInventory }
-
 }

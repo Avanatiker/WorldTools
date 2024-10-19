@@ -86,7 +86,7 @@ object MessageManager {
         }
     }
 
-    fun translateHighlight(key: String, vararg args: Any): MutableText {
+    fun translateHighlight(key: String, vararg args: Any): MutableText =
         args.map { element ->
             val secondaryColor = TextColor.fromRgb(config.render.accentColor)
             if (element is Text) {
@@ -103,7 +103,6 @@ object MessageManager {
                 }
             }
         }.toTypedArray().let {
-            return Text.translatable(key, *it)
+            Text.translatable(key, *it)
         }
-    }
 }

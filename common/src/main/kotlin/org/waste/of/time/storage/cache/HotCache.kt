@@ -26,13 +26,12 @@ object HotCache {
     internal val savedChunks = LongOpenHashSet()
     val entities = ConcurrentHashMap<ChunkPos, MutableSet<EntityCacheable>>()
     val players: ConcurrentHashMap.KeySetView<PlayerStoreable, Boolean> = ConcurrentHashMap.newKeySet()
-    val scannedContainers = ConcurrentHashMap<BlockPos, LockableContainerBlockEntity>()
+    val scannedBlockEntities = ConcurrentHashMap<BlockPos, BlockEntity>()
     var lastInteractedBlockEntity: BlockEntity? = null
-    val unscannedContainers by LazyUpdatingDelegate(100) {
+    val unscannedBlockEntities by LazyUpdatingDelegate(100) {
         chunks.values
             .flatMap { it.chunk.blockEntities.values }
-            .filterIsInstance<LockableContainerBlockEntity>()
-            .filterNot { scannedContainers.containsKey(it.pos) }
+            .filterNot { scannedBlockEntities.containsKey(it.pos) }
     }
     // map id's of maps that we've seen during the capture
     val mapIDs = mutableSetOf<Int>()
@@ -57,7 +56,7 @@ object HotCache {
         savedChunks.clear()
         entities.clear()
         players.clear()
-        scannedContainers.clear()
+        scannedBlockEntities.clear()
         mapIDs.clear()
 
         // failing to reset this could cause users to accidentally save their echest contents on subsequent captures

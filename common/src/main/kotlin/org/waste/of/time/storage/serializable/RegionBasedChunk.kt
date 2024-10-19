@@ -44,7 +44,7 @@ open class RegionBasedChunk(
         cachedBlockEntities.putAll(chunk.blockEntities)
 
         cachedBlockEntities.values.associateWith { fresh ->
-            HotCache.scannedContainers[fresh.pos]
+            HotCache.scannedBlockEntities[fresh.pos]
         }.forEach { (fresh, cached) ->
             if (cached == null) return@forEach
             cachedBlockEntities[fresh.pos] = cached

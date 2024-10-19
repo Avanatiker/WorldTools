@@ -12,11 +12,6 @@ interface Storeable {
         cachedStorages: MutableMap<String, CustomRegionBasedStorage>
     )
 
-    fun load(
-        session: Session,
-        cachedStorages: MutableMap<String, CustomRegionBasedStorage>
-    ) {}
-
     fun emit() = StorageFlow.emit(this)
 
     fun shouldStore(): Boolean

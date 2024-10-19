@@ -1,5 +1,7 @@
 package org.waste.of.time
 
+import net.minecraft.block.entity.BlockEntity
+import net.minecraft.registry.Registries
 import net.minecraft.util.math.Vec3d
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -34,4 +36,7 @@ object Utils {
         val pre = (if (si) "kMGTPE" else "KMGTPE")[exp - 1] + if (si) "" else "i"
         return String.format("%.1f %sB", this / unit.toDouble().pow(exp.toDouble()), pre)
     }
+
+    val BlockEntity.typeName: String
+        get() = Registries.BLOCK_ENTITY_TYPE.getId(type)?.path ?: "unknown"
 }
