@@ -14,4 +14,3 @@ accessible method net/minecraft/client/world/ClientWorld getMapStates ()Ljava/ut
 accessible field net/minecraft/entity/player/PlayerEntity enderChestInventory Lnet/minecraft/inventory/EnderChestInventory;
 accessible method net/minecraft/block/entity/LockableContainerBlockEntity getHeldStacks ()Lnet/minecraft/util/collection/DefaultedList;
 accessible method net/minecraft/block/entity/LockableContainerBlockEntity setHeldStacks (Lnet/minecraft/util/collection/DefaultedList;)V
-accessible method net/minecraft/world/chunk/WorldChunk createBlockEntity (Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/block/entity/BlockEntity;

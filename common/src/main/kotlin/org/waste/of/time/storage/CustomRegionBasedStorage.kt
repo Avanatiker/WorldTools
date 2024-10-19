@@ -16,6 +16,7 @@ import net.minecraft.world.storage.RegionFile
 import net.minecraft.world.storage.StorageKey
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.MCA_EXTENSION
+import org.waste.of.time.WorldTools.MOD_NAME
 import org.waste.of.time.WorldTools.mc
 import java.io.DataOutput
 import java.io.IOException
@@ -31,7 +32,7 @@ open class CustomRegionBasedStorage internal constructor(
     companion object {
         // Seems to only be used for MC's profiler
         // simpler to just use a default key instead of wiring this all in here
-        val defaultStorageKey: StorageKey = StorageKey("doesn't matter", World.OVERWORLD, "chunk")
+        val defaultStorageKey: StorageKey = StorageKey(MOD_NAME, World.OVERWORLD, "chunk")
     }
 
     @Throws(IOException::class)
@@ -74,24 +75,13 @@ open class CustomRegionBasedStorage internal constructor(
             ?.mapNotNull { compoundTag ->
                 val blockPos = BlockPos(compoundTag.getInt("x"), compoundTag.getInt("y"), compoundTag.getInt("z"))
                 val blockStateIdentifier = Identifier.of(compoundTag.getString("id"))
-                // todo: read block state from section data NBT?
-                //  doesn't seem necessary rn because we're just using this to get the pos and container contents
-                //  might be needed for certain container types with multiple block states, like chest vs double chest?
-                try {
-                    Registries.BLOCK.get(blockStateIdentifier).let { block ->
-                        Registries.BLOCK_ENTITY_TYPE
-                            .getOrEmpty(blockStateIdentifier)
-                            .orElse(null)
-                            ?.instantiate(blockPos, block.defaultState)?.apply {
-                                mc.world?.let { world ->
-                                    read(compoundTag, world.registryManager)
-                                }
-                            }
+
+                runCatching {
+                    mc.world?.let { world ->
+                        val state = Registries.BLOCK.get(blockStateIdentifier).defaultState
+                        BlockEntity.createFromNbt(blockPos, state, compoundTag, world.registryManager)
                     }
-                } catch (e: Exception) {
-                    LOG.error("Error creating block entity: {} from NBT at chunk: {}", blockStateIdentifier, chunkPos)
-                    null
-                }
+                }.getOrNull()
             } ?: emptyList()
 
     @Throws(IOException::class)
