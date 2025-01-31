@@ -1,5 +1,7 @@
 package org.waste.of.time.storage.cache
 
+import it.unimi.dsi.fastutil.longs.LongArrayList
+import it.unimi.dsi.fastutil.longs.LongList
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.LecternBlockEntity
@@ -69,6 +71,9 @@ object HotCache {
      */
     @Suppress("unused")
     fun isChunkSaved(chunkX: Int, chunkZ: Int) = savedChunks.contains(ChunkPos.toLong(chunkX, chunkZ))
+
+    @Suppress("unused")
+    fun getSavedChunks(): LongList = LongArrayList(savedChunks);
 
     fun clear() {
         chunks.clear()
