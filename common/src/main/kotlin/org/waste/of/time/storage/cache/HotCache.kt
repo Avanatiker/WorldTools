@@ -105,7 +105,9 @@ object HotCache {
 
     fun clear() {
         chunks.clear()
-        savedDimensionChunks.clear()
+        synchronized(savedDimensionChunksLock) {
+            savedDimensionChunks.clear()
+        }
         entities.clear()
         players.clear()
         scannedBlockEntities.clear()
