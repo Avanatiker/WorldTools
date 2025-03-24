@@ -1,5 +1,6 @@
 package org.waste.of.time.storage.cache
 
+import it.unimi.dsi.fastutil.longs.LongArrayList
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.LecternBlockEntity
@@ -73,6 +74,11 @@ object HotCache {
     fun isChunkSaved(chunkX: Int, chunkZ: Int, dimension: RegistryKey<World>): Boolean {
         val dimensionChunks = savedChunks[dimension] ?: return false
         return dimensionChunks.contains(ChunkPos.toLong(chunkX, chunkZ))
+    }
+
+    @Suppress("unused")
+    fun getSavedChunks(dimension: RegistryKey<World>): LongArrayList {
+        return LongArrayList(savedChunks[dimension])
     }
 
     fun clear() {
