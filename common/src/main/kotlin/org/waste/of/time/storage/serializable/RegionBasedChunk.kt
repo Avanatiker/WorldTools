@@ -76,8 +76,10 @@ open class RegionBasedChunk(
 
     override fun cache() {
         HotCache.chunks[chunkPos] = this
-        HotCache.savedChunks.getOrPut(world.registryKey) { LongOpenHashSet() }
-            .add(chunkPos.toLong())
+        synchronized(HotCache.savedDimensionChunksLock) {
+            HotCache.savedDimensionChunks.getOrPut(world.registryKey) { LongOpenHashSet() }
+                .add(chunkPos.toLong())
+        }
     }
 
     override fun flush() {

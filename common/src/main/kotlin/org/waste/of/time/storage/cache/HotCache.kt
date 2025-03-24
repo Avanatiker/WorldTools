@@ -2,6 +2,7 @@ package org.waste.of.time.storage.cache
 
 import it.unimi.dsi.fastutil.longs.LongArrayList
 import it.unimi.dsi.fastutil.longs.LongCollection
+import it.unimi.dsi.fastutil.longs.LongLists
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.LecternBlockEntity
@@ -31,7 +32,8 @@ import java.util.concurrent.ConcurrentHashMap
  */
 object HotCache {
     val chunks = ConcurrentHashMap<ChunkPos, RegionBasedChunk>()
-    internal val savedChunks = mutableMapOf<RegistryKey<World>, LongOpenHashSet>()
+    internal val savedDimensionChunks = mutableMapOf<RegistryKey<World>, LongOpenHashSet>()
+    internal val savedDimensionChunksLock = Any()
     val entities = ConcurrentHashMap<ChunkPos, MutableSet<EntityCacheable>>()
     val players: ConcurrentHashMap.KeySetView<PlayerStoreable, Boolean> = ConcurrentHashMap.newKeySet()
     val scannedBlockEntities = ConcurrentHashMap<BlockPos, BlockEntity>()
@@ -75,7 +77,7 @@ object HotCache {
     @Suppress("unused")
     fun isChunkSaved(chunkX: Int, chunkZ: Int): Boolean {
         val dimension = mc.world?.registryKey!!
-        val chunks = savedChunks[dimension] ?: return false
+        val chunks = savedDimensionChunks[dimension] ?: return false
         return chunks.contains(ChunkPos.toLong(chunkX, chunkZ))
     }
 
@@ -89,18 +91,21 @@ object HotCache {
      */
     @Suppress("unused")
     fun isChunkSaved(chunkX: Int, chunkZ: Int, dimension: RegistryKey<World>): Boolean {
-        val dimensionChunks = savedChunks[dimension] ?: return false
-        return dimensionChunks.contains(ChunkPos.toLong(chunkX, chunkZ))
+        val savedChunks = savedDimensionChunks[dimension] ?: return false
+        return savedChunks.contains(ChunkPos.toLong(chunkX, chunkZ))
     }
 
     @Suppress("unused")
     fun getSavedChunks(dimension: RegistryKey<World>): LongCollection {
-        return LongArrayList(savedChunks[dimension])
+        synchronized(savedDimensionChunksLock) {
+            val savedChunks = savedDimensionChunks[dimension] ?: return LongLists.EMPTY_LIST
+            return LongArrayList(savedChunks)
+        }
     }
 
     fun clear() {
         chunks.clear()
-        savedChunks.clear()
+        savedDimensionChunks.clear()
         entities.clear()
         players.clear()
         scannedBlockEntities.clear()
