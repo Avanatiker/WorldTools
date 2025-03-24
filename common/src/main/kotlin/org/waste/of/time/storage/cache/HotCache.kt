@@ -32,8 +32,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 object HotCache {
     val chunks = ConcurrentHashMap<ChunkPos, RegionBasedChunk>()
-    internal val savedDimensionChunks = mutableMapOf<RegistryKey<World>, LongOpenHashSet>()
-    internal val savedDimensionChunksLock = Any()
+    internal val savedDimensionChunks = ConcurrentHashMap<RegistryKey<World>, LongOpenHashSet>()
     val entities = ConcurrentHashMap<ChunkPos, MutableSet<EntityCacheable>>()
     val players: ConcurrentHashMap.KeySetView<PlayerStoreable, Boolean> = ConcurrentHashMap.newKeySet()
     val scannedBlockEntities = ConcurrentHashMap<BlockPos, BlockEntity>()
@@ -97,17 +96,15 @@ object HotCache {
 
     @Suppress("unused")
     fun getSavedChunks(dimension: RegistryKey<World>): LongCollection {
-        synchronized(savedDimensionChunksLock) {
-            val savedChunks = savedDimensionChunks[dimension] ?: return LongLists.EMPTY_LIST
+        val savedChunks = savedDimensionChunks[dimension] ?: return LongLists.EMPTY_LIST
+        synchronized(savedChunks) {
             return LongArrayList(savedChunks)
         }
     }
 
     fun clear() {
         chunks.clear()
-        synchronized(savedDimensionChunksLock) {
-            savedDimensionChunks.clear()
-        }
+        savedDimensionChunks.clear()
         entities.clear()
         players.clear()
         scannedBlockEntities.clear()
