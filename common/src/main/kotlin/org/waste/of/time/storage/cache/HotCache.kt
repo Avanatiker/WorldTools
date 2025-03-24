@@ -8,6 +8,7 @@ import net.minecraft.entity.Entity
 import net.minecraft.entity.vehicle.VehicleInventory
 import net.minecraft.inventory.EnderChestInventory
 import net.minecraft.registry.Registries
+import net.minecraft.registry.RegistryKey
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.world.World
@@ -28,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 object HotCache {
     val chunks = ConcurrentHashMap<ChunkPos, RegionBasedChunk>()
-    internal val savedChunks = LongOpenHashSet()
+    internal val savedChunks = mutableMapOf<RegistryKey<World>, LongOpenHashSet>()
     val entities = ConcurrentHashMap<ChunkPos, MutableSet<EntityCacheable>>()
     val players: ConcurrentHashMap.KeySetView<PlayerStoreable, Boolean> = ConcurrentHashMap.newKeySet()
     val scannedBlockEntities = ConcurrentHashMap<BlockPos, BlockEntity>()
@@ -65,10 +66,14 @@ object HotCache {
      *
      * @param chunkX The X coordinate of the chunk.
      * @param chunkZ The Z coordinate of the chunk.
+     * @param dimension The dimension of the chunk.
      * @return True if the chunk is saved, false otherwise.
      */
     @Suppress("unused")
-    fun isChunkSaved(chunkX: Int, chunkZ: Int) = savedChunks.contains(ChunkPos.toLong(chunkX, chunkZ))
+    fun isChunkSaved(chunkX: Int, chunkZ: Int, dimension: RegistryKey<World>): Boolean {
+        val dimensionChunks = savedChunks[dimension] ?: return false
+        return dimensionChunks.contains(ChunkPos.toLong(chunkX, chunkZ))
+    }
 
     fun clear() {
         chunks.clear()

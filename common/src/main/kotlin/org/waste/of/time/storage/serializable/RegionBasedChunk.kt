@@ -1,5 +1,6 @@
 package org.waste.of.time.storage.serializable
 
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet
 import net.minecraft.SharedConstants
 import net.minecraft.block.Block
 import net.minecraft.block.BlockState
@@ -75,7 +76,8 @@ open class RegionBasedChunk(
 
     override fun cache() {
         HotCache.chunks[chunkPos] = this
-        HotCache.savedChunks.add(chunkPos.toLong())
+        HotCache.savedChunks.getOrPut(world.registryKey) { LongOpenHashSet() }
+            .add(chunkPos.toLong())
     }
 
     override fun flush() {
