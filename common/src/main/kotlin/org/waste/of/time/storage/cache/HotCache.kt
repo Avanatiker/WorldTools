@@ -85,7 +85,7 @@ object HotCache {
      * @param dimension The dimension of the chunk.
      * @return True if the chunk is saved, false otherwise.
      */
-    @Suppress("unused")
+    @Suppress("MemberVisibilityCanBePrivate")
     fun isChunkSaved(chunkX: Int, chunkZ: Int, dimension: RegistryKey<World>): Boolean {
         val savedChunks = savedDimensionChunks[dimension] ?: return false
         return savedChunks.contains(ChunkPos.toLong(chunkX, chunkZ))
