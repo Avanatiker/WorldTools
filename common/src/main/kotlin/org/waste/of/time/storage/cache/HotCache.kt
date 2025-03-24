@@ -1,5 +1,8 @@
 package org.waste.of.time.storage.cache
 
+import it.unimi.dsi.fastutil.longs.LongArrayList
+import it.unimi.dsi.fastutil.longs.LongCollection
+import it.unimi.dsi.fastutil.longs.LongLists
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.LecternBlockEntity
@@ -8,6 +11,7 @@ import net.minecraft.entity.Entity
 import net.minecraft.entity.vehicle.VehicleInventory
 import net.minecraft.inventory.EnderChestInventory
 import net.minecraft.registry.Registries
+import net.minecraft.registry.RegistryKey
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.world.World
@@ -28,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 object HotCache {
     val chunks = ConcurrentHashMap<ChunkPos, RegionBasedChunk>()
-    internal val savedChunks = LongOpenHashSet()
+    internal val savedDimensionChunks = ConcurrentHashMap<RegistryKey<World>, LongOpenHashSet>()
     val entities = ConcurrentHashMap<ChunkPos, MutableSet<EntityCacheable>>()
     val players: ConcurrentHashMap.KeySetView<PlayerStoreable, Boolean> = ConcurrentHashMap.newKeySet()
     val scannedBlockEntities = ConcurrentHashMap<BlockPos, BlockEntity>()
@@ -67,12 +71,44 @@ object HotCache {
      * @param chunkZ The Z coordinate of the chunk.
      * @return True if the chunk is saved, false otherwise.
      */
+    @Deprecated("This method will default to the current dimension. Please use the new method by passing in a dimension.")
     @Suppress("unused")
-    fun isChunkSaved(chunkX: Int, chunkZ: Int) = savedChunks.contains(ChunkPos.toLong(chunkX, chunkZ))
+    fun isChunkSaved(chunkX: Int, chunkZ: Int): Boolean {
+        val dimension = mc.world?.registryKey ?: World.OVERWORLD
+        return isChunkSaved(chunkX, chunkZ, dimension)
+    }
+
+    /**
+     * Used as a public API for external mods like [XaeroPlus](https://github.com/rfresh2/XaeroPlus), change carefully.
+     *
+     * @param chunkX The X coordinate of the chunk.
+     * @param chunkZ The Z coordinate of the chunk.
+     * @param dimension The dimension of the chunk.
+     * @return True if the chunk is saved, false otherwise.
+     */
+    @Suppress("MemberVisibilityCanBePrivate")
+    fun isChunkSaved(chunkX: Int, chunkZ: Int, dimension: RegistryKey<World>): Boolean {
+        val savedChunks = savedDimensionChunks[dimension] ?: return false
+        return savedChunks.contains(ChunkPos.toLong(chunkX, chunkZ))
+    }
+
+    /**
+     * Returns a [LongCollection] of all the chunk positions saved by WorldTools.
+     *
+     * @param dimension The dimension to get the saved chunks.
+     * @return All the chunk positions saved.
+     */
+    @Suppress("unused")
+    fun getSavedChunks(dimension: RegistryKey<World>): LongCollection {
+        val savedChunks = savedDimensionChunks[dimension] ?: return LongLists.EMPTY_LIST
+        synchronized(savedChunks) {
+            return LongArrayList(savedChunks)
+        }
+    }
 
     fun clear() {
         chunks.clear()
-        savedChunks.clear()
+        savedDimensionChunks.clear()
         entities.clear()
         players.clear()
         scannedBlockEntities.clear()
