@@ -1,6 +1,7 @@
 package org.waste.of.time.storage.cache
 
 import it.unimi.dsi.fastutil.longs.LongArrayList
+import it.unimi.dsi.fastutil.longs.LongCollection
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.LecternBlockEntity
@@ -62,6 +63,22 @@ object HotCache {
             RegionBasedEntities(chunkPos, entities, world)
         }
 
+
+    /**
+     * Used as a public API for external mods like [XaeroPlus](https://github.com/rfresh2/XaeroPlus), change carefully.
+     *
+     * @param chunkX The X coordinate of the chunk.
+     * @param chunkZ The Z coordinate of the chunk.
+     * @return True if the chunk is saved, false otherwise.
+     */
+    @Deprecated("This method will default to the current dimension. Please use the new method by passing in a dimension.")
+    @Suppress("unused")
+    fun isChunkSaved(chunkX: Int, chunkZ: Int): Boolean {
+        val dimension = mc.world?.registryKey!!
+        val chunks = savedChunks[dimension] ?: return false
+        return chunks.contains(ChunkPos.toLong(chunkX, chunkZ))
+    }
+
     /**
      * Used as a public API for external mods like [XaeroPlus](https://github.com/rfresh2/XaeroPlus), change carefully.
      *
@@ -77,7 +94,7 @@ object HotCache {
     }
 
     @Suppress("unused")
-    fun getSavedChunks(dimension: RegistryKey<World>): LongArrayList {
+    fun getSavedChunks(dimension: RegistryKey<World>): LongCollection {
         return LongArrayList(savedChunks[dimension])
     }
 
