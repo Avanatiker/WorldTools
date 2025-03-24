@@ -64,7 +64,6 @@ object HotCache {
             RegionBasedEntities(chunkPos, entities, world)
         }
 
-
     /**
      * Used as a public API for external mods like [XaeroPlus](https://github.com/rfresh2/XaeroPlus), change carefully.
      *
@@ -75,9 +74,7 @@ object HotCache {
     @Deprecated("This method will default to the current dimension. Please use the new method by passing in a dimension.")
     @Suppress("unused")
     fun isChunkSaved(chunkX: Int, chunkZ: Int): Boolean {
-        val dimension = mc.world?.registryKey!!
-        val chunks = savedDimensionChunks[dimension] ?: return false
-        return chunks.contains(ChunkPos.toLong(chunkX, chunkZ))
+        return isChunkSaved(chunkX, chunkZ, mc.world?.registryKey!!)
     }
 
     /**
@@ -94,6 +91,12 @@ object HotCache {
         return savedChunks.contains(ChunkPos.toLong(chunkX, chunkZ))
     }
 
+    /**
+     * Returns a [LongCollection] of all the chunk positions saved by WorldTools.
+     *
+     * @param dimension The dimension to get the saved chunks.
+     * @return All the chunk positions saved.
+     */
     @Suppress("unused")
     fun getSavedChunks(dimension: RegistryKey<World>): LongCollection {
         val savedChunks = savedDimensionChunks[dimension] ?: return LongLists.EMPTY_LIST
