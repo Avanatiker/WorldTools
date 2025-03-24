@@ -73,9 +73,7 @@ object HotCache {
      */
     @Deprecated("This method will default to the current dimension. Please use the new method by passing in a dimension.")
     @Suppress("unused")
-    fun isChunkSaved(chunkX: Int, chunkZ: Int): Boolean {
-        return isChunkSaved(chunkX, chunkZ, mc.world?.registryKey!!)
-    }
+    fun isChunkSaved(chunkX: Int, chunkZ: Int) = isChunkSaved(chunkX, chunkZ, mc.world?.registryKey!!)
 
     /**
      * Used as a public API for external mods like [XaeroPlus](https://github.com/rfresh2/XaeroPlus), change carefully.
