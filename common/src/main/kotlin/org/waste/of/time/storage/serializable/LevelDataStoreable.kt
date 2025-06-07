@@ -95,8 +95,8 @@ class LevelDataStoreable : Storeable() {
         mc.networkHandler?.listedPlayerListEntries?.find {
             it.profile.id == player.uuid
         }?.let {
-            putInt("GameType", it.gameMode.id)
-        } ?: putInt("GameType", player.server?.defaultGameMode?.id ?: 0)
+            putInt("GameType", it.gameMode.index)
+        } ?: putInt("GameType", player.server?.defaultGameMode?.index ?: 0)
 
         putInt("SpawnX", player.world.levelProperties.spawnPos.x)
         putInt("SpawnY", player.world.levelProperties.spawnPos.y)

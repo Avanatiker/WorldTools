@@ -5,7 +5,7 @@ import com.mojang.serialization.JsonOps
 import net.minecraft.advancement.PlayerAdvancementTracker
 import net.minecraft.datafixer.DataFixTypes
 import net.minecraft.text.MutableText
-import net.minecraft.util.PathUtil
+import net.minecraft.util.path.PathUtil
 import net.minecraft.util.WorldSavePath
 import net.minecraft.world.level.storage.LevelStorage
 import org.waste.of.time.WorldTools.CURRENT_VERSION
