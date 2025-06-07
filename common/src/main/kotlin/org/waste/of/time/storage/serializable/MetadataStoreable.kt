@@ -2,7 +2,7 @@ package org.waste.of.time.storage.serializable
 
 import net.minecraft.client.network.PlayerListEntry
 import net.minecraft.text.MutableText
-import net.minecraft.util.PathUtil
+import net.minecraft.util.path.PathUtil
 import net.minecraft.util.WorldSavePath
 import net.minecraft.world.level.storage.LevelStorage.Session
 import org.waste.of.time.Utils

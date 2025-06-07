@@ -3,7 +3,7 @@ package org.waste.of.time.storage.serializable
 import com.google.gson.JsonObject
 import net.minecraft.registry.Registries
 import net.minecraft.text.MutableText
-import net.minecraft.util.PathUtil
+import net.minecraft.util.path.PathUtil
 import net.minecraft.util.WorldSavePath
 import net.minecraft.world.level.storage.LevelStorage
 import org.waste.of.time.manager.MessageManager.translateHighlight
