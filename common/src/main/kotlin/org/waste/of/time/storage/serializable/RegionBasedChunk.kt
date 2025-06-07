@@ -231,9 +231,7 @@ open class RegionBasedChunk(
 
     private fun NbtCompound.getTickSchedulers(chunk: WorldChunk) {
         val time = chunk.world.levelProperties.time
-        val tickSchedulers = chunk.getTickSchedulers(time)
-        put("block_ticks", SerializedChunk.BLOCK_TICKS_CODEC, tickSchedulers.blocks);
-        put("fluid_ticks", SerializedChunk.FLUID_TICKS_CODEC, tickSchedulers.fluids);
+        SerializedChunk.serializeTicks(this, chunk.getTickSchedulers(time))
     }
 
     private fun NbtCompound.genPostProcessing(chunk: WorldChunk) {

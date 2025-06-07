@@ -15,5 +15,4 @@ accessible field net/minecraft/entity/player/PlayerEntity enderChestInventory Ln
 accessible method net/minecraft/block/entity/LockableContainerBlockEntity getHeldStacks ()Lnet/minecraft/util/collection/DefaultedList;
 accessible method net/minecraft/block/entity/LockableContainerBlockEntity setHeldStacks (Lnet/minecraft/util/collection/DefaultedList;)V
 accessible method net/minecraft/world/chunk/SerializedChunk toNbt ([Lit/unimi/dsi/fastutil/shorts/ShortList;)Lnet/minecraft/nbt/NbtList;
-accessible field net/minecraft/world/chunk/SerializedChunk BLOCK_TICKS_CODEC Lcom/mojang/serialization/Codec;
-accessible field net/minecraft/world/chunk/SerializedChunk FLUID_TICKS_CODEC Lcom/mojang/serialization/Codec;
+accessible method net/minecraft/world/chunk/SerializedChunk serializeTicks (Lnet/minecraft/nbt/NbtCompound;Lnet/minecraft/world/chunk/Chunk$TickSchedulers;)V
