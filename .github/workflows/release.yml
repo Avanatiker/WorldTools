@@ -33,13 +33,13 @@ jobs:
           arguments: build
 
       - name: Upload Fabric Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: WorldTools-fabric-${{ github.ref_name }}
           path: fabric/build/libs/WorldTools-fabric-${{ github.ref_name }}.jar
 
       - name: Upload Forge Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: WorldTools-forge-${{ github.ref_name }}
           path: forge/build/libs/WorldTools-forge-${{ github.ref_name }}.jar
