@@ -31,13 +31,13 @@ jobs:
           arguments: build
 
       - name: Upload Fabric Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: WorldTools-fabric
           path: fabric/build/libs/*.jar
 
       - name: Upload Forge Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: WorldTools-forge
           path: forge/build/libs/*.jar
