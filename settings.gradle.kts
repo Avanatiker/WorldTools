@@ -12,5 +12,7 @@ pluginManagement {
 }
 
 include("common")
-include("fabric")
-include("forge")
+val enabled = providers.gradleProperty("enabled_platforms").orNull ?: "fabric,forge"
+val platforms = enabled.split(',').map { it.trim() }.toSet()
+if (platforms.contains("fabric")) include("fabric")
+if (platforms.contains("forge")) include("forge")

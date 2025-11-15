@@ -3,7 +3,7 @@ package org.waste.of.time.storage.serializable
 import com.google.gson.JsonObject
 import net.minecraft.registry.Registries
 import net.minecraft.text.MutableText
-import net.minecraft.util.PathUtil
+import java.nio.file.Path
 import net.minecraft.util.WorldSavePath
 import net.minecraft.world.level.storage.LevelStorage
 import org.waste.of.time.manager.MessageManager.translateHighlight
@@ -34,7 +34,7 @@ class StatisticStoreable : Storeable() {
         // contains the stats that have changed since the last time the packet was sent
         val completeStatMap = mc.player?.statHandler?.statMap?.toMap() ?: return
         val uuid = mc.player?.uuid ?: return
-        val statDirectory = session.getDirectory(WorldSavePath.STATS)
+        val statDirectory: Path = session.getDirectory(WorldSavePath.STATS)
 
         val json = JsonObject().apply {
             addProperty("Author", WorldTools.CREDIT_MESSAGE)
@@ -52,8 +52,9 @@ class StatisticStoreable : Storeable() {
             addProperty("DataVersion", CURRENT_VERSION)
         }
 
-        PathUtil.createDirectories(statDirectory)
-        Files.newBufferedWriter(
+        Files.createDirectories(statDirectory)
+        java.nio.file.Files.createDirectories(statDirectory)
+        java.nio.file.Files.newBufferedWriter(
             statDirectory.resolve("$uuid.json"),
             StandardCharsets.UTF_8
         ).use { writer ->

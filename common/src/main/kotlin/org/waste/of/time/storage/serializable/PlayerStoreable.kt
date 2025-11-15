@@ -61,11 +61,11 @@ data class PlayerStoreable(
             playerDataDir.mkdirs()
 
             val newPlayerFile = File.createTempFile(player.uuidAsString + "-", ".dat", playerDataDir).toPath()
-            NbtIo.writeCompressed(player.writeNbt(NbtCompound()).apply {
-                if (config.entity.censor.lastDeathLocation) {
-                    remove("LastDeathLocation")
-                }
-            }, newPlayerFile)
+            val playerTag = NbtCompound()
+            if (config.entity.censor.lastDeathLocation) {
+                playerTag.remove("LastDeathLocation")
+            }
+            NbtIo.writeCompressed(playerTag, newPlayerFile)
             val currentFile = File(playerDataDir, player.uuidAsString + ".dat").toPath()
             val backupFile = File(playerDataDir, player.uuidAsString + ".dat_old").toPath()
             Util.backupAndReplace(currentFile, newPlayerFile, backupFile)

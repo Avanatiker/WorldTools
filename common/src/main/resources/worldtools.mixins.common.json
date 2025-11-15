@@ -10,6 +10,7 @@
     "ClientWorldMixin",
     "DebugRendererMixin",
     "GameMenuScreenMixin",
+    "ScreenAccessor",
     "IntegratedServerLoaderMixin",
     "PalettedContainerMixin"
   ],

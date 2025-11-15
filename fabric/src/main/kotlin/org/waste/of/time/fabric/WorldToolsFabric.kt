@@ -14,10 +14,15 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
+import net.minecraft.client.gui.screen.GameMenuScreen
+import net.minecraft.client.gui.widget.ButtonWidget
+import net.minecraft.text.Text
 import org.waste.of.time.Events
 import org.waste.of.time.WorldTools
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.manager.CaptureManager
+import org.waste.of.time.gui.ManagerScreen
+import org.waste.of.time.manager.MessageManager
 
 object WorldToolsFabric : ClientModInitializer {
     override fun onInitializeClient() {
@@ -45,6 +50,7 @@ object WorldToolsFabric : ClientModInitializer {
             Events.onClientTickStart()
         })
         ScreenEvents.AFTER_INIT.register(ScreenEvents.AfterInit { _, screen, _, _ ->
+            // Removal event hookup; actual menu button is added via mixin for compatibility
             ScreenEvents.remove(screen).register(ScreenEvents.Remove { screen ->
                 Events.onScreenRemoved(screen)
             })

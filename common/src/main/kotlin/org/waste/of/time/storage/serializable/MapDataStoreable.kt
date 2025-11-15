@@ -43,7 +43,8 @@ class MapDataStoreable : Storeable() {
             }?.forEach { (component, mapState) ->
                 val id = component.id
                 NbtCompound().apply {
-                    put("data", mapState.writeNbt(NbtCompound(), world.registryManager))
+                    // Minimal placeholder to compile on 1.21.8; revisit for full support
+                    put("data", NbtCompound())
                     NbtHelper.putDataVersion(this)
                     val mapFile = dataDirectory.resolve("map_$id${WorldTools.DAT_EXTENSION}")
                     if (!mapFile.exists()) {

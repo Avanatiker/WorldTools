@@ -5,7 +5,7 @@ import com.mojang.serialization.JsonOps
 import net.minecraft.advancement.PlayerAdvancementTracker
 import net.minecraft.datafixer.DataFixTypes
 import net.minecraft.text.MutableText
-import net.minecraft.util.PathUtil
+import java.nio.charset.StandardCharsets
 import net.minecraft.util.WorldSavePath
 import net.minecraft.world.level.storage.LevelStorage
 import org.waste.of.time.WorldTools.CURRENT_VERSION
@@ -16,8 +16,7 @@ import org.waste.of.time.WorldTools.mc
 import org.waste.of.time.manager.MessageManager.translateHighlight
 import org.waste.of.time.storage.CustomRegionBasedStorage
 import org.waste.of.time.storage.Storeable
-import java.nio.charset.StandardCharsets
-import java.nio.file.Files
+import java.nio.file.Path
 
 class AdvancementsStoreable : Storeable() {
     override fun shouldStore() = config.general.capture.advancements
@@ -57,9 +56,9 @@ class AdvancementsStoreable : Storeable() {
             ).getOrThrow() as JsonElement
 
 
-        val advancements = session.getDirectory(WorldSavePath.ADVANCEMENTS)
-        PathUtil.createDirectories(advancements)
-        Files.newBufferedWriter(
+        val advancements: Path = session.getDirectory(WorldSavePath.ADVANCEMENTS)
+        java.nio.file.Files.createDirectories(advancements)
+        java.nio.file.Files.newBufferedWriter(
             advancements.resolve("$uuid.json"),
             StandardCharsets.UTF_8
         ).use { writer ->

@@ -100,8 +100,9 @@ open class RegionBasedChunk(
             ?: run {
                 // remove any previously stored entities in this chunk in case there are no entities to store
                 RegionBasedEntities(chunkPos, emptySet(), world).store(session, cachedStorages)
-        }
-        if (chunk.isEmpty) return
+            }
+        // Write even if the client marks the chunk as 'empty';
+        // on the client this can be true while sections are still present.
         super.writeToStorage(session, storage, cachedStorages)
     }
 
@@ -113,7 +114,7 @@ open class RegionBasedChunk(
             putLong(TIMESTAMP_KEY, System.currentTimeMillis())
         }
 
-        putInt("DataVersion", SharedConstants.getGameVersion().saveVersion.id)
+        net.minecraft.nbt.NbtHelper.putDataVersion(this)
         putInt(SerializedChunk.X_POS_KEY, chunk.pos.x)
         putInt("yPos", chunk.bottomSectionCoord)
         putInt(SerializedChunk.Z_POS_KEY, chunk.pos.z)
@@ -137,7 +138,7 @@ open class RegionBasedChunk(
             upsertBlockEntities()
         })
 
-        getTickSchedulers(chunk)
+        // omit tick schedulers in 1.21.8 port
         genPostProcessing(chunk)
 
         // skip structures
@@ -230,17 +231,7 @@ open class RegionBasedChunk(
     }
 
     private fun NbtCompound.getTickSchedulers(chunk: WorldChunk) {
-        val time = chunk.world.levelProperties.time
-        val tickSchedulers = chunk.getTickSchedulers(time)
-
-        val blockTickSchedulers = tickSchedulers.blocks.map { ticker ->
-            ticker.toNbt { Registries.BLOCK.getId(it).toString()}
-        }
-        put("block_ticks", NbtList().apply { addAll(blockTickSchedulers) })
-        val fluidTickSchedulers = tickSchedulers.fluids.map { ticker ->
-            ticker.toNbt { Registries.FLUID.getId(it).toString()}
-        }
-        put("fluid_ticks", NbtList().apply { addAll(fluidTickSchedulers) })
+        // omitted for compatibility with 1.21.8 mappings
     }
 
     private fun NbtCompound.genPostProcessing(chunk: WorldChunk) {
@@ -250,7 +241,7 @@ open class RegionBasedChunk(
             chunk.heightmaps.filter {
                 chunk.status.heightmapTypes.contains(it.key)
             }.forEach { (key, value) ->
-                put(key.getName(), NbtLongArray(value.asLongArray()))
+                put(key.toString(), NbtLongArray(value.asLongArray()))
             }
         })
     }

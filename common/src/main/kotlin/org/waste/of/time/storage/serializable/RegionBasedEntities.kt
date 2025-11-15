@@ -46,7 +46,7 @@ class RegionBasedEntities(
             }
         })
 
-        putInt("DataVersion", SharedConstants.getGameVersion().saveVersion.id)
+        net.minecraft.nbt.NbtHelper.putDataVersion(this)
         put("Position", NbtIntArray(intArrayOf(chunkPos.x, chunkPos.z)))
         if (config.debug.logSavedEntities) {
             entities.forEach { entity -> LOG.info("Entity saved: $entity (Chunk: $chunkPos)") }

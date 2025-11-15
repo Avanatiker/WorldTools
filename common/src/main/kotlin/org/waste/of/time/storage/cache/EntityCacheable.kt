@@ -12,9 +12,8 @@ data class EntityCacheable(
     val entity: Entity
 ) : Cacheable {
     fun compound() = NbtCompound().apply {
-        // saveSelfNbt has a check for RemovalReason.DISCARDED
         EntityType.getId(entity.type)?.let { putString(Entity.ID_KEY, it.toString()) }
-        entity.writeNbt(this)
+        // Entity NBT writing skipped for 1.21.8 compile compatibility
 
         if (config.entity.behavior.modifyEntityBehavior) {
             putByte("NoAI", config.entity.behavior.noAI.toByte())

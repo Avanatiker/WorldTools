@@ -81,7 +81,7 @@ class WorldToolsConfig : ConfigData {
 
         class WorldGenerator {
             @Tooltip
-            var type = GeneratorType.VOID
+            var type = GeneratorType.DEFAULT
             val bonusChest = false
             val generateFeatures = false
             var seed = 0L

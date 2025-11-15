@@ -36,13 +36,13 @@ class EndFlow : Storeable() {
             val clickToOpen = translateHighlight(
                 "worldtools.capture.click_to_open",
                 currentLevelName
-            ).copy().styled {
-                it.withClickEvent(
-                    ClickEvent(
-                        ClickEvent.Action.OPEN_FILE,
-                        session.getDirectory(WorldSavePath.ROOT).toFile().path
-                    )
-                )
+            ).copy()
+
+            // Make the trailing text clickable to open the saves directory
+            val savesDir = org.waste.of.time.WorldTools.mc.levelStorage.savesDirectory
+            clickToOpen.styled { style ->
+                // Attach a click event to open the saves directory
+                style.withClickEvent(ClickEvent.OpenFile(savesDir))
             }
 
             copy().append(directory).append(clickToOpen).sendInfo()

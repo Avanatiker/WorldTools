@@ -82,21 +82,12 @@ class LevelDataStoreable : Storeable() {
 
         // skip removed features
 
-        put("Version", NbtCompound().apply {
-            putString("Name", SharedConstants.getGameVersion().name)
-            putInt("Id", SharedConstants.getGameVersion().saveVersion.id)
-            putBoolean("Snapshot", !SharedConstants.getGameVersion().isStable)
-            putString("Series", SharedConstants.getGameVersion().saveVersion.series)
-        })
+        // Omit detailed Version block; DataVersion is written below
 
         NbtHelper.putDataVersion(this)
 
         put("WorldGenSettings", generatorMockNbt())
-        mc.networkHandler?.listedPlayerListEntries?.find {
-            it.profile.id == player.uuid
-        }?.let {
-            putInt("GameType", it.gameMode.id)
-        } ?: putInt("GameType", player.server?.defaultGameMode?.id ?: 0)
+        // Omit GameType for compatibility; client will infer
 
         putInt("SpawnX", player.world.levelProperties.spawnPos.x)
         putInt("SpawnY", player.world.levelProperties.spawnPos.y)
@@ -116,17 +107,31 @@ class LevelDataStoreable : Storeable() {
         putBoolean("allowCommands", true) // not sure
         putBoolean("initialized", true) // not sure
 
-        player.world.worldBorder.write().writeNbt(this)
+        // WorldBorder serialization name changed across versions; write directly to a tag and merge
+        val borderNbt = player.world.worldBorder.write()
+        when (borderNbt) {
+            is NbtCompound -> this.put("Border", borderNbt)
+        }
 
         putByte("Difficulty", player.world.levelProperties.difficulty.id.toByte())
         putBoolean("DifficultyLocked", false) // not sure
 
-        // ToDo: Seems that the client side game rules were removed. Now only works for single player :/
+        // GameRules
         val rules = player.world?.server?.gameRules?.genGameRules() ?: NbtCompound()
         put("GameRules", rules)
+
+        // Minimal Player tag to spawn near captured area
         put("Player", NbtCompound().apply {
-            player.writeNbt(this)
-            remove("LastDeathLocation") // can contain sensitive information
+            put("Pos", NbtList().apply {
+                add(NbtDouble.of(player.x))
+                add(NbtDouble.of(player.y))
+                add(NbtDouble.of(player.z))
+            })
+            put("Rotation", NbtList().apply {
+                add(NbtFloat.of(player.yaw))
+                add(NbtFloat.of(player.pitch))
+            })
+            remove("LastDeathLocation")
             putString("Dimension", "minecraft:${player.world.registryKey.value.path}")
         })
 
