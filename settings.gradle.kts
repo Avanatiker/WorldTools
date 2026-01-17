@@ -13,4 +13,4 @@ pluginManagement {
 
 include("common")
 include("fabric")
-include("forge")
+// include("forge") // Forge is not supported for MC 1.21.11+, use NeoForge instead

@@ -1,0 +1,19 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "org.waste.of.time.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "BossBarHudMixin",
+    "ClientPlayInteractionManagerMixin",
+    "ClientPlayNetworkHandlerMixin",
+    "ClientWorldMixin",
+    "DebugRendererMixin",
+    "GameMenuScreenMixin",
+    "IntegratedServerLoaderMixin",
+    "PalettedContainerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

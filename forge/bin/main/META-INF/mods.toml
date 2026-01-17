@@ -1,0 +1,42 @@
+modLoader = "kotlinforforge"
+loaderVersion = "[4,)"
+license = "GNU General Public License v3.0"
+
+[[mods]]
+modId = "worldtools"
+version = "${version}"
+displayName = "WorldTools"
+authors = "Constructor, P529, rfresh2"
+description = '''
+A powerful Minecraft mod that captures high-detail snapshots of server worlds locally.
+'''
+logoFile = "assets/worldtools/WorldTools.png"
+displayTest = "IGNORE_ALL_VERSION"
+
+[[dependencies.worldtools]]
+modId = "forge"
+mandatory = true
+versionRange = "[47,)"
+ordering = "NONE"
+side = "CLIENT"
+
+[[dependencies.worldtools]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[1.21,)"
+ordering = "NONE"
+side = "CLIENT"
+
+[[dependencies.worldtools]]
+modId = "kotlinforforge"
+mandatory = true
+versionRange = "[4,)"
+ordering = "AFTER"
+side = "CLIENT"
+
+[[dependencies.worldtools]]
+modId = "cloth_config"
+mandatory = true
+versionRange = "[15,)"
+ordering = "AFTER"
+side = "CLIENT"
