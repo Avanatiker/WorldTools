@@ -3,6 +3,8 @@ package org.waste.of.time.storage.serializable
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtIo
+import net.minecraft.storage.NbtWriteView
+import net.minecraft.util.ErrorReporter
 import net.minecraft.text.MutableText
 import net.minecraft.util.Util
 import net.minecraft.util.WorldSavePath
@@ -29,15 +31,15 @@ data class PlayerStoreable(
         get() = translateHighlight(
             "worldtools.capture.saved.player",
             player.name,
-            player.pos.asString(),
-            player.world.registryKey.value.path
+            player.getEntityPos().asString(),
+            player.getEntityWorld().registryKey.value.path
         )
 
     override val anonymizedInfo: MutableText
         get() = translateHighlight(
             "worldtools.capture.saved.player.anonymized",
             player.name,
-            player.world.registryKey.value.path
+            player.getEntityWorld().registryKey.value.path
         )
 
     override fun cache() {
@@ -52,7 +54,7 @@ data class PlayerStoreable(
         savePlayerData(player, session)
         session.createSaveHandler()
         StatisticManager.players++
-        StatisticManager.dimensions.add(player.world.registryKey.value.path)
+        StatisticManager.dimensions.add(player.getEntityWorld().registryKey.value.path)
     }
 
     private fun savePlayerData(player: PlayerEntity, session: Session) {
@@ -61,11 +63,13 @@ data class PlayerStoreable(
             playerDataDir.mkdirs()
 
             val newPlayerFile = File.createTempFile(player.uuidAsString + "-", ".dat", playerDataDir).toPath()
-            NbtIo.writeCompressed(player.writeNbt(NbtCompound()).apply {
-                if (config.entity.censor.lastDeathLocation) {
-                    remove("LastDeathLocation")
-                }
-            }, newPlayerFile)
+            val view = NbtWriteView.create(ErrorReporter.EMPTY, player.registryManager)
+            player.writeData(view)
+            val playerTag = view.nbt
+            if (config.entity.censor.lastDeathLocation) {
+                playerTag.remove("LastDeathLocation")
+            }
+            NbtIo.writeCompressed(playerTag, newPlayerFile)
             val currentFile = File(playerDataDir, player.uuidAsString + ".dat").toPath()
             val backupFile = File(playerDataDir, player.uuidAsString + ".dat_old").toPath()
             Util.backupAndReplace(currentFile, newPlayerFile, backupFile)

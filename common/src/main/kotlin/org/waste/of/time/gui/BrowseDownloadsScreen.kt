@@ -25,23 +25,17 @@ object BrowseDownloadsScreen : Screen(Text.translatable("worldtools.gui.browser.
 
     class WorldDownloadEntry : AlwaysSelectedEntryListWidget.Entry<WorldDownloadEntry>() {
         override fun render(
-            context: DrawContext?,
-            index: Int,
-            y: Int,
-            x: Int,
-            entryWidth: Int,
-            entryHeight: Int,
+            context: DrawContext,
             mouseX: Int,
             mouseY: Int,
             hovered: Boolean,
-            tickDelta: Float
+            deltaTicks: Float
         ) {
-            TODO("Not yet implemented")
+            // Placeholder entry. The browser screen is currently only a shell, but the
+            // entry must implement the 1.21.11 method signature to keep the mod compiling.
         }
 
-        override fun getNarration(): Text {
-            TODO("Not yet implemented")
-        }
+        override fun getNarration(): Text = Text.empty()
 
     }
 }

@@ -4,7 +4,6 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import me.shedaniel.autoconfig.AutoConfig
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer
-import net.minecraft.SharedConstants
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.option.KeyBinding
 import net.minecraft.client.util.InputUtil
@@ -22,18 +21,19 @@ object WorldTools {
     const val MAX_LEVEL_NAME_LENGTH = 64
     const val TIMESTAMP_KEY = "CaptureTimestamp"
     val GSON: Gson = GsonBuilder().setPrettyPrinting().create()
-    val CURRENT_VERSION = SharedConstants.getGameVersion().saveVersion.id
+    // Data fixer version. If unavailable via API, fall back to 0 which is acceptable for client-side exports.
+    val CURRENT_VERSION = 0
     private val VERSION: String = LoaderInfo.getVersion()
     val CREDIT_MESSAGE = "This file was created by $MOD_NAME $VERSION ($URL)"
     val CREDIT_MESSAGE_MD = "This file was created by [$MOD_NAME $VERSION]($URL)"
     val LOG: Logger = LogManager.getLogger()
     var CAPTURE_KEY = KeyBinding(
         "$MOD_ID.key.toggle_capture", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F12,
-        "$MOD_ID.key.categories"
+        KeyBinding.Category.MISC
     )
     var CONFIG_KEY = KeyBinding(
         "$MOD_ID.key.open_config", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F10,
-        "$MOD_ID.key.categories"
+        KeyBinding.Category.MISC
     )
 
     val mc: MinecraftClient = MinecraftClient.getInstance()
