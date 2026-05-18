@@ -2,6 +2,7 @@ package org.waste.of.time.storage.serializable
 
 import net.minecraft.SharedConstants
 import net.minecraft.nbt.*
+import net.minecraft.resource.featuretoggle.FeatureFlags
 import net.minecraft.text.MutableText
 import net.minecraft.util.Util
 import net.minecraft.util.WorldSavePath
@@ -121,9 +122,7 @@ class LevelDataStoreable : Storeable() {
         putByte("Difficulty", player.world.levelProperties.difficulty.id.toByte())
         putBoolean("DifficultyLocked", false) // not sure
 
-        // ToDo: Seems that the client side game rules were removed. Now only works for single player :/
-        val rules = player.world?.server?.gameRules?.genGameRules() ?: NbtCompound()
-        put("GameRules", rules)
+        put("GameRules", buildGameRules())
         put("Player", NbtCompound().apply {
             player.writeNbt(this)
             remove("LastDeathLocation") // can contain sensitive information
@@ -139,20 +138,32 @@ class LevelDataStoreable : Storeable() {
         // skip wandering trader id
     }
 
-    private fun GameRules.genGameRules() = toNbt().apply {
-        val setting = config.world.gameRules
-        if (!setting.modifyGameRules) return@apply
+    private fun buildGameRules(): NbtCompound {
+        // SP: use the integrated server's live rule set (carries any per-world
+        // changes). MP: mc.server is null and the client never receives the
+        // server's rules, so default-construct a GameRules(featureSet) to get
+        // the full vanilla-default rule set on MP captures too. 1.21.4 has no
+        // GameRules.createCodec; GameRules.toNbt() emits the string-form NBT
+        // shape vanilla level.dat uses ("true"/"false" string values).
+        val featureSet = mc.world?.enabledFeatures ?: FeatureFlags.DEFAULT_ENABLED_FEATURES
+        val source = mc.server?.saveProperties?.mainWorldProperties?.gameRules ?: GameRules(featureSet)
+        val base = source.toNbt()
 
-        putString(GameRules.DO_WARDEN_SPAWNING.name, setting.doWardenSpawning.toString())
-        putString(GameRules.DO_FIRE_TICK.name, setting.doFireTick.toString())
-        putString(GameRules.DO_VINES_SPREAD.name, setting.doVinesSpread.toString())
-        putString(GameRules.DO_MOB_SPAWNING.name, setting.doMobSpawning.toString())
-        putString(GameRules.DO_DAYLIGHT_CYCLE.name, setting.doDaylightCycle.toString())
-        putString(GameRules.KEEP_INVENTORY.name, setting.keepInventory.toString())
-        putString(GameRules.DO_MOB_GRIEFING.name, setting.doMobGriefing.toString())
-        putString(GameRules.DO_TRADER_SPAWNING.name, setting.doTraderSpawning.toString())
-        putString(GameRules.DO_PATROL_SPAWNING.name, setting.doPatrolSpawning.toString())
-        putString(GameRules.DO_WEATHER_CYCLE.name, setting.doWeatherCycle.toString())
+        val setting = config.world.gameRules
+        if (!setting.modifyGameRules) return base
+
+        return base.apply {
+            putString(GameRules.DO_WARDEN_SPAWNING.name, setting.doWardenSpawning.toString())
+            putString(GameRules.DO_FIRE_TICK.name, setting.doFireTick.toString())
+            putString(GameRules.DO_VINES_SPREAD.name, setting.doVinesSpread.toString())
+            putString(GameRules.DO_MOB_SPAWNING.name, setting.doMobSpawning.toString())
+            putString(GameRules.DO_DAYLIGHT_CYCLE.name, setting.doDaylightCycle.toString())
+            putString(GameRules.KEEP_INVENTORY.name, setting.keepInventory.toString())
+            putString(GameRules.DO_MOB_GRIEFING.name, setting.doMobGriefing.toString())
+            putString(GameRules.DO_TRADER_SPAWNING.name, setting.doTraderSpawning.toString())
+            putString(GameRules.DO_PATROL_SPAWNING.name, setting.doPatrolSpawning.toString())
+            putString(GameRules.DO_WEATHER_CYCLE.name, setting.doWeatherCycle.toString())
+        }
     }
 
     private fun generatorMockNbt() = NbtCompound().apply {
