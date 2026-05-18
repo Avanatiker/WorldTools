@@ -1,6 +1,7 @@
 package org.waste.of.time.storage.serializable
 
 import net.minecraft.block.entity.BlockEntity
+import net.minecraft.block.entity.ChiseledBookshelfBlockEntity
 import net.minecraft.block.entity.LecternBlockEntity
 import net.minecraft.block.entity.LockableContainerBlockEntity
 import net.minecraft.world.chunk.WorldChunk
@@ -45,6 +46,7 @@ class BlockEntityLoadable(
                         when (blockEntity) {
                             is LockableContainerBlockEntity -> blockEntity.migrateData(existing)
                             is LecternBlockEntity -> blockEntity.migrateData(existing)
+                            is ChiseledBookshelfBlockEntity -> blockEntity.migrateData(existing)
                         }
                     }
             }
@@ -63,6 +65,14 @@ class BlockEntityLoadable(
         if (existing !is LecternBlockEntity) return
         if (!book.isEmpty) return
         book = existing.book
+        markScanned(true)
+        migrated = true
+    }
+
+    private fun ChiseledBookshelfBlockEntity.migrateData(existing: BlockEntity) {
+        if (existing !is ChiseledBookshelfBlockEntity) return
+        if (!isEmpty) return
+        repeat(size()) { slot -> setStack(slot, existing.getStack(slot)) }
         markScanned(true)
         migrated = true
     }

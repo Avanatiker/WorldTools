@@ -15,3 +15,4 @@ accessible field net/minecraft/entity/player/PlayerEntity enderChestInventory Ln
 accessible method net/minecraft/block/entity/LockableContainerBlockEntity getHeldStacks ()Lnet/minecraft/util/collection/DefaultedList;
 accessible method net/minecraft/block/entity/LockableContainerBlockEntity setHeldStacks (Lnet/minecraft/util/collection/DefaultedList;)V
 accessible method net/minecraft/world/chunk/SerializedChunk toNbt ([Lit/unimi/dsi/fastutil/shorts/ShortList;)Lnet/minecraft/nbt/NbtList;
+accessible method net/minecraft/block/ChiseledBookshelfBlock getSlotForHitPos (Lnet/minecraft/util/hit/BlockHitResult;Lnet/minecraft/block/BlockState;)Ljava/util/OptionalInt;
