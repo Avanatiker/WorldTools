@@ -2,6 +2,7 @@ package org.waste.of.time.storage.cache
 
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityType
+import net.minecraft.entity.mob.MobEntity
 import net.minecraft.nbt.NbtCompound
 import org.waste.of.time.Utils.toByte
 import org.waste.of.time.WorldTools.TIMESTAMP_KEY
@@ -21,6 +22,14 @@ data class EntityCacheable(
             putByte("NoGravity", config.entity.behavior.noGravity.toByte())
             putByte("Invulnerable", config.entity.behavior.invulnerable.toByte())
             putByte("Silent", config.entity.behavior.silent.toByte())
+        }
+
+        // PersistenceRequired is server-authoritative and arrives as false on the
+        // client, so name-tagged mobs would despawn after world load. Restore the
+        // flag here: always for named mobs (vanilla's NameTagItem path), and for
+        // every mob when the aggressive opt-in is set.
+        if (entity is MobEntity && (entity.hasCustomName() || config.entity.behavior.forceMobPersistence)) {
+            putByte("PersistenceRequired", 1)
         }
 
         if (config.entity.metadata.captureTimestamp) {

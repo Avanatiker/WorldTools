@@ -136,6 +136,9 @@ class WorldToolsConfig : ConfigData {
             var noGravity = true
             var invulnerable = true
             var silent = true
+
+            @Tooltip
+            var forceMobPersistence = false
         }
 
         class Metadata {
