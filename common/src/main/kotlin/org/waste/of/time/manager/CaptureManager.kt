@@ -23,6 +23,11 @@ import org.waste.of.time.storage.serializable.*
 object CaptureManager {
     private const val MAX_WORLD_NAME_LENGTH = 64
     var capturing = false
+
+    // True between the first stop() call and the drain's cleanup running.
+    // Re-entries during this window (stale-button clicks, onClientDisconnect)
+    // would otherwise re-emit the whole HotCache and spam chat.
+    var stopping = false
     private var storeJob: Job? = null
     var currentLevelName: String = "Not yet initialized"
     var lastPlayer: ClientPlayerEntity? = null
@@ -106,6 +111,11 @@ object CaptureManager {
             MessageManager.sendError("worldtools.log.error.not_capturing")
             return
         }
+        if (stopping) {
+            LOG.info("stop() ignored: drain already in progress for $currentLevelName")
+            return
+        }
+        stopping = true
 
         MessageManager.sendInfo("worldtools.log.info.stopping_capture", currentLevelName)
 
