@@ -75,11 +75,13 @@ object StorageFlow {
             LOG.info("Canceled caching thread")
         } catch (e: Throwable) {
             LOG.error("Unhandled storage flow error", e)
+            MessageManager.sendError("worldtools.log.error.unhandled_drain_failure", levelName, e.localizedMessage)
         }
 
         cachedStorages.values.forEach { it.close() }
         HotCache.clear()
         CaptureManager.capturing = false
+        lastStored = null
         LOG.info("Finished caching")
     }
 
