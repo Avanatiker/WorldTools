@@ -42,17 +42,24 @@ class MapDataStoreable : Storeable() {
                 HotCache.mapIDs.contains(component.id)
             }?.forEach { (component, mapState) ->
                 val id = component.id
-                NbtCompound().apply {
-                    put("data", mapState.writeNbt(NbtCompound(), world.registryManager))
-                    NbtHelper.putDataVersion(this)
-                    val mapFile = dataDirectory.resolve("map_$id${WorldTools.DAT_EXTENSION}")
-                    if (!mapFile.exists()) {
-                        mapFile.toFile().createNewFile()
+                try {
+                    NbtCompound().apply {
+                        put("data", mapState.writeNbt(NbtCompound(), world.registryManager))
+                        NbtHelper.putDataVersion(this)
+                        val mapFile = dataDirectory.resolve("map_$id${WorldTools.DAT_EXTENSION}")
+                        if (!mapFile.exists()) {
+                            mapFile.toFile().createNewFile()
+                        }
+                        NbtIo.writeCompressed(this, mapFile)
+                        if (config.debug.logSavedMaps) {
+                            LOG.info("Map data saved: $id")
+                        }
                     }
-                    NbtIo.writeCompressed(this, mapFile)
-                    if (config.debug.logSavedMaps) {
-                        LOG.info("Map data saved: $id")
-                    }
+                } catch (e: Exception) {
+                    // A single map's codec / IO / permissions failure must not
+                    // abort the rest of the drain. Mirrors the per-entity catch
+                    // in RegionBasedEntities.compound (d5bdf62).
+                    LOG.error("Failed to save map data for $id", e)
                 }
             }
         }
