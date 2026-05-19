@@ -29,6 +29,8 @@
   "text.autoconfig.worldtools.option.entity.behavior.noAI": "No AI",
   "text.autoconfig.worldtools.option.entity.behavior.noGravity": "No Gravity",
   "text.autoconfig.worldtools.option.entity.behavior.silent": "Silent",
+  "text.autoconfig.worldtools.option.entity.behavior.forceMobPersistence": "Force Mob Persistence",
+  "text.autoconfig.worldtools.option.entity.behavior.forceMobPersistence.@Tooltip": "Mark every captured mob as PersistenceRequired so none despawn after world load. Name-tagged mobs are already preserved automatically; enable this only if you want ambient mobs (skeletons, zombies, etc.) to stick around forever in the downloaded world.",
   "text.autoconfig.worldtools.option.entity.censor": "Censor",
   "text.autoconfig.worldtools.option.entity.censor.censorNames": "Censor Names",
   "text.autoconfig.worldtools.option.entity.censor.lastDeathLocation": "Censor last death location",
