@@ -86,6 +86,18 @@ object Events {
     }
 
     fun onClientJoin() {
+        // A prior capture's StorageFlow drain may still be running; touching
+        // HotCache/lastStored/stats here would zero EndFlow's counters and
+        // delete entity data in unprocessed chunks. The drain's own cleanup
+        // clears HotCache when it finishes, so the next capture starts clean.
+        if (capturing) {
+            // Surface the skip when autoDownload is enabled: the user opted in
+            // to "capture on join" and would otherwise see no feedback.
+            if (config.general.autoDownload) {
+                MessageManager.sendInfo("worldtools.log.info.autodownload_skipped_drain_in_progress")
+            }
+            return
+        }
         HotCache.clear()
         StorageFlow.lastStored = null
         StatisticManager.reset()
