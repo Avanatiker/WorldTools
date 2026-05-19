@@ -1,6 +1,7 @@
 package org.waste.of.time
 
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.screen.GameMenuScreen
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.GridWidget
@@ -12,6 +13,7 @@ import net.minecraft.component.type.MapIdComponent
 import net.minecraft.entity.Entity
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.text.Text
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
@@ -40,6 +42,17 @@ import org.waste.of.time.storage.serializable.RegionBasedChunk
 import java.awt.Color
 
 object Events {
+    // Built once per GameMenuScreen init and refreshed from the tick because
+    // `capturing` can flip while the menu stays open. Cleared on screen removal
+    // so the per-tick refresh can short-circuit when no menu is showing.
+    private var menuButton: ButtonWidget? = null
+
+    private fun menuButtonLabel(): Text = when {
+        capturing && CaptureManager.stopping -> translateHighlight("worldtools.gui.escape.button.saving", currentLevelName)
+        capturing -> translateHighlight("worldtools.gui.escape.button.finish_download", currentLevelName)
+        else -> MessageManager.brand
+    }
+
     fun onChunkLoad(chunk: WorldChunk) {
         if (!capturing) return
         RegionBasedChunk(chunk).cache()
@@ -80,6 +93,10 @@ object Events {
         if (CONFIG_KEY.wasPressed() && mc.world != null && mc.currentScreen == null) {
             mc.setScreen(ManagerScreen)
         }
+
+        // Must run before the !capturing guard: the most important refresh is
+        // the true->false flip at drain end, which the guard would skip.
+        refreshMenuButton()
 
         if (!capturing) return
         updateCapture()
@@ -164,22 +181,30 @@ object Events {
     }
 
     fun onGameMenuScreenInitWidgets(adder: GridWidget.Adder) {
-        val widget = if (capturing) {
-            val label = translateHighlight("worldtools.gui.escape.button.finish_download", currentLevelName)
-            ButtonWidget.builder(label) {
+        // Route at click time, not build time: 'capturing' can flip while the
+        // menu stays open, so the wrong handler would fire on a stale label.
+        val widget = ButtonWidget.builder(menuButtonLabel()) {
+            if (capturing) {
                 CaptureManager.stop()
                 mc.setScreen(null)
-            }.width(204).build()
-        } else {
-            ButtonWidget.builder(MessageManager.brand) {
+            } else {
                 MinecraftClient.getInstance().setScreen(ManagerScreen)
-            }.width(204).build()
-        }
+            }
+        }.width(204).build()
+        widget.active = !(capturing && CaptureManager.stopping)
 
+        menuButton = widget
         adder.add(widget, 2)
     }
 
+    private fun refreshMenuButton() {
+        val btn = menuButton ?: return
+        btn.message = menuButtonLabel()
+        btn.active = !(capturing && CaptureManager.stopping)
+    }
+
     fun onScreenRemoved(screen: Screen) {
+        if (screen is GameMenuScreen) menuButton = null
         if (!capturing) return
         DataInjectionHandler.onScreenRemoved(screen)
         HotCache.lastInteractedBlockEntity = null

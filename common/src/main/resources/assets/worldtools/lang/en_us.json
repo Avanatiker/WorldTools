@@ -122,6 +122,7 @@
   "worldtools.gui.capture.existing_world_confirm.message": "A save named: \"%s\" already exists. Overwrite it? (Will merge with existing data)",
   "worldtools.gui.capture.existing_world_confirm.title": "Existing World Found",
   "worldtools.gui.escape.button.finish_download": "Save capture of %s",
+  "worldtools.gui.escape.button.saving": "Saving capture of %s...",
   "worldtools.gui.manager.button.cancel": "Cancel",
   "worldtools.gui.manager.button.config": "Config",
   "worldtools.gui.manager.button.start_download": "Start download",
