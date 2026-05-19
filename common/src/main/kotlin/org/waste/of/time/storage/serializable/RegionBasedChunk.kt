@@ -129,9 +129,11 @@ open class RegionBasedChunk(
 
         put(SerializedChunk.SECTIONS_KEY, generateSections(chunk))
 
-        if (chunk.isLightOn) {
-            putBoolean(SerializedChunk.IS_LIGHT_ON_KEY, true)
-        }
+        // Don't set isLightOn for client-captured chunks.
+        // LightData packets mark sections as uninitialized via per-chunk bitsets,
+        // so a capture typically holds light data for only some sections. Setting
+        // isLightOn=true would make MC trust the flag and skip relighting those
+        // gaps; omit it so MC recomputes lighting on world load.
 
         put("block_entities", NbtList().apply {
             upsertBlockEntities()
