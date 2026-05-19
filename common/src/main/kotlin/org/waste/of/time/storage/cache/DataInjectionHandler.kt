@@ -1,6 +1,7 @@
 package org.waste.of.time.storage.cache
 
 import net.minecraft.block.ChestBlock
+import net.minecraft.block.ChiseledBookshelfBlock
 import net.minecraft.block.entity.*
 import net.minecraft.block.enums.ChestType
 import net.minecraft.client.gui.screen.Screen
@@ -11,6 +12,10 @@ import net.minecraft.entity.vehicle.HopperMinecartEntity
 import net.minecraft.entity.vehicle.VehicleInventory
 import net.minecraft.inventory.EnderChestInventory
 import net.minecraft.inventory.SimpleInventory
+import net.minecraft.item.ItemStack
+import net.minecraft.registry.tag.ItemTags
+import net.minecraft.util.hit.BlockHitResult
+import net.minecraft.world.World
 import org.waste.of.time.WorldTools.mc
 import org.waste.of.time.storage.cache.HotCache.markScanned
 import org.waste.of.time.storage.cache.HotCache.scannedBlockEntities
@@ -207,4 +212,49 @@ object DataInjectionHandler {
     }
 
     private fun HandledScreen<*>.getContainerSlots() = screenHandler.slots.filter { it.inventory !is PlayerInventory }
+
+    /**
+     * Called from [org.waste.of.time.Events.onInteractBlock] HEAD-side, before the server
+     * has processed the interaction. Predicts the post-interaction inventory of a
+     * chiseled bookshelf and writes it to the local block entity so the chunk
+     * serializer picks it up.
+     *
+     * The server never sends a chiseled bookshelf's inventory to the client, so the
+     * only way to recover it is to observe the player placing books slot-by-slot.
+     * Books pulled from a previously-stocked shelf that the local capture never saw
+     * are unrecoverable.
+     *
+     * Optimistic-write caveat: we write the predicted slot state at HEAD time, before
+     * the server has confirmed the interaction. If the server rejects (reach distance,
+     * cooldown, permissions, custom plugin guard), the local cache diverges from the
+     * server's actual state until the next blockstate sync corrects it. Capture
+     * fidelity depends on the player not interacting through rejected actions.
+     */
+    fun onChiseledBookshelfInteract(
+        world: World,
+        hitResult: BlockHitResult,
+        blockEntity: BlockEntity?,
+        handStack: ItemStack,
+    ) {
+        if (blockEntity !is ChiseledBookshelfBlockEntity) return
+        val state = world.getBlockState(hitResult.blockPos)
+        val block = state.block as? ChiseledBookshelfBlock ?: return
+        val slotOpt = block.getSlotForHitPos(hitResult, state)
+        if (slotOpt.isEmpty) return
+        val slot = slotOpt.asInt
+        val occupied = state.get(ChiseledBookshelfBlock.SLOT_OCCUPIED_PROPERTIES[slot])
+        if (occupied) {
+            // Removal: vanilla onUse will return the existing book to the player. We
+            // don't know what the server actually had there; clear whatever we
+            // optimistically cached so the saved NBT matches the synced blockstate.
+            blockEntity.setStack(slot, ItemStack.EMPTY)
+        } else if (handStack.isIn(ItemTags.BOOKSHELF_BOOKS)) {
+            // Addition: vanilla onUseWithItem decrements the hand stack by one and
+            // stores a single-item copy in the slot.
+            blockEntity.setStack(slot, handStack.copyWithCount(1))
+        } else {
+            return
+        }
+        blockEntity.markScanned()
+    }
 }

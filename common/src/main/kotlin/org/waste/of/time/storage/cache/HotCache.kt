@@ -2,6 +2,7 @@ package org.waste.of.time.storage.cache
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet
 import net.minecraft.block.entity.BlockEntity
+import net.minecraft.block.entity.ChiseledBookshelfBlockEntity
 import net.minecraft.block.entity.LecternBlockEntity
 import net.minecraft.block.entity.LockableContainerBlockEntity
 import net.minecraft.entity.Entity
@@ -53,6 +54,7 @@ object HotCache {
     val BlockEntity.isSupported get() =
         this is LockableContainerBlockEntity
                 || this is LecternBlockEntity
+                || this is ChiseledBookshelfBlockEntity
     val Entity.isSupported get() = this is VehicleInventory
 
     fun getEntitySerializableForChunk(chunkPos: ChunkPos, world: World) =

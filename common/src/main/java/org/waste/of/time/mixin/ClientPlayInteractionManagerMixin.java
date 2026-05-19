@@ -26,7 +26,7 @@ public class ClientPlayInteractionManagerMixin {
     @Inject(method = "interactBlock", at = @At("HEAD"))
     public void interactBlockHead(final ClientPlayerEntity player, final Hand hand, final BlockHitResult hitResult, final CallbackInfoReturnable<ActionResult> cir) {
         if (client.world == null) return;
-        Events.INSTANCE.onInteractBlock(client.world, hitResult);
+        Events.INSTANCE.onInteractBlock(client.world, hitResult, player, hand);
     }
 
     @Inject(method = "interactEntity", at = @At("HEAD"))

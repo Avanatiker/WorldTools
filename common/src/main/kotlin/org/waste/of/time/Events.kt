@@ -12,6 +12,8 @@ import net.minecraft.component.type.MapIdComponent
 import net.minecraft.entity.Entity
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.text.Text
+import net.minecraft.util.Hand
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
@@ -97,11 +99,17 @@ object Events {
         CaptureManager.stop()
     }
 
-    fun onInteractBlock(world: World, hitResult: BlockHitResult) {
+    fun onInteractBlock(world: World, hitResult: BlockHitResult, player: PlayerEntity, hand: Hand) {
         if (!capturing) return
         val blockEntity = world.getBlockEntity(hitResult.blockPos)
         HotCache.lastInteractedBlockEntity = blockEntity
         HotCache.lastInteractedEntity = null
+
+        // Chiseled bookshelves never sync their inventory to the client and the player
+        // interacts with individual slots without opening a screen, so onScreenRemoved
+        // can't see this. Snapshot the hand item into the local block entity so the
+        // generic chunk capture path serializes the books the player just placed.
+        DataInjectionHandler.onChiseledBookshelfInteract(world, hitResult, blockEntity, player.getStackInHand(hand))
     }
 
     fun onInteractEntity(entity: Entity) {
