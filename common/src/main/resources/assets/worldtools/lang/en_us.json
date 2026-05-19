@@ -137,6 +137,7 @@
   "worldtools.log.error.failed_to_visit_file": "Failed accessing file %s to create a zip! (error: %s)",
   "worldtools.log.error.failed_to_zip": "Failed to create session to zip capture of %s! (error: %s)",
   "worldtools.log.error.not_capturing": "No capture is running yet!",
+  "worldtools.log.error.unhandled_drain_failure": "Capture drain failed for %s: %s. The world directory may be incomplete.",
   "worldtools.log.error.world_name_too_long": "World name \"%s\" is too long! (max %d characters)",
   "worldtools.log.info.singleplayer_capture": "EXPERIMENTAL: Capturing in singleplayer is experimental and may not work as expected!",
   "worldtools.log.info.started_capture": "Started capturing %s...",
