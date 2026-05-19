@@ -13,6 +13,7 @@ import org.waste.of.time.WorldTools.mc
 import org.waste.of.time.manager.CaptureManager
 import org.waste.of.time.manager.MessageManager
 import org.waste.of.time.storage.CustomRegionBasedStorage
+import org.waste.of.time.storage.StorageFlow
 import org.waste.of.time.storage.Storeable
 import org.waste.of.time.storage.cache.HotCache
 import kotlin.io.path.exists
@@ -38,6 +39,12 @@ class MapDataStoreable : Storeable() {
         }
 
         mc.world?.let { world ->
+            // Seed lastStored so the progressBar renders this storeable's text
+            // during the loop below; refresh lastStoredTimestamp per iteration
+            // so BarManager's decay-clear does not hide the bar mid-save on
+            // map-heavy captures (10k+ maparts on anarchy servers).
+            StorageFlow.lastStored = this
+
             world.mapStates?.filter { (component, _) ->
                 HotCache.mapIDs.contains(component.id)
             }?.forEach { (component, mapState) ->
@@ -54,6 +61,7 @@ class MapDataStoreable : Storeable() {
                         LOG.info("Map data saved: $id")
                     }
                 }
+                StorageFlow.lastStoredTimestamp = System.currentTimeMillis()
             }
         }
     }
