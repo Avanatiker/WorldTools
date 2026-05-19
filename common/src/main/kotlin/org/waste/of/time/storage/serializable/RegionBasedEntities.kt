@@ -42,7 +42,13 @@ class RegionBasedEntities(
     override fun compound() = NbtCompound().apply {
         put("Entities", NbtList().apply {
             entities.forEach { entity ->
-                add(entity.compound())
+                try {
+                    add(entity.compound())
+                } catch (e: Exception) {
+                    // Skip the bad entity; otherwise the catch in
+                    // RegionBased.writeToStorage drops every entity in the chunk.
+                    LOG.error("Failed to serialize entity ${entity.entity} in chunk $chunkPos; skipping it", e)
+                }
             }
         })
 
