@@ -80,6 +80,7 @@ object StorageFlow {
         cachedStorages.values.forEach { it.close() }
         HotCache.clear()
         CaptureManager.capturing = false
+        CaptureManager.stopping = false
         LOG.info("Finished caching")
     }
 
