@@ -57,7 +57,9 @@ object HotCache {
 
     fun getEntitySerializableForChunk(chunkPos: ChunkPos, world: World) =
         entities[chunkPos]?.let { entities ->
-            RegionBasedEntities(chunkPos, entities, world)
+            // snapshot guards the isEmpty()/forEach in RegionBasedEntities against
+            // the live newKeySet flipping empty between lookup and write
+            RegionBasedEntities(chunkPos, entities.toSet(), world)
         }
 
     /**

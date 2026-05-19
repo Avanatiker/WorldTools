@@ -7,6 +7,7 @@ import org.waste.of.time.Utils.toByte
 import org.waste.of.time.WorldTools.TIMESTAMP_KEY
 import org.waste.of.time.WorldTools.config
 import org.waste.of.time.storage.Cacheable
+import java.util.concurrent.ConcurrentHashMap
 
 data class EntityCacheable(
     val entity: Entity
@@ -29,7 +30,9 @@ data class EntityCacheable(
     }
 
     override fun cache() {
-        HotCache.entities.computeIfAbsent(entity.chunkPos) { mutableSetOf() }.apply {
+        // newKeySet: client-thread cache/flush mutations race the IO coroutine's
+        // forEach in RegionBasedEntities.compound; a plain HashSet CMEs there.
+        HotCache.entities.computeIfAbsent(entity.chunkPos) { ConcurrentHashMap.newKeySet() }.apply {
             // Remove the entity if it already exists to update it
             removeIf { it.entity.uuid == entity.uuid }
             add(this@EntityCacheable)
