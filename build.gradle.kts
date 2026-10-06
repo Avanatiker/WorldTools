@@ -74,6 +74,9 @@ allprojects {
 
     base.archivesName.set(archivesBaseName)
 
+    group = mavenGroup
+    version = modVersion
+
     repositories {
         maven("https://api.modrinth.com/maven")
         maven("https://jitpack.io")
