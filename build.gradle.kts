@@ -46,6 +46,7 @@ subprojects {
                 archiveVersion = versionWithMCVersion
                 archiveClassifier.set("shadow")
                 configurations = listOf(shadowCommon)
+                duplicatesStrategy = DuplicatesStrategy.INCLUDE
             }
 
             named<RemapJarTask>("remapJar") {
