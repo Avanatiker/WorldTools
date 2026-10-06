@@ -5,7 +5,6 @@ import net.minecraft.client.gui.hud.ClientBossBar
 import net.minecraft.text.Text
 import org.waste.of.time.manager.CaptureManager.capturing
 import org.waste.of.time.WorldTools.config
-import org.waste.of.time.manager.MessageManager.info
 import org.waste.of.time.storage.StorageFlow
 import java.util.*
 

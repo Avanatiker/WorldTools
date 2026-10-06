@@ -1,7 +1,6 @@
 package org.waste.of.time.storage.serializable
 
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtIo
 import net.minecraft.predicate.NbtPredicate
 import net.minecraft.text.MutableText
@@ -17,7 +16,6 @@ import org.waste.of.time.storage.Cacheable
 import org.waste.of.time.storage.CustomRegionBasedStorage
 import org.waste.of.time.storage.Storeable
 import org.waste.of.time.storage.cache.HotCache
-import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -76,7 +74,7 @@ data class PlayerStoreable(
             val backupFile = playerDataDir.resolve("$uuidStr.dat_old")
 
             Util.backupAndReplace(currentFile, newPlayerFile, backupFile)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             WorldTools.LOG.warn("Failed to save player data for {}", player.name.string)
         }
     }

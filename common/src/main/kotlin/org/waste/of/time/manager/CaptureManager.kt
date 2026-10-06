@@ -6,7 +6,6 @@ import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.network.packet.c2s.play.ClientStatusC2SPacket
 import net.minecraft.registry.RegistryKey
-import net.minecraft.registry.RegistryKeys
 import net.minecraft.text.Text
 import net.minecraft.world.World
 import org.waste.of.time.WorldTools
@@ -14,11 +13,11 @@ import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.config
 import org.waste.of.time.WorldTools.mc
 import org.waste.of.time.config.WorldToolsConfig
-import org.waste.of.time.manager.MessageManager.info
 import org.waste.of.time.storage.StorageFlow
 import org.waste.of.time.storage.cache.EntityCacheable
 import org.waste.of.time.storage.cache.HotCache
 import org.waste.of.time.storage.serializable.*
+import kotlin.time.Duration.Companion.milliseconds
 
 object CaptureManager {
     private const val MAX_WORLD_NAME_LENGTH = 64
@@ -87,7 +86,7 @@ object CaptureManager {
 
         // Need to wait until the storage flow is running before syncing the cache
         CoroutineScope(Dispatchers.IO).launch {
-            delay(100L)
+            delay(100L.milliseconds)
             mc.execute {
                 syncCacheFromWorldState()
             }

@@ -17,7 +17,6 @@ import org.waste.of.time.manager.MessageManager
 import org.waste.of.time.storage.CustomRegionBasedStorage
 import org.waste.of.time.storage.Storeable
 import org.waste.of.time.storage.cache.HotCache
-import kotlin.io.path.exists
 
 class MapDataStoreable : Storeable() {
     override fun shouldStore() = config.general.capture.maps
