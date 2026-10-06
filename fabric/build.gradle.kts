@@ -10,11 +10,11 @@ base.archivesName.set("${base.archivesName.get()}-fabric")
 loom {
     accessWidenerPath.set(project(":common").loom.accessWidenerPath)
     enableTransitiveAccessWideners.set(true)
-//    runs {
-//        getByName("client") {
-//            ideConfigGenerated(true)
-//        }
-//    }
+    runs {
+        getByName("client") {
+            ideConfigGenerated(true)
+        }
+    }
 }
 
 val common: Configuration = configurations.create("common") {

@@ -7,7 +7,7 @@ plugins {
     kotlin("jvm") version ("2.4.20")
     id("architectury-plugin") version "3.5.170"
     id("dev.architectury.loom") version "1.17-SNAPSHOT" apply false
-    id("com.github.johnrengelman.shadow") version "8.1.1" apply false
+    id("com.gradleup.shadow") version "9.5.1" apply false
 }
 
 val minecraftVersion = providers.gradleProperty("minecraft_version").get()
@@ -27,7 +27,7 @@ subprojects {
     }
 
     if (path != ":common") {
-        plugins.apply("com.github.johnrengelman.shadow")
+        plugins.apply("com.gradleup.shadow")
 
         val shadowCommon = configurations.create("shadowCommon") {
             isCanBeConsumed = false
@@ -47,7 +47,6 @@ subprojects {
                 archiveClassifier.set("shadow")
                 configurations = listOf(shadowCommon)
             }
-
 
             named<RemapJarTask>("remapJar") {
                 dependsOn(shadowJarTask)

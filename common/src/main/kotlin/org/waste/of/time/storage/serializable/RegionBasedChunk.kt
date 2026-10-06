@@ -1,5 +1,6 @@
 package org.waste.of.time.storage.serializable
 
+import it.unimi.dsi.fastutil.shorts.ShortList
 import net.minecraft.SharedConstants
 import net.minecraft.block.Block
 import net.minecraft.block.BlockState
@@ -7,6 +8,7 @@ import net.minecraft.block.Blocks
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.fluid.Fluid
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.nbt.NbtHelper
 import net.minecraft.nbt.NbtList
 import net.minecraft.nbt.NbtLongArray
 import net.minecraft.nbt.NbtOps
@@ -18,11 +20,13 @@ import net.minecraft.util.math.ChunkSectionPos
 import net.minecraft.world.LightType
 import net.minecraft.world.biome.BiomeKeys
 import net.minecraft.world.chunk.BelowZeroRetrogen
+import net.minecraft.world.chunk.PaletteProvider
 import net.minecraft.world.chunk.PalettedContainer
 import net.minecraft.world.chunk.SerializedChunk
 import net.minecraft.world.chunk.WorldChunk
 import net.minecraft.world.gen.chunk.BlendingData
 import net.minecraft.world.level.storage.LevelStorage
+import net.minecraft.world.tick.Tick
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.TIMESTAMP_KEY
 import org.waste.of.time.WorldTools.config
@@ -67,9 +71,8 @@ open class RegionBasedChunk(
         )
 
     private val stateIdContainer = PalettedContainer.createPalettedContainerCodec(
-        Block.STATE_IDS,
         BlockState.CODEC,
-        PalettedContainer.PaletteProvider.BLOCK_STATE,
+        PaletteProvider.forBlockStates(Block.STATE_IDS),
         Blocks.AIR.defaultState
     )
 
@@ -113,7 +116,7 @@ open class RegionBasedChunk(
             putLong(TIMESTAMP_KEY, System.currentTimeMillis())
         }
 
-        putInt("DataVersion", SharedConstants.getGameVersion().saveVersion.id)
+        NbtHelper.putDataVersion(this)
         putInt(SerializedChunk.X_POS_KEY, chunk.pos.x)
         putInt("yPos", chunk.bottomSectionCoord)
         putInt(SerializedChunk.Z_POS_KEY, chunk.pos.z)
@@ -159,9 +162,8 @@ open class RegionBasedChunk(
         val biomeRegistry = chunk.world.registryManager.getOptional(RegistryKeys.BIOME).orElse(null) ?: return@apply
         val defaultValue = biomeRegistry.getOptional(BiomeKeys.PLAINS).orElse(null) ?: return@apply
         val biomeCodec = PalettedContainer.createReadableContainerCodec(
-            biomeRegistry.indexedEntries,
             biomeRegistry.entryCodec,
-            PalettedContainer.PaletteProvider.BIOME,
+            PaletteProvider.forBiomes(biomeRegistry.indexedEntries),
             defaultValue
         )
         val lightingProvider = chunk.world.chunkManager.lightingProvider
@@ -232,15 +234,19 @@ open class RegionBasedChunk(
     private fun NbtCompound.getTickSchedulers(chunk: WorldChunk) {
         val time = chunk.world.levelProperties.time
         val tickSchedulers = chunk.getTickSchedulers(time)
+        val registryLookup = chunk.world.registryManager
+        val ops = registryLookup.getOps(NbtOps.INSTANCE)
 
-        val blockTickSchedulers = tickSchedulers.blocks.map { ticker ->
-            ticker.toNbt { Registries.BLOCK.getId(it).toString()}
-        }
-        put("block_ticks", NbtList().apply { addAll(blockTickSchedulers) })
-        val fluidTickSchedulers = tickSchedulers.fluids.map { ticker ->
-            ticker.toNbt { Registries.FLUID.getId(it).toString()}
-        }
-        put("fluid_ticks", NbtList().apply { addAll(fluidTickSchedulers) })
+        val blockTickCodec = Tick.createCodec(Registries.BLOCK.codec)
+        val fluidTickCodec = Tick.createCodec(Registries.FLUID.codec)
+
+        blockTickCodec.listOf().encodeStart(ops, tickSchedulers.blocks())
+            .result()
+            .ifPresent { put("block_ticks", it) }
+
+        fluidTickCodec.listOf().encodeStart(ops, tickSchedulers.fluids())
+            .result()
+            .ifPresent { put("fluid_ticks", it) }
     }
 
     private fun NbtCompound.genPostProcessing(chunk: WorldChunk) {
@@ -250,7 +256,7 @@ open class RegionBasedChunk(
             chunk.heightmaps.filter {
                 chunk.status.heightmapTypes.contains(it.key)
             }.forEach { (key, value) ->
-                put(key.getName(), NbtLongArray(value.asLongArray()))
+                put(key.id, NbtLongArray(value.asLongArray()))
             }
         })
     }

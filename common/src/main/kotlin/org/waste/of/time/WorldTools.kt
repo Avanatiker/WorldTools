@@ -28,11 +28,12 @@ object WorldTools {
     val CREDIT_MESSAGE = "This file was created by $MOD_NAME $VERSION ($URL)"
     val CREDIT_MESSAGE_MD = "This file was created by [$MOD_NAME $VERSION]($URL)"
     val LOG: Logger = LogManager.getLogger()
+    val KEYBINDINGS_CATEGORY = KeyBinding.Category.create(Identifier.of(MOD_ID, "categories"))
     var CAPTURE_KEY = KeyBinding(
-        "$MOD_ID.key.toggle_capture", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F12, KeyBinding.Category.create(Identifier.of(MOD_ID, "categories"))
+        "$MOD_ID.key.toggle_capture", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F12, KEYBINDINGS_CATEGORY
     )
     var CONFIG_KEY = KeyBinding(
-        "$MOD_ID.key.open_config", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F10, KeyBinding.Category.create(Identifier.of(MOD_ID, "categories"))
+        "$MOD_ID.key.open_config", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F10, KEYBINDINGS_CATEGORY
     )
 
     val mc: MinecraftClient = MinecraftClient.getInstance()
