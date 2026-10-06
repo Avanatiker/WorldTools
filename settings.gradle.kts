@@ -9,8 +9,11 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
     }
+    plugins {
+        kotlin("kapt") version "2.1.0"
+    }
 }
 
 include("common")
 include("fabric")
-include("forge")
+//include("forge")
