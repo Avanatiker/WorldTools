@@ -50,7 +50,7 @@ object DataInjectionHandler {
         }
     }
 
-    private fun handleBlockEntity(screen: Screen, blockEntity: BlockEntity, ) {
+    private fun handleBlockEntity(screen: Screen, blockEntity: BlockEntity) {
         when (screen) {
             is GenericContainerScreen -> {
                 when (blockEntity) {

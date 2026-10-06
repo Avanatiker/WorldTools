@@ -79,7 +79,7 @@ object HotCache {
         loadedBlockEntities.clear()
         mapIDs.clear()
 
-        // failing to reset this could cause users to accidentally save their echest contents on subsequent captures
+        // failing to reset this could cause users to accidentally save their ender chest contents on further captures
         if (!mc.isInSingleplayer && !config.advanced.keepEnderChestContents) {
             mc.player?.enderChestInventory = EnderChestInventory()
         }

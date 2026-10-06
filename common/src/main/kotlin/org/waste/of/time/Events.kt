@@ -4,19 +4,20 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.GridWidget
-import net.minecraft.client.render.RenderLayer
-import net.minecraft.client.render.VertexConsumer
-import net.minecraft.client.render.VertexConsumerProvider
-import net.minecraft.client.util.math.MatrixStack
+import net.minecraft.client.render.DrawStyle
+import net.minecraft.client.render.Frustum
 import net.minecraft.component.type.MapIdComponent
 import net.minecraft.entity.Entity
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.Box
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 import net.minecraft.world.chunk.WorldChunk
+import net.minecraft.world.debug.gizmo.GizmoDrawing
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo
 import org.waste.of.time.Utils.manhattanDistance2d
 import org.waste.of.time.WorldTools.CAPTURE_KEY
 import org.waste.of.time.WorldTools.CONFIG_KEY
@@ -110,57 +111,28 @@ object Events {
         HotCache.lastInteractedBlockEntity = null
     }
 
-    fun onDebugRenderStart(
-        matrices: MatrixStack,
-        vertexConsumers: VertexConsumerProvider.Immediate,
-        cameraX: Double,
-        cameraY: Double,
-        cameraZ: Double
+    fun onDebugRenderStart(frustum: Frustum, cameraX: Double, cameraY: Double, cameraZ: Double, tickProgress: Float, ci: CallbackInfo
     ) {
         if (!capturing || !config.render.renderNotYetCachedContainers) return
 
-        val vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getLines()) ?: return
-
         HotCache.unscannedBlockEntities
-            .forEach { render(it.pos.vec, cameraX, cameraY, cameraZ, matrices, vertexConsumer, Color(config.render.unscannedContainerColor)) }
+            .forEach { render(it.pos.vec, Color(config.render.unscannedContainerColor)) }
 
         HotCache.loadedBlockEntities
-            .forEach { render(it.value.pos.vec, cameraX, cameraY, cameraZ, matrices, vertexConsumer, Color(config.render.fromCacheLoadedContainerColor)) }
+            .forEach { render(it.value.pos.vec, Color(config.render.fromCacheLoadedContainerColor)) }
 
         HotCache.unscannedEntities
-            .forEach { render(it.entity.pos.add(-.5, .0, -.5), cameraX, cameraY, cameraZ, matrices, vertexConsumer, Color(config.render.unscannedEntityColor)) }
+            .forEach { render(it.entity.syncedPos.add(-.5, .0, -.5), Color(config.render.unscannedEntityColor)) }
     }
 
     private val BlockPos.vec get() = Vec3d(x.toDouble(), y.toDouble(), z.toDouble())
 
     private fun render(
         vec: Vec3d,
-        cameraX: Double,
-        cameraY: Double,
-        cameraZ: Double,
-        matrices: MatrixStack,
-        vertexConsumer: VertexConsumer,
         color: Color
     ) {
-        val x1 = (vec.x - cameraX).toFloat()
-        val y1 = (vec.y - cameraY).toFloat()
-        val z1 = (vec.z - cameraZ).toFloat()
-        val x2 = x1 + 1
-        val z2 = z1 + 1
-        val r = color.red / 255.0f
-        val g = color.green / 255.0f
-        val b = color.blue / 255.0f
-        val a = 1.0f
-        val positionMat = matrices.peek().positionMatrix
-        val normMat = matrices.peek()
-        vertexConsumer.vertex(positionMat, x1, y1, z1).color(r, g, b, a).normal(normMat, 1.0f, 0.0f, 0.0f)
-        vertexConsumer.vertex(positionMat, x2, y1, z1).color(r, g, b, a).normal(normMat, 1.0f, 0.0f, 0.0f)
-        vertexConsumer.vertex(positionMat, x1, y1, z1).color(r, g, b, a).normal(normMat, 0.0f, 0.0f, 1.0f)
-        vertexConsumer.vertex(positionMat, x1, y1, z2).color(r, g, b, a).normal(normMat, 0.0f, 0.0f, 1.0f)
-        vertexConsumer.vertex(positionMat, x1, y1, z2).color(r, g, b, a).normal(normMat, 1.0f, 0.0f, 0.0f)
-        vertexConsumer.vertex(positionMat, x2, y1, z2).color(r, g, b, a).normal(normMat, 1.0f, 0.0f, 0.0f)
-        vertexConsumer.vertex(positionMat, x2, y1, z2).color(r, g, b, a).normal(normMat, 0.0f, 0.0f, -1.0f)
-        vertexConsumer.vertex(positionMat, x2, y1, z1).color(r, g, b, a).normal(normMat, 0.0f, 0.0f, -1.0f)
+        val box = Box(vec.x, vec.y, vec.z, vec.x + 1.0, vec.y + 1.0, vec.z + 1.0)
+        GizmoDrawing.box(box, DrawStyle.stroked(color.rgb, 1.0f))
     }
 
     fun onGameMenuScreenInitWidgets(adder: GridWidget.Adder) {
@@ -201,7 +173,7 @@ object Events {
             //  need to find a reliable way to determine it
             //  if chunk is loaded, remove the entity? -> doesn't seem to work because server will remove entity before chunk is unloaded
             mc.player?.let { player ->
-                if (entity.pos.manhattanDistance2d(player.pos) < 32) { // todo: configurable distance, this should be small enough to be safe for most cases
+                if (entity.syncedPos.manhattanDistance2d(player.syncedPos) < 32) { // todo: configurable distance, this should be small enough to be safe for most cases
                     val cacheable = EntityCacheable(entity)
                     HotCache.entities[entity.chunkPos]?.remove(cacheable)
                 }

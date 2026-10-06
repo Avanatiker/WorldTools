@@ -24,22 +24,17 @@ object BrowseDownloadsScreen : Screen(Text.translatable("worldtools.gui.browser.
     }
 
     class WorldDownloadEntry : AlwaysSelectedEntryListWidget.Entry<WorldDownloadEntry>() {
-        override fun render(
-            context: DrawContext?,
-            index: Int,
-            y: Int,
-            x: Int,
-            entryWidth: Int,
-            entryHeight: Int,
-            mouseX: Int,
-            mouseY: Int,
-            hovered: Boolean,
-            tickDelta: Float
-        ) {
+        override fun getNarration(): Text {
             TODO("Not yet implemented")
         }
 
-        override fun getNarration(): Text {
+        override fun render(
+            context: DrawContext?,
+            mouseX: Int,
+            mouseY: Int,
+            hovered: Boolean,
+            deltaTicks: Float
+        ) {
             TODO("Not yet implemented")
         }
 

@@ -1,8 +1,10 @@
 package org.waste.of.time.storage.serializable
 
+import net.minecraft.item.map.MapState
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtHelper
 import net.minecraft.nbt.NbtIo
+import net.minecraft.nbt.NbtOps
 import net.minecraft.text.MutableText
 import net.minecraft.util.WorldSavePath
 import net.minecraft.world.level.storage.LevelStorage
@@ -15,7 +17,6 @@ import org.waste.of.time.manager.MessageManager
 import org.waste.of.time.storage.CustomRegionBasedStorage
 import org.waste.of.time.storage.Storeable
 import org.waste.of.time.storage.cache.HotCache
-import kotlin.io.path.exists
 
 class MapDataStoreable : Storeable() {
     override fun shouldStore() = config.general.capture.maps
@@ -37,22 +38,30 @@ class MapDataStoreable : Storeable() {
             dataDirectory.toFile().mkdirs()
         }
 
+
         mc.world?.let { world ->
+            val registryLookup = world.registryManager
+            val ops = registryLookup.getOps(NbtOps.INSTANCE)
+
             world.mapStates?.filter { (component, _) ->
                 HotCache.mapIDs.contains(component.id)
             }?.forEach { (component, mapState) ->
                 val id = component.id
-                NbtCompound().apply {
-                    put("data", mapState.writeNbt(NbtCompound(), world.registryManager))
+
+                val mapDataNbt = MapState.CODEC.encodeStart(ops, mapState)
+                    .getOrThrow { IllegalStateException("Nie udało się zmaterializować NBT mapy: $it") }
+
+                val nbt = NbtCompound().apply {
+                    put("data", mapDataNbt)
                     NbtHelper.putDataVersion(this)
-                    val mapFile = dataDirectory.resolve("map_$id${WorldTools.DAT_EXTENSION}")
-                    if (!mapFile.exists()) {
-                        mapFile.toFile().createNewFile()
-                    }
-                    NbtIo.writeCompressed(this, mapFile)
-                    if (config.debug.logSavedMaps) {
-                        LOG.info("Map data saved: $id")
-                    }
+                }
+
+                val mapFile = dataDirectory.resolve("map_$id${WorldTools.DAT_EXTENSION}")
+
+                NbtIo.writeCompressed(nbt, mapFile)
+
+                if (config.debug.logSavedMaps) {
+                    LOG.info("Map data saved: $id")
                 }
             }
         }

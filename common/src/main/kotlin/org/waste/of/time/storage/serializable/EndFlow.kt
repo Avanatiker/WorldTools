@@ -38,8 +38,7 @@ class EndFlow : Storeable() {
                 currentLevelName
             ).copy().styled {
                 it.withClickEvent(
-                    ClickEvent(
-                        ClickEvent.Action.OPEN_FILE,
+                    ClickEvent.OpenFile(
                         session.getDirectory(WorldSavePath.ROOT).toFile().path
                     )
                 )

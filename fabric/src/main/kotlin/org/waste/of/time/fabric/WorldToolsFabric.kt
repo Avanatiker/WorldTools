@@ -53,7 +53,6 @@ object WorldToolsFabric : ClientModInitializer {
             Events.onChunkLoad(chunk)
         })
         ClientChunkEvents.CHUNK_UNLOAD.register(ClientChunkEvents.Unload { world, chunk ->
-            if (chunk == null) return@Unload
             Events.onChunkUnload(chunk)
         })
 
