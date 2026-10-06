@@ -3,6 +3,7 @@ package org.waste.of.time.storage.serializable
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtIo
+import net.minecraft.predicate.NbtPredicate
 import net.minecraft.text.MutableText
 import net.minecraft.util.Util
 import net.minecraft.util.WorldSavePath
@@ -29,15 +30,15 @@ data class PlayerStoreable(
         get() = translateHighlight(
             "worldtools.capture.saved.player",
             player.name,
-            player.pos.asString(),
-            player.world.registryKey.value.path
+            player.syncedPos.asString(),
+            player.entityWorld.registryKey.value.path
         )
 
     override val anonymizedInfo: MutableText
         get() = translateHighlight(
             "worldtools.capture.saved.player.anonymized",
             player.name,
-            player.world.registryKey.value.path
+            player.entityWorld.registryKey.value.path
         )
 
     override fun cache() {
@@ -52,22 +53,28 @@ data class PlayerStoreable(
         savePlayerData(player, session)
         session.createSaveHandler()
         StatisticManager.players++
-        StatisticManager.dimensions.add(player.world.registryKey.value.path)
+        StatisticManager.dimensions.add(player.entityWorld.registryKey.value.path)
     }
 
     private fun savePlayerData(player: PlayerEntity, session: Session) {
         try {
-            val playerDataDir = session.getDirectory(WorldSavePath.PLAYERDATA).toFile()
-            playerDataDir.mkdirs()
+            val playerDataDir = session.getDirectory(WorldSavePath.PLAYERDATA)
+            Files.createDirectories(playerDataDir)
 
-            val newPlayerFile = File.createTempFile(player.uuidAsString + "-", ".dat", playerDataDir).toPath()
-            NbtIo.writeCompressed(player.writeNbt(NbtCompound()).apply {
+            val uuidStr = player.uuidAsString
+            val newPlayerFile: Path = Files.createTempFile(playerDataDir, "$uuidStr-", ".dat")
+
+            val nbt = NbtPredicate.entityToNbt(player).apply {
                 if (config.entity.censor.lastDeathLocation) {
                     remove("LastDeathLocation")
                 }
-            }, newPlayerFile)
-            val currentFile = File(playerDataDir, player.uuidAsString + ".dat").toPath()
-            val backupFile = File(playerDataDir, player.uuidAsString + ".dat_old").toPath()
+            }
+
+            NbtIo.writeCompressed(nbt, newPlayerFile)
+
+            val currentFile = playerDataDir.resolve("$uuidStr.dat")
+            val backupFile = playerDataDir.resolve("$uuidStr.dat_old")
+
             Util.backupAndReplace(currentFile, newPlayerFile, backupFile)
         } catch (e: Exception) {
             WorldTools.LOG.warn("Failed to save player data for {}", player.name.string)

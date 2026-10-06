@@ -4,9 +4,9 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.GridWidget
+import net.minecraft.client.render.Frustum
 import net.minecraft.client.render.RenderLayer
 import net.minecraft.client.render.VertexConsumer
-import net.minecraft.client.render.VertexConsumerProvider
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.component.type.MapIdComponent
 import net.minecraft.entity.Entity
@@ -17,6 +17,7 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 import net.minecraft.world.chunk.WorldChunk
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo
 import org.waste.of.time.Utils.manhattanDistance2d
 import org.waste.of.time.WorldTools.CAPTURE_KEY
 import org.waste.of.time.WorldTools.CONFIG_KEY
@@ -110,12 +111,7 @@ object Events {
         HotCache.lastInteractedBlockEntity = null
     }
 
-    fun onDebugRenderStart(
-        matrices: MatrixStack,
-        vertexConsumers: VertexConsumerProvider.Immediate,
-        cameraX: Double,
-        cameraY: Double,
-        cameraZ: Double
+    fun onDebugRenderStart(frustum: Frustum, cameraX: Double, cameraY: Double, cameraZ: Double, tickProgress: Float, ci: CallbackInfo
     ) {
         if (!capturing || !config.render.renderNotYetCachedContainers) return
 
@@ -128,7 +124,7 @@ object Events {
             .forEach { render(it.value.pos.vec, cameraX, cameraY, cameraZ, matrices, vertexConsumer, Color(config.render.fromCacheLoadedContainerColor)) }
 
         HotCache.unscannedEntities
-            .forEach { render(it.entity.pos.add(-.5, .0, -.5), cameraX, cameraY, cameraZ, matrices, vertexConsumer, Color(config.render.unscannedEntityColor)) }
+            .forEach { render(it.entity.syncedPos.add(-.5, .0, -.5), cameraX, cameraY, cameraZ, matrices, vertexConsumer, Color(config.render.unscannedEntityColor)) }
     }
 
     private val BlockPos.vec get() = Vec3d(x.toDouble(), y.toDouble(), z.toDouble())
@@ -201,7 +197,7 @@ object Events {
             //  need to find a reliable way to determine it
             //  if chunk is loaded, remove the entity? -> doesn't seem to work because server will remove entity before chunk is unloaded
             mc.player?.let { player ->
-                if (entity.pos.manhattanDistance2d(player.pos) < 32) { // todo: configurable distance, this should be small enough to be safe for most cases
+                if (entity.syncedPos.manhattanDistance2d(player.syncedPos) < 32) { // todo: configurable distance, this should be small enough to be safe for most cases
                     val cacheable = EntityCacheable(entity)
                     HotCache.entities[entity.chunkPos]?.remove(cacheable)
                 }

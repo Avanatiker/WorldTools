@@ -3,6 +3,7 @@ package org.waste.of.time.storage.cache
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityType
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.predicate.NbtPredicate
 import org.waste.of.time.Utils.toByte
 import org.waste.of.time.WorldTools.TIMESTAMP_KEY
 import org.waste.of.time.WorldTools.config
@@ -11,21 +12,24 @@ import org.waste.of.time.storage.Cacheable
 data class EntityCacheable(
     val entity: Entity
 ) : Cacheable {
-    fun compound() = NbtCompound().apply {
-        // saveSelfNbt has a check for RemovalReason.DISCARDED
-        EntityType.getId(entity.type)?.let { putString(Entity.ID_KEY, it.toString()) }
-        entity.writeNbt(this)
+    fun compound(): NbtCompound {
+        val nbt = NbtPredicate.entityToNbt(entity)
+        nbt.apply {
+            EntityType.getId(entity.type)?.let { putString(Entity.ID_KEY, it.toString()) }
 
-        if (config.entity.behavior.modifyEntityBehavior) {
-            putByte("NoAI", config.entity.behavior.noAI.toByte())
-            putByte("NoGravity", config.entity.behavior.noGravity.toByte())
-            putByte("Invulnerable", config.entity.behavior.invulnerable.toByte())
-            putByte("Silent", config.entity.behavior.silent.toByte())
+            if (config.entity.behavior.modifyEntityBehavior) {
+                putByte("NoAI", config.entity.behavior.noAI.toByte())
+                putByte("NoGravity", config.entity.behavior.noGravity.toByte())
+                putByte("Invulnerable", config.entity.behavior.invulnerable.toByte())
+                putByte("Silent", config.entity.behavior.silent.toByte())
+            }
+
+            if (config.entity.metadata.captureTimestamp) {
+                putLong(TIMESTAMP_KEY, System.currentTimeMillis())
+            }
         }
 
-        if (config.entity.metadata.captureTimestamp) {
-            putLong(TIMESTAMP_KEY, System.currentTimeMillis())
-        }
+        return nbt
     }
 
     override fun cache() {

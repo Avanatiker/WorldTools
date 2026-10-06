@@ -5,8 +5,10 @@ import net.minecraft.block.entity.BlockEntity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtIo
 import net.minecraft.registry.Registries
+import net.minecraft.storage.NbtReadView
+import net.minecraft.util.ErrorReporter
 import net.minecraft.util.Identifier
-import net.minecraft.util.PathUtil
+import net.minecraft.util.path.PathUtil
 import net.minecraft.util.ThrowableDeliverer
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.ChunkPos
@@ -19,6 +21,7 @@ import org.waste.of.time.WorldTools.mc
 import java.io.DataOutput
 import java.io.IOException
 import java.nio.file.Path
+import kotlin.jvm.optionals.getOrDefault
 
 
 open class CustomRegionBasedStorage internal constructor(
@@ -68,21 +71,31 @@ open class CustomRegionBasedStorage internal constructor(
 
     fun getBlockEntities(chunkPos: ChunkPos): List<BlockEntity> =
         getNbtAt(chunkPos)
-            ?.getList("block_entities", 10)
+            ?.getList("block_entities")
+            ?.orElse(null)
             ?.filterIsInstance<NbtCompound>()
             ?.mapNotNull { compoundTag ->
-                val blockPos = BlockPos(compoundTag.getInt("x"), compoundTag.getInt("y"), compoundTag.getInt("z"))
-                val blockStateIdentifier = Identifier.of(compoundTag.getString("id"))
+                val blockPos = BlockPos(
+                    compoundTag.getInt("x").getOrDefault(0),
+                    compoundTag.getInt("y").getOrDefault(0),
+                    compoundTag.getInt("z").getOrDefault(0)
+                )
+                val idString = compoundTag.getString("id").getOrDefault("")
+                if (idString.isEmpty()) return@mapNotNull null
+
+                val blockStateIdentifier = Identifier.of(idString)
                 val world = mc.world ?: return@mapNotNull null
 
                 runCatching {
                     val block = Registries.BLOCK.get(blockStateIdentifier)
-                    Registries.BLOCK_ENTITY_TYPE
+                    val blockEntityType = Registries.BLOCK_ENTITY_TYPE
                         .getOptionalValue(blockStateIdentifier)
-                        .orElse(null)
-                        ?.instantiate(blockPos, block.defaultState)?.apply {
-                            read(compoundTag, world.registryManager)
-                        }
+                        .orElse(null) ?: return@mapNotNull null
+
+                    blockEntityType.instantiate(blockPos, block.defaultState)?.apply {
+                        val view = NbtReadView.create(ErrorReporter.EMPTY, world.registryManager, compoundTag)
+                        read(view)
+                    }
                 }.getOrNull()
             } ?: emptyList()
 
